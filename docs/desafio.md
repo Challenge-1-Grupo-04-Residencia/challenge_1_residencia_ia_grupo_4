@@ -17,7 +17,9 @@ até um desafio concreto, pessoal e acionável. Os três pilares definidos pela 
 ## Challenge
 
 > Construir uma solução/protótipo com suporte de IA que atue de forma **transparente**
-> na detecção de desinformação.
+> na detecção de desinformação e **explique seus critérios** para o usuário.
+
+A resposta do grupo ao Challenge é a [**Senhora Vera**](produto/vera.md).
 
 ## Guiding Questions
 
@@ -27,13 +29,52 @@ pesquisa das Semanas 2 e 3.
 
 ### Fator humano
 
-- Quais vieses cognitivos fazem com que as pessoas aceitem e compartilhem informações
-  falsas com tanta facilidade?
+- Quais vieses cognitivos e psicológicos fazem com que as pessoas aceitem e compartilhem
+  informações falsas com tanta facilidade?
+- Que público é mais exposto (idosos, jovens, ativistas) e como cada um consome notícias?
 
-### Tecnologia
+### Tecnologia e IA
 
-- De que maneira os avanços em inteligência artificial generativa aumentam a escala e a
-  sofisticação da desinformação — e o que isso exige de quem tenta detectá-la?
+- De que maneira os avanços em inteligência artificial generativa aumentaram a
+  complexidade e o realismo das campanhas de desinformação?
+- Como sistemas de IA podem ajudar as pessoas a avaliar a confiabilidade de informações
+  sem substituir seu pensamento?
+- Quais critérios e evidências objetivas precisamos estabelecer para que uma ferramenta
+  de IA auxilie na verificação de fatos sem anular o pensamento crítico humano?
+
+### O que é e como identificar
+
+- O que se classifica como uma fake news?
+- Como uma fake news pode ser identificada? O que no texto entrega que algo é falso?
+- Qual é a forma de escrita? O texto foi gerado por inteligência artificial?
+- É plágio de outra fonte? As fontes usadas são corretas?
+
+### Fontes e veículos
+
+- Quais são os veículos confiáveis? Qual a credibilidade do veículo (empresa, universidade etc.)?
+- Qual a data de criação do website? Qual a sua credibilidade recente?
+- O veículo teve outras notícias falsas recentemente?
+- Suas publicações são politicamente enviesadas?
+- Quem é o autor? É jornalista formado? É enviesado?
+- Se a fonte é um artigo científico: foi revisado por pares? Qual metodologia? Em que base foi publicado?
+- Se a fonte é um website, ela também precisa ser checada por completo?
+
+### Corroboração
+
+- A mesma notícia está presente em outros sites? Outros sites a replicaram?
+- Há quanto tempo a postagem está no ar?
+
+### Solução
+
+- É possível criar uma API que identifica se um veículo é confiável?
+- Usar IA para resumir a notícia e buscar pontos incompatíveis?
+- Fazer web scraping para descobrir a veracidade?
+- Fazer etapas de classificação para poupar poder computacional e tempo?
+- Que pesos cada critério deve ter?
+
+As respostas propostas estão em [Classificação e pesos](produto/classificacao.md) e em
+[Como a Vera funciona](produto/funcionamento.md). A pesquisa que as valida fica em
+[Investigação](investigacao.md).
 
 !!! note "Transparência como requisito, não como recurso"
     O Challenge exige que a solução atue de forma transparente. Isso descarta, por

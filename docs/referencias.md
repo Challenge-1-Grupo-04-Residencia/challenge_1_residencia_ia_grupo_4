@@ -24,7 +24,11 @@ consistência emocional de um texto como sinal para detecção de notícias fals
 | --- | --- |
 | [NRC Emotion Intensity Lexicon](https://saifmohammad.com/WebPages/AffectIntensity.htm) | Medir picos emocionais em textos |
 | [C2PA](https://c2pa.org/) | Proveniência e autenticidade de conteúdo de mídia |
-| WHOIS | Auditoria forense de procedência de domínios |
+| WHOIS / RDAP | Auditoria forense de procedência de domínios (sinal S-03) |
+| Google Fact Check Tools API | Checagens existentes no padrão ClaimReview (RN-01) |
+| Fake.Br Corpus | Dataset de notícias falsas e verdadeiras em PT-BR |
+
+Datasets e APIs em avaliação estão em [Investigação](investigacao.md#datasets-publicos).
 
 !!! note
     Esta lista cresce durante a fase **Investigate**. Cada fonte nova deve entrar aqui com

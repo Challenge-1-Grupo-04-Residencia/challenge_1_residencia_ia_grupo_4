@@ -8,6 +8,11 @@ Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
     A IA pode apoiar a investigação da confiabilidade das informações, **fortalecendo o
     pensamento crítico em vez de substituí-lo**.
 
+!!! quote "O produto: Senhora Vera"
+    **"O que você quer saber que é verdade?"** Uma senhora fofoqueira que sabe de tudo, mas
+    só acredita depois de conferir as fontes. Disponível como site, extensão de navegador e
+    no celular. [Conheça a Vera →](produto/vera.md)
+
 ## Equipe
 
 | Membro | Papel |
@@ -21,6 +26,7 @@ Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 ## Onde estamos
 
 - [x] **Semana 1 — Engage**: Big Idea, Essential Question e Challenge definidos (07/09 a 11/09)
+- [x] **Semana 2 — Backlog**: produto, requisitos, classificação, riscos e backlog documentados
 - [ ] **Semanas 2 e 3 — Investigate**: pesquisa de artigos e fontes, respostas às Guiding Questions
 - [ ] **Semanas 4 e 5 — Act**: desenvolvimento do protótipo
 
@@ -32,17 +38,33 @@ Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 
     Big Idea, Essential Question, Challenge e as Guiding Questions.
 
--   :material-run-fast: **[Metodologia](metodologia.md)**
+-   :material-account-voice: **[Senhora Vera](produto/vera.md)**
 
-    Como o Scrum foi adaptado: sprints, cerimônias, artefatos e papéis.
+    Visão do produto, persona, canais e identidade visual.
 
--   :material-flask: **[Hipóteses técnicas](hipoteses.md)**
+-   :material-layers-triple: **[Como a Vera funciona](produto/funcionamento.md)**
 
-    Ideações preliminares — ainda **não** são decisões fechadas.
+    Pipeline em camadas: do mais barato até a LLM.
 
--   :material-file-document: **[Relatórios](relatorios.md)**
+-   :material-scale-balance: **[Classificação e pesos](produto/classificacao.md)**
 
-    Entregas formais por fase do CBL.
+    Sinais, pesos, fórmula e faixas de veracidade.
+
+-   :material-clipboard-list: **[Requisitos](requisitos/funcionais.md)**
+
+    Funcionais, não funcionais e regras de negócio.
+
+-   :material-view-column: **[Backlog](backlog/index.md)**
+
+    Épicos, histórias com critérios de aceite, MVP e Planning Poker.
+
+-   :material-alert: **[Mapa de riscos](riscos.md)**
+
+    Probabilidade × impacto e mitigação.
+
+-   :material-magnify: **[Investigação](investigacao.md)**
+
+    Estudos de caso, datasets públicos e APIs.
 
 </div>
 

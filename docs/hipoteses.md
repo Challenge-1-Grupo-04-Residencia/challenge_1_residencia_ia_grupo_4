@@ -26,9 +26,31 @@ A hipótese se apoia na literatura de *emotional consistency* para detecção de
 (ver [Referências](referencias.md)): a intensidade e a coerência emocional de um texto
 carregam sinal independente do conteúdo factual.
 
+## Hipótese 3 — Pipeline em camadas (baixo × alto custo)
+
+Resolver as notícias fáceis com sinais baratos (fonte, domínio, ML clássico) e subir para a
+LLM só quando necessário. Detalhado em [Como a Vera funciona](produto/funcionamento.md).
+
+## Hipótese 4 — ML clássico sobre o texto
+
+Um modelo baseado **apenas na escrita** (TF-IDF + SVM, Regressão Logística ou Random Forest)
+pode entregar sinal forte de falsidade a custo muito baixo. Alternativa mais cara:
+**fine-tuning** de um modelo de linguagem em PT-BR.
+
+## Hipótese 5 — Idade do domínio
+
+Sites criados há pouco tempo concentram mais desinformação. O sinal S-03 usa RDAP/WHOIS.
+
+## Hipótese 6 — Extensão de navegador
+
+Checar a notícia **onde ela é lida** aumenta o uso em comparação a um site separado.
+
 ## O que precisa ser validado na fase Investigate
 
 - [ ] Um motor multiagente entrega ganho real sobre um LLM único, ou só adiciona custo e latência?
 - [ ] WHOIS e C2PA têm cobertura suficiente no tipo de conteúdo que queremos analisar?
 - [ ] Sinal emocional se sustenta em português, ou o léxico é enviesado para o inglês?
 - [ ] Que baselines existem para comparar, e quais datasets públicos são utilizáveis?
+- [ ] Que % das notícias o pipeline resolve sem LLM?
+- [ ] TF-IDF + modelo clássico atinge F1 ≥ 0,80 em PT-BR?
+- [ ] Idade do domínio separa fake de verdadeira nos dados? Qual limiar?
