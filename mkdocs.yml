@@ -1,0 +1,73 @@
+site_name: Challenge 1 — Fake News e Desinformação
+site_description: Documentação do Grupo 4 — Residência em IA, framework Challenge Based Learning
+site_author: Grupo 4
+repo_url: https://github.com/iancostag/challenge_1_residencia_ia_grupo_4
+repo_name: challenge_1_residencia_ia_grupo_4
+edit_uri: edit/docs/docs/
+
+theme:
+  name: material
+  language: pt-BR
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Mudar para modo escuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Mudar para modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+nav:
+  - Início: index.md
+  - O Desafio (CBL): desafio.md
+  - Metodologia: metodologia.md
+  - Hipóteses técnicas: hipoteses.md
+  - Relatórios: relatorios.md
+  - Referências: referencias.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+plugins:
+  - search:
+      lang: pt
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/iancostag/challenge_1_residencia_ia_grupo_4
+
+copyright: Grupo 4 — Residência em IA
