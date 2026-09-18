@@ -113,7 +113,7 @@ extra:
   # foto: caminho dentro de docs/ (ex.: assets/equipe/maykon.png); vazio usa o avatar padrão.
   # github: usuário do GitHub, sem @; vazio não gera link.
   equipe:
-    - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
+    - { nome: "Rebeca Bontempo", papel: "Papel", foto: "", github: "rebecaboncaputo" }
     - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
     - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
     - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }

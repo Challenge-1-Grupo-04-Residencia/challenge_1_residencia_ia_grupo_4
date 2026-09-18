@@ -11,6 +11,8 @@
 Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 **Challenge Based Learning (CBL)** e usa **Scrum adaptado** para a execução.
 
+
+
 !!! abstract "A Grande Ideia"
     Em um mundo com excesso de informação, como distinguir fatos, evidências e opiniões?
     A IA pode apoiar a investigação da confiabilidade das informações, **fortalecendo o
