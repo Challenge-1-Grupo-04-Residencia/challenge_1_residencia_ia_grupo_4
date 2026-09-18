@@ -114,11 +114,11 @@ extra:
   #       Vazio usa a foto do GitHub; sem github também, usa o avatar padrão.
   # github: usuário do GitHub, sem @; vazio não gera link.
   equipe:
-    - { nome: "Rebeca Bontempo", papel: "Papel", foto: "", github: "rebecaboncaputo" }
-    - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
-    - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
-    - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
-    - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
+    - { nome: "Maykon Soares", papel: "Product Owner · Developer", foto: "", github: "maykonjuso" }
+    - { nome: "Ian Costa", papel: "Scrum Master · Developer", foto: "", github: "iancostag" }
+    - { nome: "Luísa Brambilla", papel: "Developer", foto: "", github: "LuisaBrambilla" }
+    - { nome: "Natália Evelin", papel: "Developer", foto: "", github: "NataliaLily" }
+    - { nome: "Rebeca Bontempo", papel: "Developer", foto: "", github: "rebecaboncaputo" }
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/iancostag/challenge_1_residencia_ia_grupo_4
