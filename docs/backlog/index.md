@@ -1,5 +1,11 @@
 # Visão geral do backlog
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 O Product Backlog segue a hierarquia definida na [Metodologia](../metodologia.md):
 **Temas → Épicos → Histórias de usuário**. Esta documentação é a **referência**; o
 acompanhamento diário fica no **GitHub Projects**.

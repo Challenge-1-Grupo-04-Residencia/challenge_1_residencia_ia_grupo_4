@@ -1,5 +1,11 @@
 # Investigação
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 Atividades da fase **Investigate** e o registro do que a equipe descobrir. O objetivo é
 transformar as hipóteses do brainstorm em decisões baseadas em evidências antes da fase Act.
 

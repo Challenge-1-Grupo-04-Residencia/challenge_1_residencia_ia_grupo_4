@@ -1,5 +1,11 @@
 # MVP
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 !!! warning "Proposta do PO para validar"
     O recorte abaixo é a **proposta inicial**. O MVP final é fechado depois do
     [Planning Poker](planning-poker.md): se os pontos estimados passarem da capacidade, as

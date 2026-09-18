@@ -1,5 +1,11 @@
 # Requisitos funcionais
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 **Legenda**
 
 - **Canal:** :material-web: Site · :material-puzzle: Extensão · :material-cellphone: Celular ·

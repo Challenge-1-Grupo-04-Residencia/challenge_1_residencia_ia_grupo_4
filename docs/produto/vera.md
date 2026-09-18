@@ -1,5 +1,11 @@
 # Senhora Vera
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 !!! quote ""
     **"O que você quer saber que é verdade?"**
 

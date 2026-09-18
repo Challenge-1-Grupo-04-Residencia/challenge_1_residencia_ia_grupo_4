@@ -1,5 +1,11 @@
 # Metodologia
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 O **Scrum** complementa o CBL — é especialmente útil na fase **Act**, de desenvolvimento
 da solução. É uma vertente da metodologia ágil: adaptável, colaborativa e iterativa, em
 oposição à abordagem tradicional em cascata.

@@ -1,5 +1,11 @@
 # Épicos
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 | Épico | Tema | Objetivo | Requisitos | Depende de | MVP |
 | --- | --- | --- | --- | --- | --- |
 | **E1 · Chat com a Vera** | T1 | Conversar com a Vera para checar uma notícia | RF-01 a RF-05 | E3 | :material-check: |

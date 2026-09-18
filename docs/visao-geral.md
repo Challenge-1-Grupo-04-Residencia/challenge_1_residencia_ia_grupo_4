@@ -1,5 +1,13 @@
 # Challenge 1 — Fake News e Desinformação
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 16/09 | 1.1 | Inclusão do produto Vera, requisitos, backlog e riscos | Maykon Soares |
+    | 18/09 | 1.2 | Conteúdo movido da página inicial para Visão geral | Maykon Soares |
+
 Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 **Challenge Based Learning (CBL)** e usa **Scrum adaptado** para a execução.
 

@@ -1,0 +1,162 @@
+<!-- Elementos adicionados em "home.html" só aparecem na página inicial -->
+
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+
+<style>
+    .hero {
+        background: linear-gradient(to bottom, var(--md-primary-fg-color), #1d2026 99%, #1d2026 99%);
+        flex: 1 0 auto;
+    }
+
+    .md-main {
+        content-visibility: hidden;
+    }
+
+    .hero-logo {
+        width: 96px;
+        height: 96px;
+        margin-bottom: 16px;
+    }
+
+    .hero .hero-paragraph {
+        color: rgba(255, 255, 255, 0.82);
+    }
+
+    @media (max-width: 640px) {
+        .hero-logo {
+            display: block;
+            margin: 0 auto 16px;
+        }
+    }
+
+    .team-photo {
+        border-radius: 50px;
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+</style>
+
+<link rel="stylesheet" href="{{ base_url }}/morse/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/animejs@3.0.1/lib/anime.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/scrollreveal@4.0.0/dist/scrollreveal.min.js"></script>
+
+<div class="is-boxed has-animations">
+    <div class="body-wrap">
+        <main>
+            <section class="hero">
+                <div class="container">
+                    <div class="hero-inner">
+                        <div class="hero-copy">
+                            <img class="hero-logo" src="{{ base_url }}/assets/vera/logo.svg" alt="Logo Senhora Vera">
+                            <h1 class="hero-title mt-0">Senhora Vera</h1>
+                            <p class="hero-paragraph">"O que você quer saber que é verdade?" Uma senhora que sabe
+                                de tudo, mas só acredita depois de conferir as fontes. Grupo 4 · Residência em IA ·
+                                Desafio 1: Fake News e Desinformação.</p>
+                            <div class="hero-cta">
+                                <a class="button button-primary" href="{{ base_url }}/visao-geral/">Visão geral do
+                                    projeto</a>
+                            </div>
+                        </div>
+                        <div class="hero-figure anime-element">
+                            <svg class="placeholder" width="528" height="396" viewBox="0 0 528 396">
+                                <rect width="528" height="396" style="fill:transparent;" />
+                            </svg>
+                            <div class="hero-figure-box hero-figure-box-01" data-rotation="45deg"></div>
+                            <div class="hero-figure-box hero-figure-box-02" data-rotation="-45deg"></div>
+                            <div class="hero-figure-box hero-figure-box-03" data-rotation="0deg"></div>
+                            <div class="hero-figure-box hero-figure-box-04" data-rotation="-135deg"></div>
+                            <div class="hero-figure-box hero-figure-box-05"></div>
+                            <div class="hero-figure-box hero-figure-box-06"></div>
+                            <div class="hero-figure-box hero-figure-box-07"></div>
+                            <div class="hero-figure-box hero-figure-box-08" data-rotation="-22deg"></div>
+                            <div class="hero-figure-box hero-figure-box-09" data-rotation="-52deg"></div>
+                            <div class="hero-figure-box hero-figure-box-10" data-rotation="-50deg"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="features section">
+                <div class="container">
+                    <div class="features-inner section-inner has-bottom-divider">
+                        <div class="features-wrap">
+                            <div class="feature text-center is-revealing">
+                                <div class="feature-inner">
+                                    <div class="feature-icon">
+                                        <img src="{{ base_url }}/morse/images/feature-icon-01.svg" alt="">
+                                    </div>
+                                    <h4 class="feature-title mt-24">Challenge Based Learning</h4>
+                                    <p class="text-sm mb-0">Engage, Investigate e Act: partimos de uma grande ideia
+                                        e chegamos a uma solução real, executada em Scrum adaptado.</p>
+                                </div>
+                            </div>
+                            <div class="feature text-center is-revealing">
+                                <div class="feature-inner">
+                                    <div class="feature-icon">
+                                        <img src="{{ base_url }}/morse/images/feature-icon-02.svg" alt="">
+                                    </div>
+                                    <h4 class="feature-title mt-24">Checagem em camadas</h4>
+                                    <p class="text-sm mb-0">Do mais barato ao mais caro: reputação do veículo, outras
+                                        fontes, forma de escrita e, só no fim, a LLM. Menos custo e menos espera.</p>
+                                </div>
+                            </div>
+                            <div class="feature text-center is-revealing">
+                                <div class="feature-inner">
+                                    <div class="feature-icon">
+                                        <img src="{{ base_url }}/morse/images/feature-icon-03.svg" alt="">
+                                    </div>
+                                    <h4 class="feature-title mt-24">Pensamento crítico</h4>
+                                    <p class="text-sm mb-0">A IA apoia a checagem da confiabilidade das informações,
+                                        fortalecendo o pensamento crítico em vez de substituí-lo.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="pricing section">
+                <div class="container">
+                    <div class="pricing-inner section-inner">
+                        <div class="pricing-header text-center">
+                            <h2 class="section-title mt-0">Nosso Time</h2>
+                            <p class="section-paragraph mb-0">
+                                Residentes do Grupo 4 da Residência em IA.
+                            </p>
+                        </div>
+                        <div class="features-inner section-inner has-bottom-divider">
+                            <div class="features-wrap">
+                                <!-- Os membros são preenchidos em mkdocs.yml, na chave extra.equipe -->
+                                {% for membro in config.extra.equipe %}
+                                <div class="feature text-center is-revealing">
+                                    <div class="feature-inner">
+                                        <div class="feature-icon">
+                                            <img class="team-photo"
+                                                src="{{ base_url }}/{{ membro.foto or 'assets/equipe/membro.svg' }}"
+                                                alt="Foto de {{ membro.nome }}">
+                                        </div>
+                                        <h4 class="feature-title mt-24">
+                                            {% if membro.github %}<a href="https://github.com/{{ membro.github }}">{{ membro.nome }}</a>{% else %}{{ membro.nome }}{% endif %}
+                                        </h4>
+                                        <p class="text-sm mb-0">{{ membro.papel }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>document.body.classList.add("is-boxed", "has-animations");</script>
+<script src="{{ base_url }}/morse/js/main.min.js"></script>
+
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}

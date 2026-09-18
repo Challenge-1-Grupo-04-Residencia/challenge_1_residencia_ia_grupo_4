@@ -1,5 +1,11 @@
 # Planning Poker
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 A equipe estima o **esforço** de cada história com Planning Poker e o PO atribui o **valor**.
 A combinação dos dois alimenta a **Matriz de Esforço × Valor** definida na
 [Metodologia](../metodologia.md#artefatos) e decide a ordem do backlog e o corte do

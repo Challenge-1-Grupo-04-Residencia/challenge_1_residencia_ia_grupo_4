@@ -17,6 +17,16 @@ uv sync
 uv run mkdocs serve   # http://127.0.0.1:8000
 ```
 
+A cada push no branch `docs`, a Action [`deploy-docs.yml`](.github/workflows/deploy-docs.yml)
+publica o site no GitHub Pages (branch `gh-pages`).
+
+- **Página inicial:** template em [`overrides/home.html`](overrides/home.html), no mesmo estilo
+  do projeto Paraizo. Cores em [`overrides/stylesheets/extra.css`](overrides/stylesheets/extra.css).
+- **Membros da seção "Nosso Time":** preencha `extra.equipe` no [`mkdocs.yml`](mkdocs.yml)
+  (nome, papel, foto em `docs/assets/equipe/` e usuário do GitHub).
+- **Histórico de revisão:** toda página tem uma tabela recolhível no topo; adicione uma linha
+  a cada alteração.
+
 | Página | Conteúdo |
 | --- | --- |
 | `docs/desafio.md` | Big Idea, Essential Question, Challenge e Guiding Questions |

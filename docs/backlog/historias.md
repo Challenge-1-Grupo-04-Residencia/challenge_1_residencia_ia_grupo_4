@@ -1,5 +1,11 @@
 # Histórias de usuário
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 Cada história tem os critérios de aceite (clique para expandir). **Story points**, **valor** e
 **prioridade** ficam em branco e são preenchidos na [Planning Poker](planning-poker.md).
 

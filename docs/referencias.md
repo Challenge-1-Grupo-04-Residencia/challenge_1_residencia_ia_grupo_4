@@ -1,5 +1,12 @@
 # Referências
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 16/09 | 1.1 | Inclusão do produto Vera, requisitos, backlog e riscos | Maykon Soares |
+
 Os PDFs estão versionados em `Referencias_bibliograficas/` no repositório.
 
 ## Challenge Based Learning

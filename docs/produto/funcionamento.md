@@ -1,5 +1,11 @@
 # Como a Vera funciona
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 !!! danger "Proposta para validar"
     A arquitetura abaixo é a **proposta inicial** do grupo. Os limiares e as camadas
     precisam ser validados com dados na fase Investigate.

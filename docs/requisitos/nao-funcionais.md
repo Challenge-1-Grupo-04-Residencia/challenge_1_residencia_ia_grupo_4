@@ -1,5 +1,11 @@
 # Requisitos não funcionais
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 Os valores-alvo são a proposta inicial e devem ser confirmados antes do início da fase Act.
 
 | ID | Categoria | Requisito | Métrica / alvo | MoSCoW |

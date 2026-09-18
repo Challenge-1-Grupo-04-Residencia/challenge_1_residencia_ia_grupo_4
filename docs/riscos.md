@@ -1,5 +1,11 @@
 # Mapa de riscos
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 **Probabilidade (P)** e **Impacto (I)** de 1 a 5. **Exposição = P × I.**
 :material-circle:{ style="color: #c62828" } Alta (≥ 15) ·
 :material-circle:{ style="color: #f9a825" } Média (8–14) ·

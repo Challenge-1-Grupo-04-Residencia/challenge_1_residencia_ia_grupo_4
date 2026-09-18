@@ -1,5 +1,11 @@
 # Regras de negócio
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 As regras de negócio valem para **todos os canais** (site, extensão e celular) e são
 referenciadas pelos requisitos e critérios de aceite.
 

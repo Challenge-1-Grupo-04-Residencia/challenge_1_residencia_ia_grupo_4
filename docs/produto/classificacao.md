@@ -1,5 +1,11 @@
 # Classificação e pesos
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 !!! danger "Pesos iniciais, não definitivos"
     Os pesos desta página são uma **hipótese de partida** vinda do brainstorm. Eles serão
     calibrados com datasets rotulados ([US-10.3](../backlog/historias.md#e10-dados-e-avaliacao)).

@@ -1,5 +1,11 @@
 # Relatórios
 
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 16/09 | 1.0 | Criação da página | Maykon Soares |
+
 Entregas formais por fase do CBL. Os PDFs estão versionados no repositório.
 
 ## Fase 1 — Engage (Semana 1: 07/09 a 11/09)
