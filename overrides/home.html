@@ -134,9 +134,16 @@
                                 <div class="feature text-center is-revealing">
                                     <div class="feature-inner">
                                         <div class="feature-icon">
-                                            <img class="team-photo"
-                                                src="{{ base_url }}/{{ membro.foto or 'assets/equipe/membro.svg' }}"
-                                                alt="Foto de {{ membro.nome }}">
+                                            {% set avatar_padrao = base_url ~ '/assets/equipe/membro.svg' %}
+                                            {% if membro.foto %}
+                                            {% set foto = base_url ~ '/' ~ membro.foto %}
+                                            {% elif membro.github %}
+                                            {% set foto = 'https://github.com/' ~ membro.github ~ '.png?size=200' %}
+                                            {% else %}
+                                            {% set foto = avatar_padrao %}
+                                            {% endif %}
+                                            <img class="team-photo" src="{{ foto }}" alt="Foto de {{ membro.nome }}"
+                                                onerror="this.onerror=null; this.src='{{ avatar_padrao }}';">
                                         </div>
                                         <h4 class="feature-title mt-24">
                                             {% if membro.github %}<a href="https://github.com/{{ membro.github }}">{{ membro.nome }}</a>{% else %}{{ membro.nome }}{% endif %}
