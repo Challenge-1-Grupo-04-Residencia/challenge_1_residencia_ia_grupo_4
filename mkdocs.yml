@@ -110,7 +110,8 @@ plugins:
 extra:
   generator: false
   # Membros exibidos na seção "Nosso Time" da página inicial.
-  # foto: caminho dentro de docs/ (ex.: assets/equipe/maykon.png); vazio usa o avatar padrão.
+  # foto: caminho dentro de docs/ (ex.: assets/equipe/maykon.png).
+  #       Vazio usa a foto do GitHub; sem github também, usa o avatar padrão.
   # github: usuário do GitHub, sem @; vazio não gera link.
   equipe:
     - { nome: "Nome do membro", papel: "Papel", foto: "", github: "" }
