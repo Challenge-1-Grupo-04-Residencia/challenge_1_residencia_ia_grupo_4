@@ -40,17 +40,8 @@ Use uma ficha por caso estudado:
 
 ## Datasets públicos
 
-!!! warning "Verificar antes de usar"
-    A lista é o ponto de partida da pesquisa. Tamanho, licença e disponibilidade de cada
-    dataset precisam ser **conferidos na fonte original** e registrados aqui.
-
-| Dataset | Idioma | Conteúdo | Uso previsto | Tamanho | Licença | Limitações |
-| --- | --- | --- | --- | --- | --- | --- |
-| **Fake.Br Corpus** | PT-BR | Notícias falsas e verdadeiras pareadas por tema | Treino/teste do N2 (principal) | | | |
-| **FakeRecogna** | PT-BR | Notícias falsas e verdadeiras | Teste com notícias mais recentes | | | |
-| **FACTCK.BR** | PT-BR | Alegações checadas por agências brasileiras | Avaliação de N1 (RN-01) e N4 | | | |
-| **LIAR** | EN | Declarações do PolitiFact com 6 rótulos | Referência de literatura | | | |
-| **FakeNewsNet** | EN | Notícias + contexto social | Referência de literatura | | | |
+As bases em PT-BR já foram levantadas, baixadas e conferidas uma a uma: tamanho real,
+conteúdo, licença e limitações estão em **[Datasets](datasets.md)**.
 
 ## Fontes de dados e APIs
 
