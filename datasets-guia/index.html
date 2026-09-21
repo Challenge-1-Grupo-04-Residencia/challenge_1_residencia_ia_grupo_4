@@ -1,0 +1,2188 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação do Grupo 4 — Residência em IA, framework Challenge Based Learning">
+      
+      
+        <meta name="author" content="Grupo 4">
+      
+      
+      
+        <link rel="prev" href="../datasets/">
+      
+      
+        <link rel="next" href="../metodologia/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/vera/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Alocação e Justificativas - Senhora Vera</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#alocacao-e-justificativas-dos-datasets-na-arquitetura" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href=".." title="Senhora Vera" class="md-header__button md-logo" aria-label="Senhora Vera" data-md-component="logo">
+      
+  <img src="../assets/vera/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Senhora Vera
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Alocação e Justificativas
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Mudar para modo escuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Mudar para modo escuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Mudar para modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Mudar para modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/iancostag/challenge_1_residencia_ia_grupo_4" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    challenge_1_residencia_ia_grupo_4
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href=".." class="md-tabs__link">
+          
+  
+  
+  Visão Geral
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../produto/vera/" class="md-tabs__link">
+          
+  
+  
+  Produto
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../requisitos/tecnicas_elicitacao/" class="md-tabs__link">
+          
+  
+  
+  Requisitos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../backlog/" class="md-tabs__link">
+          
+  
+  
+  Backlog
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../investigacao/" class="md-tabs__link">
+          
+  
+  
+  Dados e Investigação
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../metodologia/" class="md-tabs__link">
+          
+  
+  
+  Gestão e Projeto
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Senhora Vera" class="md-nav__button md-logo" aria-label="Senhora Vera" data-md-component="logo">
+      
+  <img src="../assets/vera/logo.svg" alt="logo">
+
+    </a>
+    Senhora Vera
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/iancostag/challenge_1_residencia_ia_grupo_4" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    challenge_1_residencia_ia_grupo_4
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão Geral
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Visão Geral
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visao-geral/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../desafio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    O Desafio (CBL)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Produto
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Produto
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../produto/vera/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Senhora Vera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../produto/funcionamento/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Como a Vera funciona
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../produto/classificacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Classificação e pesos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../riscos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mapa de riscos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Requisitos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Requisitos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requisitos/tecnicas_elicitacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Engenharia de Requisitos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requisitos/funcionais/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Funcionais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requisitos/nao-funcionais/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Não funcionais
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requisitos/regras-de-negocio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regras de negócio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../requisitos/analise-comparativa/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Análise comparativa
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Backlog
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/epicos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Épicos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/historias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Histórias de usuário
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../backlog/mvp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MVP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dados e Investigação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Dados e Investigação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../investigacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Investigação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hipoteses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hipóteses técnicas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../datasets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Catálogo de Datasets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alocação e Justificativas
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Alocação e Justificativas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principio-arquitetural-investigacao-progressiva" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Princípio arquitetural: investigação progressiva
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#justificativa-por-camada-da-vera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificativa por camada da Vera
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Justificativa por camada da Vera">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-camada-n0-cache-de-fatos-checagens-pre-existentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Camada N0 · Cache de Fatos &amp; Checagens Pré-Existentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-camada-n1-fonte-e-reputacao-de-veiculos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Camada N1 · Fonte e Reputação de Veículos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-camada-n2-conteudo-e-estilo-ml-classico-e-heuristicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Camada N2 · Conteúdo e Estilo (ML Clássico e Heurísticas)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Camada N2 · Conteúdo e Estilo (ML Clássico e Heurísticas)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-treino-principal-do-classificador-estilistico-s-06-rf-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A) Treino Principal do Classificador Estilístico (S-06 / RF-21)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-calibracao-de-heuristicas-de-sensacionalismo-s-07-rf-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B) Calibração de Heurísticas de Sensacionalismo (S-07 / RF-22)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-avaliacao-de-robustez-em-outros-canais-whatsapp-e-twitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C) Avaliação de Robustez em Outros Canais (WhatsApp e Twitter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-camada-n3-corroboracao-de-fatos-e-evidencias-cruzadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Camada N3 · Corroboração de Fatos e Evidências Cruzadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-camada-n4-casos-complexos-e-ia-generativa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Camada N4 · Casos Complexos e IA Generativa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criterios-para-o-benchmark-oficial-rnf-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Critérios para o Benchmark Oficial (RNF-06)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matriz-resumo-de-decisao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matriz resumo de decisão
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gestão e Projeto
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gestão e Projeto
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../metodologia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metodologia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../relatorios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Relatórios
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../referencias/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Referências
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#principio-arquitetural-investigacao-progressiva" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Princípio arquitetural: investigação progressiva
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#justificativa-por-camada-da-vera" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificativa por camada da Vera
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Justificativa por camada da Vera">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-camada-n0-cache-de-fatos-checagens-pre-existentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Camada N0 · Cache de Fatos &amp; Checagens Pré-Existentes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-camada-n1-fonte-e-reputacao-de-veiculos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Camada N1 · Fonte e Reputação de Veículos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-camada-n2-conteudo-e-estilo-ml-classico-e-heuristicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Camada N2 · Conteúdo e Estilo (ML Clássico e Heurísticas)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Camada N2 · Conteúdo e Estilo (ML Clássico e Heurísticas)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-treino-principal-do-classificador-estilistico-s-06-rf-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A) Treino Principal do Classificador Estilístico (S-06 / RF-21)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-calibracao-de-heuristicas-de-sensacionalismo-s-07-rf-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B) Calibração de Heurísticas de Sensacionalismo (S-07 / RF-22)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-avaliacao-de-robustez-em-outros-canais-whatsapp-e-twitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C) Avaliação de Robustez em Outros Canais (WhatsApp e Twitter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-camada-n3-corroboracao-de-fatos-e-evidencias-cruzadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Camada N3 · Corroboração de Fatos e Evidências Cruzadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-camada-n4-casos-complexos-e-ia-generativa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Camada N4 · Casos Complexos e IA Generativa
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criterios-para-o-benchmark-oficial-rnf-06" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Critérios para o Benchmark Oficial (RNF-06)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matriz-resumo-de-decisao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matriz resumo de decisão
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/iancostag/challenge_1_residencia_ia_grupo_4/edit/docs/docs/datasets-guia.md" title="Editar esta página" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="alocacao-e-justificativas-dos-datasets-na-arquitetura">Alocação e Justificativas dos Datasets na Arquitetura<a class="headerlink" href="#alocacao-e-justificativas-dos-datasets-na-arquitetura" title="Permanent link">&para;</a></h1>
+<details class="abstract">
+<summary>Histórico de revisão</summary>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Data</th>
+<th style="text-align: center;">Versão</th>
+<th>Descrição</th>
+<th>Autor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">21/09</td>
+<td style="text-align: center;">1.0</td>
+<td>Criação da página com a fundamentação e mapeamento dos 11 datasets no pipeline da Vera</td>
+<td>Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo</td>
+</tr>
+</tbody>
+</table>
+</details>
+<p>Esta página detalha a <strong>estratégia de uso dos 11 datasets padronizados</strong> no produto <strong>Vera</strong>. Ela fundamenta o porquê de cada base ter sido alocada em sua respectiva camada no pipeline de checagem (<a href="../produto/funcionamento/">Como a Vera funciona</a>), quais problemas cada uma resolve e os <strong>riscos metodológicos</strong> de utilizá-las fora do escopo planejado.</p>
+<hr />
+<h2 id="principio-arquitetural-investigacao-progressiva">Princípio arquitetural: investigação progressiva<a class="headerlink" href="#principio-arquitetural-investigacao-progressiva" title="Permanent link">&para;</a></h2>
+<p>A Vera não trata a detecção de fake news como uma classificação monolítica (<em>"jogar todo o texto em um modelo e esperar uma resposta"</em>). O produto segue uma <strong>esteira de decisão em camadas</strong>, escalonando custos computacionais e financeiros da verificação mais barata até a mais complexa:</p>
+<pre class="mermaid"><code>flowchart TD
+    subgraph D_N0["Base N0 · Cache de Fatos Checados"]
+        D_CF["central-de-fatos (11.643)&lt;br/&gt;Checagens de 6 agências IFCN"]
+        D_FC["factck-br (1.300)&lt;br/&gt;Alegações ClaimReview"]
+    end
+
+    subgraph D_N1["Base N1 · Reputação de Fontes"]
+        D_REP["Lookup de domínios&lt;br/&gt;(extraído de central-de-fatos + fakenewsbr-v6)"]
+    end
+
+    subgraph D_N2["Treino &amp; Validação N2 · Estilo e Conteúdo"]
+        D_FBR["fake-br (7.200)&lt;br/&gt;Benchmark Ouro balanceado e pareado"]
+        D_REC["fakerecogna (11.902)&lt;br/&gt;Multitemático balanceado pós-2018"]
+        D_FN6["fakenewsbr-v6 (297.672)&lt;br/&gt;Calibração de sensacionalismo"]
+        D_WPP["fakewhatsapp-br (9.824)&lt;br/&gt;Estresse em mensagens virais"]
+        D_TWT["faketweet-br (279)&lt;br/&gt;Estresse em microblogging"]
+    end
+
+    subgraph D_N3["Base N3 · Corroboração de Fontes"]
+        D_FTR["faketrue-br (3.582)&lt;br/&gt;Pares boato vs desmentido alinhados"]
+    end
+
+    subgraph D_N4["Testes Específicos &amp; Riscos"]
+        D_GEN["fakegen-br (20)&lt;br/&gt;Resistência a texto gerado por IA (RF-25)"]
+        D_MUM["portuguese-fact-checking (3.391)&lt;br/&gt;Quase-duplicatas e recirculação"]
+    end
+
+    D_N0 --&gt; N0["N0 · Cache"]
+    D_REP --&gt; N1["N1 · Fonte"]
+    D_N2 --&gt; N2["N2 · Conteúdo"]
+    D_N3 --&gt; N3["N3 · Corroboração"]
+    D_N4 --&gt; N4["N4 · LLM / Avaliação de Riscos"]</code></pre>
+<hr />
+<h2 id="justificativa-por-camada-da-vera">Justificativa por camada da Vera<a class="headerlink" href="#justificativa-por-camada-da-vera" title="Permanent link">&para;</a></h2>
+<h3 id="1-camada-n0-cache-de-fatos-checagens-pre-existentes">1. Camada N0 · Cache de Fatos &amp; Checagens Pré-Existentes<a class="headerlink" href="#1-camada-n0-cache-de-fatos-checagens-pre-existentes" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Objetivo da camada</p>
+<p>Responder em menos de 200 ms se a alegação já foi formalmente checada e desmentida por uma agência oficial de checagem de fatos, aplicando a regra prioritária <strong>RN-01</strong> com custo zero de LLM.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>central-de-fatos</code></strong></td>
+<td style="text-align: left;">11.643 linhas</td>
+<td style="text-align: left;">Reúne o histórico de checagens de <strong>seis agências signatárias do IFCN</strong> (Lupa, Aos Fatos, Boatos.org, Fato ou Fake, Estadão Verifica e Comprova). Se a entrada do usuário tiver alta similaridade com uma checagem existente, a Vera responde de imediato citando a agência.</td>
+<td style="text-align: left;"><strong>Inadequado para treinar ML de estilo (N2)</strong>: mais de 87% da base é de falsos e o texto reflete a redação jornalística dos checadores. O modelo aprenderia o linguajar da agência, e não as marcas da desinformação.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>factck-br</code></strong></td>
+<td style="text-align: left;">1.300 linhas</td>
+<td style="text-align: left;">Base construída no padrão <strong>ClaimReview</strong> (o mesmo padrão estruturado da Google Fact Check Tools API). Traz o resumo exato da alegação checada, permitindo busca vetorial rápida por similaridade semântica.</td>
+<td style="text-align: left;">Amostra reduzida (1.300 registros) e rótulos em escala fina ("Exagerado", "Distorcido", "Sem contexto") que dificultam classificação binária direta.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="2-camada-n1-fonte-e-reputacao-de-veiculos">2. Camada N1 · Fonte e Reputação de Veículos<a class="headerlink" href="#2-camada-n1-fonte-e-reputacao-de-veiculos" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Objetivo da camada</p>
+<p>Avaliar quem publicou a matéria e se o domínio possui histórico recente de notícias falsas confirmadas (<a href="../requisitos/funcionais/">RF-14</a>, <a href="../requisitos/funcionais/">RF-18</a>, sinais S-01 e S-02).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>central-de-fatos</code></strong> <em>(metadados)</em></td>
+<td style="text-align: left;">~11.600 URLs</td>
+<td style="text-align: left;">Ao cruzar as fontes e links citados nos desmentidos, extrai-se a relação quantitativa de domínios com desinformação comprovada nos últimos meses (alimentando o sinal S-02).</td>
+<td style="text-align: left;">Os metadados de domínio servem para lookup de reputação; o texto da checagem em si é utilizado em N0.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>fakenewsbr-v6</code></strong> <em>(metadados)</em></td>
+<td style="text-align: left;">~297.000 URLs</td>
+<td style="text-align: left;">Traz campos ricos de metadados como <code>source_description</code>, <code>url_review</code> e <code>factcheck_url</code>. É a maior fonte disponível para mapear os domínios legítimos da imprensa brasileira vs sites falsificados ou obscuros.</td>
+<td style="text-align: left;">Volume extenso demais para busca semântica em tempo de inferência online; seu uso ideal é offline, compilando a base estruturada de fontes (<code>fontes_reputacao.json</code>).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="3-camada-n2-conteudo-e-estilo-ml-classico-e-heuristicas">3. Camada N2 · Conteúdo e Estilo (ML Clássico e Heurísticas)<a class="headerlink" href="#3-camada-n2-conteudo-e-estilo-ml-classico-e-heuristicas" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Objetivo da camada</p>
+<p>Identificar padrões linguísticos e comportamentais de desinformação (estilometria, apelo emocional, sensacionalismo) rodando localmente em CPU em menos de 100 ms (<a href="../requisitos/funcionais/">RF-21</a>, <a href="../requisitos/funcionais/">RF-22</a>, sinais S-06 e S-07).</p>
+</div>
+<h4 id="a-treino-principal-do-classificador-estilistico-s-06-rf-21">A) Treino Principal do Classificador Estilístico (S-06 / RF-21)<a class="headerlink" href="#a-treino-principal-do-classificador-estilistico-s-06-rf-21" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>fake-br</code></strong></td>
+<td style="text-align: left;">7.200 linhas</td>
+<td style="text-align: left;"><strong>Referência metodológica em língua portuguesa.</strong> Possui balanceamento exato (50% fake, 50% true) e <strong>pareamento temático rigoroso</strong>: para cada notícia falsa, há uma verdadeira cobrindo o mesmo evento. Isso impede o classificador de aprender viés de assunto (<em>topic bias</em>), focando estritamente no <strong>estilo de escrita</strong>.</td>
+<td style="text-align: left;">Deve ser mantido limpo e isolado como base do conjunto de teste oficial (<a href="../requisitos/nao-funcionais/">RNF-06</a>). Não deve ser mesclado indiscriminadamente com bases desbalanceadas.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>fakerecogna</code></strong></td>
+<td style="text-align: left;">11.902 linhas</td>
+<td style="text-align: left;">Perfeitamente balanceado (5.951 falsas / 5.951 verdadeiras) e multitemático (política, saúde, economia). Expande o vocabulário para além das eleições de 2018 do <code>fake-br</code>, trazendo notícias até 2021.</td>
+<td style="text-align: left;">Atenção à rotulação original invertida (Classe 0 = falsa, Classe 1 = verdadeira), já padronizada no Parquet.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="b-calibracao-de-heuristicas-de-sensacionalismo-s-07-rf-22">B) Calibração de Heurísticas de Sensacionalismo (S-07 / RF-22)<a class="headerlink" href="#b-calibracao-de-heuristicas-de-sensacionalismo-s-07-rf-22" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>fakenewsbr-v6</code></strong> <em>(atributos)</em></td>
+<td style="text-align: left;">297.672 linhas</td>
+<td style="text-align: left;">Já traz da origem métricas de estilo pré-calculadas (frequência de exclamações <code>!</code>, interrogações <code>?</code>, reticências <code>...</code> e taxa de caixa alta). Permite calibrar empiricamente as curvas de sensacionalismo em quase 300 mil textos.</td>
+<td style="text-align: left;"><strong>Proibido usar como treino supervisionado do texto bruto</strong>: possui desbalanceamento de 3,5 verdadeiras para cada 1 falsa e <strong>incorpora 7.160 notícias copiadas do <code>fake-br</code></strong>. Treinar nele e avaliar no <code>fake-br</code> causaria vazamento brutal de dados (<em>data leakage</em>).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="c-avaliacao-de-robustez-em-outros-canais-whatsapp-e-twitter">C) Avaliação de Robustez em Outros Canais (WhatsApp e Twitter)<a class="headerlink" href="#c-avaliacao-de-robustez-em-outros-canais-whatsapp-e-twitter" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>fakewhatsapp-br</code></strong></td>
+<td style="text-align: left;">9.824 mensagens</td>
+<td style="text-align: left;">Único corpus de mensagens virais de WhatsApp em PT-BR com rotulação (2018 e 2020). Serve para testar se o classificador N2 mantém acurácia quando o usuário envia mensagens curtas e informais no chat da Vera.</td>
+<td style="text-align: left;">Não deve entrar no treino inicial de notícias formais: mensagens de bate-papo não possuem a estrutura sintática de parágrafos jornalísticos, gerando ruído nos n-gramas.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>faketweet-br</code></strong></td>
+<td style="text-align: left;">279 tweets</td>
+<td style="text-align: left;">Corpus rotulado de microblogging (280 caracteres) com dados de engajamento (retweets e favoritos).</td>
+<td style="text-align: left;">Volume muito pequeno (279 amostras): treiná-lo causaria <em>overfitting</em> imediato. Serve para teste exploratório.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="4-camada-n3-corroboracao-de-fatos-e-evidencias-cruzadas">4. Camada N3 · Corroboração de Fatos e Evidências Cruzadas<a class="headerlink" href="#4-camada-n3-corroboracao-de-fatos-e-evidencias-cruzadas" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Objetivo da camada</p>
+<p>Verificar se veículos legítimos cobriram o mesmo evento e identificar cópias com fatos adulterados (<a href="../requisitos/funcionais/">RF-27</a>, <a href="../requisitos/funcionais/">RF-28</a>, <a href="../requisitos/funcionais/">RF-31</a>, sinais S-11 e S-13).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>faketrue-br</code></strong></td>
+<td style="text-align: left;">3.582 notícias</td>
+<td style="text-align: left;">Cada linha traz o <strong>par alinhado</strong>: o boato apurado pelo Boatos.org e a matéria legítima correspondente do G1 ou Folha cobrindo o mesmo fato. É o benchmark pronto para validar os algoritmos de busca semântica e correspondência cruzada.</td>
+<td style="text-align: left;"><strong>Não usar em N2</strong>: na estruturação dos pares, a mesma notícia verdadeira aparece associada a múltiplos boatos. Treinar N2 nela duplicaria artificialmente os textos verdadeiros.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>portuguese-fact-checking</code></strong></td>
+<td style="text-align: left;">3.391 publicações</td>
+<td style="text-align: left;">Mapeia publicações de redes sociais conectadas à alegação checada, trazendo quase-duplicatas e desinformação sobre COVID-19. Ideal para testar o agrupamento de boatos requentados.</td>
+<td style="text-align: left;">Desbalanceamento severo no recorte MuMiN-PT (1.343 falsas para apenas 61 verdadeiras), o que inviabiliza o treino tradicional de classificadores.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="5-camada-n4-casos-complexos-e-ia-generativa">5. Camada N4 · Casos Complexos e IA Generativa<a class="headerlink" href="#5-camada-n4-casos-complexos-e-ia-generativa" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">Objetivo da camada</p>
+<p>Resolver notícias plausíveis e bem-escritas que escapam às camadas anteriores, empregando LLMs para decompor alegações e inferir suporte ou contradição contra evidências (NLI).</p>
+</div>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Volume</th>
+<th style="text-align: left;">Por que foi escolhido aqui?</th>
+<th style="text-align: left;">Por que NÃO usar em outra etapa?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong><code>fakegen-br</code></strong></td>
+<td style="text-align: left;">20 notícias</td>
+<td style="text-align: left;">20 notícias falsas geradas por LLM (GPT-4.1-mini) a partir de notícias reais do <code>fake-br</code>. Serve exclusivamente como <strong>conjunto de teste cego para o requisito <a href="../requisitos/funcionais/">RF-25</a></strong>: avaliar se a Vera resiste a desinformações sintéticas de gramática perfeita.</td>
+<td style="text-align: left;">Amostra minúscula (20 itens) e de origem 100% artificial: estatisticamente inválido para treino ou métricas gerais de acurácia.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong><code>fktc</code></strong></td>
+<td style="text-align: left;">460 MB</td>
+<td style="text-align: left;">Recorte denso de notícias políticas checadas por agências durante o ciclo eleitoral de 2018/2019. Serve para estresse temático na fase de refinamento.</td>
+<td style="text-align: left;">Download pesado opcional no Zenodo que inclui bases internacionais; fica reservado para testes aprofundados (<code>--completo</code>).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="criterios-para-o-benchmark-oficial-rnf-06">Critérios para o Benchmark Oficial (RNF-06)<a class="headerlink" href="#criterios-para-o-benchmark-oficial-rnf-06" title="Permanent link">&para;</a></h2>
+<p>O requisito <a href="../requisitos/nao-funcionais/">RNF-06</a> exige meta explícita para o MVP:</p>
+<div class="arithmatex">\[\mathbf{F_1\text{-macro} \ge 0,80}\]</div>
+<p>Para assegurar validade científica e ausência de viés na medição:</p>
+<ol>
+<li><strong>Partição Intocada (Golden Set):</strong> Deve ser reservada uma partição de teste estratificada de 20% do <strong><code>fake-br</code></strong> (720 falsas e 720 verdadeiras) e/ou do <strong><code>fakerecogna</code></strong>.</li>
+<li><strong>Isolamento Absoluto:</strong> Esse conjunto não deve participar de ajuste de hiperparâmetros, vetorização TF-IDF ou calibração de pesos.</li>
+<li><strong>Prevenção de Vazamento (<em>Data Leakage</em>):</strong> O dataset <code>fakenewsbr-v6</code> não deve ser utilizado como treino se o teste for no <code>fake-br</code> sem a prévia remoção das 7.160 linhas compartilhadas.</li>
+</ol>
+<hr />
+<h2 id="matriz-resumo-de-decisao">Matriz resumo de decisão<a class="headerlink" href="#matriz-resumo-de-decisao" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>datasets/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── central-de-fatos        ──► N0 (Cache de checagens) &amp; N1 (Histórico de domínios)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── factck-br               ──► N0 (Alegações estruturadas ClaimReview)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── fake-br                 ──► N2 (Treino de estilo) &amp; RNF-06 (Benchmark oficial)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── fakerecogna             ──► N2 (Treino multitemático pós-2018)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── fakenewsbr-v6           ──► N1 (Reputação de fontes) &amp; N2 (Calibração de sensacionalismo)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>├── fakewhatsapp-br         ──► N2 (Teste de robustez em mensagens virais)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── faketweet-br            ──► N2 (Teste exploratório em microblogging)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>├── faketrue-br             ──► N3 (Benchmark de corroboração e pares alinhados)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>├── portuguese-fact-checking──► N3 (Detecção de quase-duplicatas)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── fakegen-br              ──► N4 (Teste de resistência a texto por IA - RF-25)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>└── fktc                    ──► Validação de estresse em ciclo eleitoral
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../datasets/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: Catálogo de Datasets">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                Catálogo de Datasets
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../metodologia/" class="md-footer__link md-footer__link--next" aria-label="Próximo: Metodologia">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Próximo
+              </span>
+              <div class="md-ellipsis">
+                Metodologia
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Grupo 4 — Residência em IA
+    </div>
+  
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/iancostag/challenge_1_residencia_ia_grupo_4" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.instant.progress", "navigation.path", "navigation.sections", "navigation.top", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.action.edit", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
