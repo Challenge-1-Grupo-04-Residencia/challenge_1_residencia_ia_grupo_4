@@ -5,16 +5,78 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 21/09 | 1.0 | Levantamento, download e verificação das bases em PT-BR | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 21/09 | 1.1 | Padronização: esquema único de colunas, dicionário e ficha por dataset | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 Todas as bases desta página são **em português do Brasil** e foram **baixadas e conferidas**:
 os números abaixo são a contagem real dos arquivos, não o que o artigo original anuncia.
 
-!!! tip "Como baixar"
-    ```bash
-    ./scripts/baixar_datasets.sh
-    ```
-    O script recria a pasta `datasets/` (cerca de 1,3 GB), que fica **fora do controle de
-    versão**. Nenhum dado é commitado no repositório.
+## Organização padronizada
+
+Um comando baixa tudo, normaliza e gera a documentação de cada base:
+
+```bash
+./scripts/baixar_datasets.sh              # baixa o que falta, padroniza e documenta
+./scripts/baixar_datasets.sh --docs       # só refaz a padronização e a documentação
+./scripts/baixar_datasets.sh --so fake-br # apenas um dataset
+./scripts/baixar_datasets.sh --completo   # inclui o download pesado do FKTC (460 MB)
+```
+
+Toda base recebe **a mesma estrutura de pasta**, para que importar uma ou todas dê o mesmo
+trabalho:
+
+```
+datasets/<slug>/
+├── dados/               arquivos originais, como vieram da fonte
+├── padronizado.parquet  mesmas colunas em todos os datasets
+├── metadata.json        ficha legível por código (fonte, licença, contagens)
+├── README.md            o que é, de onde veio e como usar no projeto
+└── dicionario.md        colunas, tipos e exemplos, gerados dos dados reais
+```
+
+Como o esquema é igual em todas, **importar o conjunto inteiro é uma linha**:
+
+```python
+import pandas as pd, glob
+df = pd.concat(map(pd.read_parquet, glob.glob("datasets/*/padronizado.parquet")))
+# 346.813 linhas, 10 colunas
+```
+
+### Esquema comum
+
+| Coluna | Descrição |
+| --- | --- |
+| `id` | `<slug>:<n>`, único entre todos os datasets |
+| `dataset` | slug de origem, para filtrar ou remover uma base |
+| `canal` | `noticia`, `rede_social`, `whatsapp`, `checagem` ou `sintetico` |
+| `titulo` | título, quando a fonte tem |
+| `texto` | corpo do conteúdo |
+| `rotulo` | `falso`, `verdadeiro` ou `outro` |
+| `rotulo_original` | rótulo como veio da fonte, sem tradução, para auditar a conversão |
+| `data` | data de publicação, quando existir |
+| `veiculo` | veículo ou fonte declarada |
+| `url` | link de origem |
+
+O `rotulo_original` existe porque agências usam escalas diferentes: o que é "Enganoso" ou
+"FORA DE CONTEXTO" vira `outro`, e o valor de origem fica registrado para revisão.
+
+### O que há hoje
+
+| Dataset | Slug | Canal | Linhas | falso | verdadeiro | outro |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| Fake.Br Corpus | `fake-br` | notícia | 7.200 | 3.600 | 3.600 | 0 |
+| FakeRecogna | `fakerecogna` | notícia | 11.902 | 5.951 | 5.951 | 0 |
+| FakeTrue.Br | `faketrue-br` | notícia | 3.582 | 1.791 | 1.791 | 0 |
+| FakenewsBR v6 | `fakenewsbr-v6` | notícia | 297.672 | 66.772 | 230.900 | 0 |
+| FakeWhatsApp.Br | `fakewhatsapp-br` | WhatsApp | 9.824 | 4.214 | 5.610 | 0 |
+| MuMiN-PT e COVID19.BR | `portuguese-fact-checking` | rede social | 3.391 | 2.207 | 1.184 | 0 |
+| Central de Fatos | `central-de-fatos` | checagem | 11.643 | 10.196 | 250 | 1.197 |
+| FACTCK.BR | `factck-br` | checagem | 1.300 | 933 | 123 | 244 |
+| FakeTweet.Br | `faketweet-br` | rede social | 279 | 188 | 91 | 0 |
+| FakeGen.BR | `fakegen-br` | sintético | 20 | 20 | 0 | 0 |
+| FKTC | `fktc` | notícia | sob demanda | | | |
+
+**346.813 linhas padronizadas.** A pasta `datasets/` tem cerca de 1,3 GB e fica **fora do
+controle de versão**: nenhum dado é commitado.
 
 ## Corpora rotulados: treinar e avaliar o classificador
 
@@ -25,11 +87,11 @@ Servem à camada **N2 · Conteúdo** ([RF-21](requisitos/funcionais.md) a
 | Dataset | Tamanho conferido | Conteúdo | Licença | Link |
 | --- | --- | --- | --- | --- |
 | **Fake.Br Corpus** | 3.600 falsas + 3.600 verdadeiras | Texto integral, versão pré-processada e normalizada por tamanho, com metadados | Acadêmica, citar o artigo | [github.com/roneysco/Fake.br-Corpus](https://github.com/roneysco/Fake.br-Corpus) |
-| **FakeRecogna** | 11.903 registros | Título, subtítulo, texto, **categoria**, data, autor, URL e classe | MIT | [huggingface.co/datasets/recogna-nlp/FakeRecogna](https://huggingface.co/datasets/recogna-nlp/FakeRecogna) |
+| **FakeRecogna** | 11.902 registros (5.951 de cada) | Título, subtítulo, texto, **categoria**, data, autor, URL e classe | MIT | [huggingface.co/datasets/recogna-nlp/FakeRecogna](https://huggingface.co/datasets/recogna-nlp/FakeRecogna) |
 | **FakeTrue.Br** | 1.791 pares | Cada notícia falsa **pareada com a verdadeira** sobre o mesmo fato, com os dois links | Acadêmica | [github.com/jpchav98/FakeTrue.Br](https://github.com/jpchav98/FakeTrue.Br) |
-| **FKTC** | 2.168 notícias | Política, eleições de 2018 e 2019, vindas de Aos Fatos, Lupa e UOL Confere | Acadêmica | [github.com/GoloMarcos/FKTC](https://github.com/GoloMarcos/FKTC) |
+| **FKTC** | 2.168 notícias | Política, eleições de 2018 e 2019, de Aos Fatos, Lupa e UOL Confere. Os dados não estão no repositório: vêm de um zip de 460 MB no Zenodo, baixado só com `--completo` | Acadêmica | [github.com/GoloMarcos/FKTC](https://github.com/GoloMarcos/FKTC) |
 | **Fake.Br no Hugging Face** | o mesmo Fake.Br | Carregamento direto pela biblioteca `datasets` | Acadêmica | [huggingface.co/datasets/fake-news-UFG/fakebr](https://huggingface.co/datasets/fake-news-UFG/fakebr) |
-| **Expanded Fake News Corpus** | JSON | Expansão do Fake.Br com mais notícias | Verificar no repositório | [github.com/Pedrest15/expanded_fake_news_corpus](https://github.com/Pedrest15/expanded_fake_news_corpus) |
+| **FakeGen.BR** (Expanded Fake News Corpus) | 20 itens | **Não é corpus coletado**: são notícias geradas por LLM a partir do Fake.Br. Serve de material para o RF-25 (texto gerado por IA), não para treino | Verificar no repositório | [github.com/Pedrest15/expanded_fake_news_corpus](https://github.com/Pedrest15/expanded_fake_news_corpus) |
 
 ## Ciclo de vida da desinformação: como uma alegação nasce e se espalha
 
