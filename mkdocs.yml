@@ -66,7 +66,9 @@ nav:
       # - DoR e DoD: backlog/dor-dod.md
   - Mapa de riscos: riscos.md
   - Investigação: investigacao.md
-  - Datasets: datasets.md
+  - Datasets:
+      - Catálogo e Padronização: datasets.md
+      - Alocação e Justificativas: datasets-guia.md
   - Hipóteses técnicas: hipoteses.md
   - Metodologia: metodologia.md
   - Relatórios: relatorios.md
