@@ -44,13 +44,15 @@ theme:
     - toc.follow
 
 nav:
-  - Início: index.md
-  - Visão geral: visao-geral.md
-  - O Desafio (CBL): desafio.md
+  - Visão Geral:
+      - Início: index.md
+      - Visão geral: visao-geral.md
+      - O Desafio (CBL): desafio.md
   - Produto:
       - Senhora Vera: produto/vera.md
       - Como a Vera funciona: produto/funcionamento.md
       - Classificação e pesos: produto/classificacao.md
+      - Mapa de riscos: riscos.md
   - Requisitos:
       - Engenharia de Requisitos: requisitos/tecnicas_elicitacao.md
       - Funcionais: requisitos/funcionais.md
@@ -62,17 +64,15 @@ nav:
       - Épicos: backlog/epicos.md
       - Histórias de usuário: backlog/historias.md
       - MVP: backlog/mvp.md
-      # - Planning Poker: backlog/planning-poker.md
-      # - DoR e DoD: backlog/dor-dod.md
-  - Mapa de riscos: riscos.md
-  - Investigação: investigacao.md
-  - Datasets:
-      - Catálogo e Padronização: datasets.md
+  - Dados e Investigação:
+      - Investigação: investigacao.md
+      - Hipóteses técnicas: hipoteses.md
+      - Catálogo de Datasets: datasets.md
       - Alocação e Justificativas: datasets-guia.md
-  - Hipóteses técnicas: hipoteses.md
-  - Metodologia: metodologia.md
-  - Relatórios: relatorios.md
-  - Referências: referencias.md
+  - Gestão e Projeto:
+      - Metodologia: metodologia.md
+      - Relatórios: relatorios.md
+      - Referências: referencias.md
 
 markdown_extensions:
   - admonition
