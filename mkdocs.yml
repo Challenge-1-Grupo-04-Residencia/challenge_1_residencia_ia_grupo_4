@@ -52,6 +52,7 @@ nav:
       - Como a Vera funciona: produto/funcionamento.md
       - Classificação e pesos: produto/classificacao.md
   - Requisitos:
+      - Engenharia de Requisitos: requisitos/tecnicas_elicitacao.md
       - Funcionais: requisitos/funcionais.md
       - Não funcionais: requisitos/nao-funcionais.md
       - Regras de negócio: requisitos/regras-de-negocio.md
