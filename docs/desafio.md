@@ -6,6 +6,8 @@
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 16/09 | 1.1 | Inclusão do produto Vera, requisitos, backlog e riscos | Maykon Soares |
+    | 16/09 | 1.2 | Reformulação das perguntas | Ian Costa, Luísa Brambilla |
+
 
 A fase **Engage** parte de um conceito amplo e afunila, por meio de questionamento,
 até um desafio concreto, pessoal e acionável. Os três pilares definidos pela equipe:
@@ -42,15 +44,17 @@ pesquisa das Semanas 2 e 3.
 
 ### Tecnologia e IA
 
-- De que maneira os avanços em inteligência artificial generativa aumentaram a
-  complexidade e o realismo das campanhas de desinformação?
-- Como sistemas de IA podem ajudar as pessoas a avaliar a confiabilidade de informações
-  sem substituir seu pensamento?
-- Quais critérios e evidências objetivas precisamos estabelecer para que uma ferramenta
-  de IA auxilie na verificação de fatos sem anular o pensamento crítico humano?
+- De que maneira os avanços em inteligência artificial generativa aumentaram a complexidade e o realismo das campanhas de desinformação?
 
 ### O que é e como identificar
 
+- Quais critérios e evidências objetivas precisamos estabelecer para que uma ferramenta de IA auxilie na verificação de fatos sem anular o pensamento crítico humano?
+
+## Perguntas relacionadas ao motor de busca
+Essas perguntas visam entender como a detecção de fake news funciona
+
+
+### Definição de Fake News
 - O que se classifica como uma fake news?
 - Como uma fake news pode ser identificada? O que no texto entrega que algo é falso?
 - Qual é a forma de escrita? O texto foi gerado por inteligência artificial?
