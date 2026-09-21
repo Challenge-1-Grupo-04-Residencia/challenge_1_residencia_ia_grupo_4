@@ -26,8 +26,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
+import time
 import zipfile
 from pathlib import Path
 
@@ -379,14 +381,30 @@ def baixar(ds: dict, completo: bool) -> None:
     if "git" in ds and not any(dados.iterdir()):
         print(f"  clonando {ds['git']}...")
         temp = pasta / "_tmp_clone"
-        subprocess.run(
-            ["git", "clone", "-q", "--depth", "1",
-             f"https://github.com/{ds['git']}.git", str(temp)],
-            check=True,
-        )
-        for item in list(temp.iterdir()):
-            item.rename(dados / item.name)
-        temp.rmdir()
+        tentativas = 3
+        for tentativa in range(1, tentativas + 1):
+            if temp.exists():
+                shutil.rmtree(temp, ignore_errors=True)
+            cmd = [
+                "git",
+                "-c", "http.version=HTTP/1.1",
+                "-c", "http.postBuffer=1048576000",
+                "clone", "--depth", "1",
+                f"https://github.com/{ds['git']}.git", str(temp),
+            ]
+            try:
+                subprocess.run(cmd, check=True)
+                for item in list(temp.iterdir()):
+                    shutil.move(str(item), str(dados / item.name))
+                shutil.rmtree(temp, ignore_errors=True)
+                break
+            except Exception as e:
+                if temp.exists():
+                    shutil.rmtree(temp, ignore_errors=True)
+                if tentativa == tentativas:
+                    raise
+                print(f"  tentativa {tentativa} falhou ({e}), tentando novamente...")
+                time.sleep(2)
 
     for url, nome in ds.get("url", []):
         existente = achar(dados, nome)
