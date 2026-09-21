@@ -1,3 +1,11 @@
+# Engenharia de Requisitos
+
+??? abstract "Histórico de revisão"
+
+    | Data | Versão | Descrição | Autor |
+    | :---: | :---: | --- | --- |
+    | 21/09 | 1.0 | Criação da página com as atividades, técnicas e processo de ER | Ian Costa |
+
 ## **4.1 Atividades e Técnicas de ER**
 ### Elicitação e Descoberta
 

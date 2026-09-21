@@ -5,6 +5,7 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 O **Scrum** complementa o CBL — é especialmente útil na fase **Act**, de desenvolvimento
 da solução. É uma vertente da metodologia ágil: adaptável, colaborativa e iterativa, em
@@ -32,12 +33,12 @@ O trabalho não é entregue de uma vez no final: é dividido em ciclos curtos e 
 ## Artefatos
 
 - **Product Backlog** — lista central com tudo o que precisa ser feito no projeto.
-  Composto por histórias de usuário.
+  Composto pelos requisitos elicitados.
 - **Sprint Backlog** — tarefas selecionadas para o ciclo atual.
 - **Matriz de Esforço × Valor** — metrifica quais itens agregam mais valor com o menor custo.
-- **Histórias de usuário** — formato de organização dos requisitos elicitados.
-- **Épicos** — agrupam histórias de usuário. Não se resolve um épico diretamente: ele é
-  resolvido pelas histórias que engloba.
+- **Requisitos** — funcionais (RF) e não funcionais (RNF), cada um com ID próprio.
+- **Épicos** — agrupam requisitos. Não se resolve um épico diretamente: ele é
+  resolvido pelos requisitos que engloba.
 - **Temas** — agrupam épicos, pela mesma lógica.
 
 O backlog é mantido no **GitHub Projects**, o que mantém tudo registrado e facilita a

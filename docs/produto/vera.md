@@ -5,6 +5,7 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 !!! quote ""
     **"O que você quer saber que é verdade?"**
@@ -70,7 +71,7 @@ A Vera precisa estar onde a notícia aparece:
 ### Frases temáticas (rascunho)
 
 Os textos são exemplos para calibrar o tom. A versão final sai do
-[workshop de persona](../backlog/historias.md#e2-persona-e-identidade-visual).
+workshop de persona.
 
 | Situação | Frase |
 | --- | --- |

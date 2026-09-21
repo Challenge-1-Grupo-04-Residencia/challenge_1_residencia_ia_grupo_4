@@ -5,8 +5,10 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Estimativa passa a ser por requisito | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 21/09 | 1.2 | Planilha ajustada à revisão dos RF | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
-A equipe estima o **esforço** de cada história com Planning Poker e o PO atribui o **valor**.
+A equipe estima o **esforço** de cada requisito com Planning Poker e o PO atribui o **valor**.
 A combinação dos dois alimenta a **Matriz de Esforço × Valor** definida na
 [Metodologia](../metodologia.md#artefatos) e decide a ordem do backlog e o corte do
 [MVP](mvp.md).
@@ -21,19 +23,19 @@ Sequência de Fibonacci modificada:
 | **1 · 2 · 3** | Pequena, bem entendida |
 | **5 · 8** | Média, com alguma incerteza |
 | **13** | Grande: limite para caber em uma Sprint |
-| **21** | Grande demais: **quebrar** a história antes de estimar de novo |
-| **?** | Não entendi a história: volta para o PO |
+| **21** | Grande demais: **quebrar** o requisito antes de estimar de novo |
+| **?** | Não entendi o requisito: volta para o PO |
 | **:material-coffee:** | Pausa |
 
-!!! tip "História de referência"
-    Antes da primeira rodada, a equipe escolhe uma história conhecida e a fixa como **3
-    pontos**. Todas as outras são estimadas **em relação a ela**. Sugestão:
-    **US-4.2** (consultar a idade do domínio via RDAP).
+!!! tip "Requisito de referência"
+    Antes da primeira rodada, a equipe escolhe um requisito conhecido e o fixa como **3
+    pontos**. Todos os outros são estimados **em relação a ele**. Sugestão:
+    **RF-16** (consultar a idade do domínio).
 
 ## Como conduzir uma rodada
 
-1. **PO** lê a história e os critérios de aceite.
-2. A equipe tira dúvidas (máx. 2 min). Se algo não estiver claro, carta **?** e a história volta.
+1. **PO** lê o requisito e o que se espera dele.
+2. A equipe tira dúvidas (máx. 2 min). Se algo não estiver claro, carta **?** e o requisito volta.
 3. Cada Developer escolhe uma carta **em segredo**.
 4. Todos revelam **ao mesmo tempo**.
 5. Se houver consenso (ou diferença de uma carta vizinha), registra o maior valor.
@@ -48,7 +50,7 @@ ou campo *Story Points* no GitHub Projects.
 
 ## Valor de negócio
 
-O PO dá nota de **1 a 5** para cada história, considerando:
+O PO dá nota de **1 a 5** para cada requisito, considerando:
 
 | Nota | Critério |
 | --- | --- |
@@ -71,57 +73,61 @@ A matriz ajuda a visualizar:
 
 ## Planilha de estimativa
 
-Preencha durante a sessão. As histórias estão na ordem da proposta de MVP.
+Preencha durante a sessão. Os requisitos estão na ordem da proposta de MVP.
 
-| História | Resumo | MVP | Rodada 1 | Rodada 2 | **SP final** | **Valor** | **Prioridade** | Quadrante |
+| Requisito | Resumo | MVP | Rodada 1 | Rodada 2 | **SP final** | **Valor** | **Prioridade** | Quadrante |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| US-10.1 | Levantar datasets | :material-check: | | | | | | |
-| US-10.2 | Conjunto de avaliação + métricas | :material-check: | | | | | | |
-| US-10.3 | Calibrar pesos | :material-check: | | | | | | |
-| US-4.1 | Base curada de fontes | :material-check: | | | | | | |
-| US-4.2 | Idade do domínio | :material-check: | | | | | | |
-| US-4.3 | Checagens existentes | :material-check: | | | | | | |
-| US-5.1 | Classificador TF-IDF | :material-check: | | | | | | |
-| US-5.2 | Sensacionalismo | :material-check: | | | | | | |
-| US-3.1 | Orquestrador em camadas | :material-check: | | | | | | |
-| US-3.2 | Extração de URL | :material-check: | | | | | | |
-| US-3.3 | Fórmula V e C | :material-check: | | | | | | |
-| US-3.4 | Regras que sobrepõem o score | :material-check: | | | | | | |
-| US-6.1 | Busca de notícias semelhantes | :material-check: | | | | | | |
-| US-6.2 | Contagem de veículos confiáveis | :material-check: | | | | | | |
-| US-6.3 | LLM extrai alegações | :material-check: | | | | | | |
-| US-2.1 | Persona e frases | :material-check: | | | | | | |
-| US-2.2 | Humores por faixa | :material-check: | | | | | | |
-| US-2.3 | Guia visual | :material-check: | | | | | | |
-| US-2.4 | Acessibilidade | :material-check: | | | | | | |
-| US-1.1 | Enviar link/texto | :material-check: | | | | | | |
-| US-1.2 | Resposta com persona | :material-check: | | | | | | |
-| US-1.3 | Progresso da investigação | :material-check: | | | | | | |
-| US-7.1 | Resultado com motivos e fontes | :material-check: | | | | | | |
-| US-7.2 | Detalhamento dos sinais | :material-check: | | | | | | |
-| US-8.1 | Extensão: checar aba | :material-check: | | | | | | |
-| US-9.1 | Site responsivo | :material-check: | | | | | | |
-| US-1.4 | Perguntas sobre o resultado | | | | | | | |
-| US-3.5 | Cache | | | | | | | |
-| US-3.6 | Modo econômico | | | | | | | |
-| US-4.4 | Histórico de fakes por domínio | | | | | | | |
-| US-4.5 | Domínios impostores | | | | | | | |
-| US-4.6 | API pública de reputação | | | | | | | |
-| US-5.3 | Emoção NRC | | | | | | | |
-| US-5.4 | Citação de fontes | | | | | | | |
-| US-5.5 | Texto gerado por IA | | | | | | | |
-| US-5.6 | Sátira e opinião | | | | | | | |
-| US-6.4 | NLI por alegação | | | | | | | |
-| US-6.5 | Cópia alterada | | | | | | | |
-| US-7.3 | Dicas de pensamento crítico | | | | | | | |
-| US-7.4 | Contestar resultado | | | | | | | |
-| US-8.2 | Selo de reputação | | | | | | | |
-| US-8.3 | Checar trecho selecionado | | | | | | | |
-| US-9.2 | PWA instalável | | | | | | | |
-| US-9.3 | Compartilhar do WhatsApp | | | | | | | |
-| US-10.4 | % resolvida sem LLM | | | | | | | |
-| US-11.1 | Histórico do usuário | | | | | | | |
-| US-11.2 | Últimas notícias | | | | | | | |
+| RNF-06 | Datasets, conjunto de avaliação e métricas | :material-check: | | | | | | |
+| RNF-07 | Calibrar pesos | :material-check: | | | | | | |
+| RF-14 | Confiabilidade do veículo | :material-check: | | | | | | |
+| RF-15 | Manter a base curada de veículos | :material-check: | | | | | | |
+| RF-16 | Idade do domínio | :material-check: | | | | | | |
+| RF-17 | Checagens já publicadas por agências | :material-check: | | | | | | |
+| RF-21 | Classificação pelo estilo de escrita | :material-check: | | | | | | |
+| RF-22 | Sensacionalismo | :material-check: | | | | | | |
+| RF-06 | Extração de conteúdo da URL | :material-check: | | | | | | |
+| RF-07 | Checagem em camadas | :material-check: | | | | | | |
+| RF-08 | Regra de parada | :material-check: | | | | | | |
+| RF-09 | Score de veracidade e confiança | :material-check: | | | | | | |
+| RF-10 | Regras que se sobrepõem ao score | :material-check: | | | | | | |
+| RNF-18 | Pesos configuráveis | :material-check: | | | | | | |
+| RF-27 | Busca de notícias semelhantes | :material-check: | | | | | | |
+| RF-28 | Contagem de veículos confiáveis | :material-check: | | | | | | |
+| RF-29 | Extração de alegações checáveis | :material-check: | | | | | | |
+| RF-05 | Reação da Vera por faixa | :material-check: | | | | | | |
+| RNF-20 | Experiência tematizada | :material-check: | | | | | | |
+| RNF-08 | Acessibilidade | :material-check: | | | | | | |
+| RNF-09 | Resultado não depende só de cor | :material-check: | | | | | | |
+| RF-01 | Enviar link, texto ou afirmação | :material-check: | | | | | | |
+| RF-02 | Resposta em chat | :material-check: | | | | | | |
+| RF-03 | Andamento da investigação | :material-check: | | | | | | |
+| RF-32 | Resultado com motivos e fontes | :material-check: | | | | | | |
+| RF-33 | Detalhamento dos sinais | :material-check: | | | | | | |
+| RF-36 | Extensão: checar a aba atual | :material-check: | | | | | | |
+| RNF-10 | Uso no celular (360 px) | :material-check: | | | | | | |
+| RF-04 | Perguntas de acompanhamento | | | | | | | |
+| RF-11 | Reaproveitar checagens (cache) | | | | | | | |
+| RF-12 | Modo econômico sem LLM | | | | | | | |
+| RF-13 | Dificuldade da checagem | | | | | | | |
+| RF-18 | Histórico de falsas por domínio | | | | | | | |
+| RF-19 | Domínios impostores | | | | | | | |
+| RF-20 | API pública de reputação | | | | | | | |
+| RF-23 | Intensidade emocional | | | | | | | |
+| RF-24 | Citação de fontes verificáveis | | | | | | | |
+| RF-25 | Texto gerado por IA | | | | | | | |
+| RF-26 | Sátira e opinião | | | | | | | |
+| RF-30 | Evidência por alegação | | | | | | | |
+| RF-31 | Cópia alterada | | | | | | | |
+| RF-34 | Dicas de pensamento crítico | | | | | | | |
+| RF-35 | Contestar resultado | | | | | | | |
+| RF-37 | Selo de reputação | | | | | | | |
+| RF-38 | Checar trecho selecionado | | | | | | | |
+| RF-39 | Transcrição de vídeo do YouTube | | | | | | | |
+| RF-40 | PWA instalável | | | | | | | |
+| RF-41 | Compartilhar de outro app | | | | | | | |
+| RNF-04 | % resolvida sem LLM | | | | | | | |
+| RF-42 | Histórico do usuário | | | | | | | |
+| RF-43 | Últimas notícias | | | | | | | |
 
 ## Capacidade da Sprint
 
@@ -136,6 +142,6 @@ Preencha durante a sessão. As histórias estão na ordem da proposta de MVP.
 
 ## Registro das sessões
 
-| Data | Participantes | Histórias estimadas | Observações |
+| Data | Participantes | Requisitos estimados | Observações |
 | --- | --- | --- | --- |
 | | | | |

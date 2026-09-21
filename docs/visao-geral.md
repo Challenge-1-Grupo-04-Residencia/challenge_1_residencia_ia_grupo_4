@@ -7,6 +7,7 @@
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 16/09 | 1.1 | Inclusão do produto Vera, requisitos, backlog e riscos | Maykon Soares |
     | 18/09 | 1.2 | Conteúdo movido da página inicial para Visão geral | Maykon Soares |
+    | 21/09 | 1.3 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 **Challenge Based Learning (CBL)** e usa **Scrum adaptado** para a execução.
@@ -66,7 +67,7 @@ Documentação do **Grupo 4** da Residência em IA. O projeto segue o framework
 
 -   :material-view-column: **[Backlog](backlog/index.md)**
 
-    Épicos, histórias com critérios de aceite, MVP e Planning Poker.
+    Temas, épicos, MVP, Planning Poker e DoR/DoD.
 
 -   :material-alert: **[Mapa de riscos](riscos.md)**
 

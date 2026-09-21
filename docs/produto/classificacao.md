@@ -5,10 +5,11 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 !!! danger "Pesos iniciais, não definitivos"
     Os pesos desta página são uma **hipótese de partida** vinda do brainstorm. Eles serão
-    calibrados com datasets rotulados ([US-10.3](../backlog/historias.md#e10-dados-e-avaliacao)).
+    calibrados com datasets rotulados (RNF-07).
     Toda mudança de peso deve ser registrada no [histórico de calibração](#historico-de-calibracao).
 
 ## O que é fake news para a Vera?

@@ -5,6 +5,7 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 Atividades da fase **Investigate** e o registro do que a equipe descobrir. O objetivo é
 transformar as hipóteses do brainstorm em decisões baseadas em evidências antes da fase Act.
@@ -69,7 +70,7 @@ Para responder à pergunta "quais sites têm maior credibilidade e publicam meno
 
 ## Perguntas em aberto
 
-- [ ] Existe uma API de credibilidade de veículos brasileiros, ou precisamos **construir** a nossa (US-4.1, US-4.6)?
+- [ ] Existe uma API de credibilidade de veículos brasileiros, ou precisamos **construir** a nossa (RF-14, RF-20)?
 - [ ] Como tratar fontes que são **artigos científicos** (revisão por pares, metodologia, base de publicação)?
 - [ ] Se a fonte citada é um website, ela também passa pela checagem completa? Até que profundidade?
 - [ ] Viés político do veículo deve **mesmo** ficar fora do score (RN-08)?

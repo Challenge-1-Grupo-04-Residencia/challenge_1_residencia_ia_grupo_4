@@ -5,6 +5,7 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 !!! danger "Proposta para validar"
     A arquitetura abaixo é a **proposta inicial** do grupo. Os limiares e as camadas
@@ -74,7 +75,7 @@ Depois de cada camada:
 
 !!! tip "Valores iniciais sugeridos"
     `C_min = 0,7`. A zona de dúvida (26 a 74) deve ser recalibrada com o dataset de
-    avaliação ([US-10.3](../backlog/historias.md#e10-dados-e-avaliacao)).
+    avaliação (RNF-07).
 
 ## Modelo de baixo custo × alto custo
 

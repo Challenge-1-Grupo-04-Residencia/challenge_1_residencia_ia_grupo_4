@@ -5,11 +5,13 @@
     | Data | Versão | Descrição | Autor |
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
+    | 21/09 | 1.1 | MVP passa a ser recortado por requisitos | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 21/09 | 1.2 | Recorte do MVP ajustado à revisão dos RF | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 !!! warning "Proposta do PO para validar"
     O recorte abaixo é a **proposta inicial**. O MVP final é fechado depois do
-    [Planning Poker](planning-poker.md): se os pontos estimados passarem da capacidade, as
-    histórias de menor valor por ponto saem.
+    [Planning Poker](planning-poker.md): se os pontos estimados passarem da capacidade, os
+    requisitos de menor valor por ponto saem.
 
 ## Restrição de prazo
 
@@ -35,30 +37,30 @@ São **2 Sprints de uma semana** com 5 pessoas. O MVP precisa ser pequeno.
 | :material-cellphone: **Celular** | O mesmo site, **responsivo** (sem app nativo e sem PWA) |
 | :material-puzzle: **Extensão** | Versão mínima: checar a aba atual e abrir o detalhe no site |
 
-| Épico | Histórias no MVP |
+| Épico | Requisitos no MVP |
 | --- | --- |
-| E1 · Chat | US-1.1, US-1.2, US-1.3 |
-| E2 · Persona | US-2.1, US-2.2, US-2.3, US-2.4 |
-| E3 · Pipeline | US-3.1, US-3.2, US-3.3, US-3.4 |
-| E4 · Fontes | US-4.1, US-4.2, US-4.3 |
-| E5 · Conteúdo | US-5.1, US-5.2 |
-| E6 · Corroboração | US-6.1, US-6.2, US-6.3 |
-| E7 · Explicabilidade | US-7.1, US-7.2 |
-| E8 · Extensão | US-8.1 |
-| E9 · Celular | US-9.1 |
-| E10 · Dados | US-10.1, US-10.2, US-10.3 |
+| E1 · Chat | RF-01, RF-02, RF-03 |
+| E2 · Persona | RF-05, RNF-08, RNF-09, RNF-20 |
+| E3 · Pipeline | RF-06, RF-07, RF-08, RF-09, RF-10, RNF-18 |
+| E4 · Fontes | RF-14, RF-16, RF-17 |
+| E5 · Conteúdo | RF-21, RF-22 |
+| E6 · Corroboração | RF-27, RF-28, RF-29 |
+| E7 · Explicabilidade | RF-32, RF-33 |
+| E8 · Extensão | RF-36 |
+| E9 · Celular | RNF-10 |
+| E10 · Dados | RNF-06, RNF-07 |
 
 ## O que fica de fora (e por quê)
 
 | Item | Motivo |
 | --- | --- |
-| App nativo (RF-39) | Custo alto para 2 semanas; o site responsivo cobre o uso |
-| PWA e compartilhamento (US-9.2, US-9.3) | Próximo passo natural, mas não essencial para validar a hipótese |
-| NLI completo (US-6.4) | A LLM já extrai alegações (US-6.3); o NLI por alegação é incremento |
-| Emoção NRC (US-5.3) | Ainda é hipótese sem validação em PT-BR |
-| Detector de texto gerado por IA (US-5.5) | Sinal fraco e pouco confiável |
+| App nativo | Custo alto para 2 semanas; o site responsivo cobre o uso |
+| PWA e compartilhamento (RF-40, RF-41) | Próximo passo natural, mas não essencial para validar a hipótese |
+| Verificação de evidência por alegação (RF-30) | A LLM já extrai alegações; o NLI por alegação é incremento |
+| Intensidade emocional (RF-23) | Ainda é hipótese sem validação em PT-BR |
+| Detector de texto gerado por IA (RF-25) | Sinal fraco e pouco confiável |
 | Histórico e últimas notícias (E11) | Não afeta a hipótese do MVP |
-| API pública de reputação (US-4.6) | A API interna já existe; a pública exige autenticação, limites e documentação |
+| API pública de reputação (RF-20) | A API interna já existe; a pública exige autenticação, limites e documentação |
 
 ## Sugestão de Sprints
 
