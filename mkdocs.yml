@@ -56,12 +56,14 @@ nav:
       - Funcionais: requisitos/funcionais.md
       - Não funcionais: requisitos/nao-funcionais.md
       - Regras de negócio: requisitos/regras-de-negocio.md
+      - Análise comparativa: requisitos/analise-comparativa.md
   - Backlog:
       - Visão geral: backlog/index.md
       - Épicos: backlog/epicos.md
+      # - Histórias de usuário: backlog/historias.md
       - MVP: backlog/mvp.md
-      - Planning Poker: backlog/planning-poker.md
-      - DoR e DoD: backlog/dor-dod.md
+      # - Planning Poker: backlog/planning-poker.md
+      # - DoR e DoD: backlog/dor-dod.md
   - Mapa de riscos: riscos.md
   - Investigação: investigacao.md
   - Hipóteses técnicas: hipoteses.md
