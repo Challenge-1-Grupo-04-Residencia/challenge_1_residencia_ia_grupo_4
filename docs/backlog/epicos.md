@@ -7,12 +7,13 @@
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
     | 21/09 | 1.2 | Faixas de requisitos ajustadas à revisão dos RF | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 21/09 | 1.3 | Alinhamento do escopo dos épicos (E1 a E3) para paridade com as histórias de usuário e MVP | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
 
 | Épico | Tema | Objetivo | Requisitos | Depende de | MVP |
 | --- | --- | --- | --- | --- | --- |
-| **E1 · Chat com a Vera** | T1 | Conversar com a Vera para checar uma notícia | RF-01 a RF-05 | E3 | :material-check: |
-| **E2 · Persona e identidade visual** | T1 | Vera tematizada, colorida e animada | RF-05, RNF-08, RNF-20 | — | :material-check: |
-| **E3 · Pipeline em camadas** | T2 | Orquestrar N0 a N4 com regra de parada | RF-06 a RF-13 | — | :material-check: |
+| **E1 · Chat com a Vera** | T1 | Conversar com a Vera para checar uma notícia | RF-01 a RF-04 | E3 | :material-check: |
+| **E2 · Persona e identidade visual** | T1 | Vera tematizada, colorida e animada | RF-05, RNF-08, RNF-09, RNF-20 | — | :material-check: |
+| **E3 · Pipeline em camadas** | T2 | Orquestrar N0 a N4 com regra de parada | RF-06 a RF-13, RNF-18 | — | :material-check: |
 | **E4 · Reputação de fontes** | T2 | Saber quem é confiável | RF-14 a RF-20 | — | :material-check: |
 | **E5 · Análise de conteúdo** | T2 | Detectar sinais de falsidade na escrita | RF-21 a RF-26 | E10 | :material-check: |
 | **E6 · Corroboração** | T2 | Saber se outros publicaram o mesmo e se as evidências sustentam | RF-27 a RF-31 | E4 | Parcial |

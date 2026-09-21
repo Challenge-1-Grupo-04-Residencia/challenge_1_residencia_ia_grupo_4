@@ -60,7 +60,7 @@ nav:
   - Backlog:
       - Visão geral: backlog/index.md
       - Épicos: backlog/epicos.md
-      # - Histórias de usuário: backlog/historias.md
+      - Histórias de usuário: backlog/historias.md
       - MVP: backlog/mvp.md
       # - Planning Poker: backlog/planning-poker.md
       # - DoR e DoD: backlog/dor-dod.md
