@@ -3,5 +3,11 @@ name = "challenge-1-residencia-ia-grupo-4"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
+    "ipykernel>=7.3.0",
+    "jupyterlab>=4.6.4",
+    "matplotlib>=3.11.2",
     "mkdocs-material>=9.7.7",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
+    "seaborn>=0.13.2",
 ]

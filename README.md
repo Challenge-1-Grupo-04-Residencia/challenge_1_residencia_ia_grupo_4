@@ -7,6 +7,34 @@ Projeto conduzido pelo framework **Challenge Based Learning (CBL)**, com execuç
 
 **Equipe:** Ian Costa · Luísa Brambilla · Maykon Soares · Natália Evelin · Rebeca Bontempo
 
+## Desenvolvimento e Análise Exploratória (EDA)
+
+O desenvolvimento dos modelos, pipelines e análises exploratórias ocorre no branch `development`.
+
+Para iniciar o trabalho nos notebooks da sua camada:
+
+1. Atualize seu repositório local:
+   ```bash
+   git checkout development
+   git pull origin development
+   ```
+
+2. Sincronize o ambiente com as dependências do projeto:
+   ```bash
+   uv sync
+   ```
+
+3. Baixe e padronize os datasets locais (necessário apenas na primeira vez):
+   ```bash
+   ./scripts/baixar_datasets.sh
+   ```
+
+4. Abra o ambiente de notebooks:
+   ```bash
+   uv run jupyter lab
+   ```
+   *(Caso utilize o VS Code, abra o notebook desejado na pasta `notebooks/` e selecione o kernel Python da pasta `.venv`).*
+
 ## Documentação
 
 A documentação do projeto vive no branch [`docs`](../../tree/docs), em MkDocs Material.
@@ -38,10 +66,14 @@ publica o site no GitHub Pages (branch `gh-pages`).
 ## Estrutura
 
 ```
-Relatorios/                  entregas formais (PDF)
+Relatorios/                  entregas formais (PDF e Markdown)
 Referencias_bibliograficas/  bibliografia (PDF)
+datasets/                    bases padronizadas em Parquet (fora do Git)
+notebooks/                   análises exploratórias divididas por camada
+scripts/                     automação de download e padronização dos dados
 docs/                        fonte da documentação MkDocs
-mkdocs.yml                   configuração do site
+mkdocs.yml                   configuração do site de documentação
+pyproject.toml               especificação de dependências gerenciadas por uv
 ```
 
 ## Status
