@@ -1,0 +1,35 @@
+/* Paleta do Grupo 4: vermelho predominante */
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #c62828;
+  --md-primary-fg-color--light: #e53935;
+  --md-primary-fg-color--dark: #8e1b1b;
+  --md-accent-fg-color: #e53935;
+  --md-typeset-a-color: #c62828;
+  --md-default-bg-color: #fafafa;
+}
+
+[data-md-color-scheme="default"] .md-typeset h1,
+[data-md-color-scheme="default"] .md-typeset h2,
+[data-md-color-scheme="default"] .md-typeset h3 {
+  color: #8e1b1b;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #8e1b1b;
+  --md-primary-fg-color--light: #c62828;
+  --md-primary-fg-color--dark: #5c0f0f;
+  --md-accent-fg-color: #ff6f61;
+  --md-typeset-a-color: #ff8a80;
+  --md-default-bg-color: #1d2026;
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1,
+[data-md-color-scheme="slate"] .md-typeset h2,
+[data-md-color-scheme="slate"] .md-typeset h3 {
+  color: #f7f7f7;
+}
+
+.md-nav__item .md-nav__link--active {
+  color: var(--md-accent-fg-color) !important;
+}
