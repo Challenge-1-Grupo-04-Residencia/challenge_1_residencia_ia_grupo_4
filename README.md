@@ -2,82 +2,98 @@
 
 Desafio 1 — **Fake News e Desinformação** · Grupo 4 · Residência em IA
 
+**Senhora Vera** é uma assistente de checagem em formato de chat. A pessoa cola um link
+ou um texto; a Vera cruza com fontes confiáveis e responde com uma porcentagem de
+veracidade, os motivos e as fontes que consultou — para que quem perguntou decida com o
+próprio pensamento crítico, e não apenas receba um rótulo.
+
 Projeto conduzido pelo framework **Challenge Based Learning (CBL)**, com execução em
 **Scrum adaptado** (sprints de 1 semana, dailies às segundas, quartas e sextas).
 
 **Equipe:** Ian Costa · Luísa Brambilla · Maykon Soares · Natália Evelin · Rebeca Bontempo
 
-## Desenvolvimento e Análise Exploratória (EDA)
+## O repositório
 
-O desenvolvimento dos modelos, pipelines e análises exploratórias ocorre no branch `development`.
+```
+backend/     API e motor de veracidade (FastAPI)       → backend/README.md
+frontend/    site e chat (Next.js + Tailwind)          → frontend/README.md
+ml/          datasets, EDA e treino dos modelos        → ml/README.md
+```
 
-Para iniciar o trabalho nos notebooks da sua camada:
+A organização do código e as decisões de arquitetura estão em
+[ARQUITETURA.md](ARQUITETURA.md).
 
-1. Atualize seu repositório local:
-   ```bash
-   git checkout development
-   git pull origin development
-   ```
+## Rodando
 
-2. Sincronize o ambiente com as dependências do projeto:
-   ```bash
-   uv sync
-   ```
+```bash
+# backend — http://localhost:8010
+uv sync                       # use `uv sync --extra nli` para habilitar a camada N4
+uv run uvicorn src.main:app --app-dir backend --reload --port 8010
 
-3. Baixe e padronize os datasets locais (necessário apenas na primeira vez):
-   ```bash
-   ./scripts/baixar_datasets.sh
-   ```
+# frontend — http://localhost:3000
+export PATH="$HOME/.local/node/bin:$PATH"
+cd frontend && npm install && cp .env.example .env.local && npm run dev
+```
 
-4. Abra o ambiente de notebooks:
-   ```bash
-   uv run jupyter lab
-   ```
-   *(Caso utilize o VS Code, abra o notebook desejado na pasta `notebooks/` e selecione o kernel Python da pasta `.venv`).*
+A porta do backend é 8010 porque a 8000 costuma estar ocupada pelo `mkdocs serve` da
+documentação.
+
+```bash
+uv run pytest              # testes do backend
+cd frontend && npm run build   # checagem de tipos do frontend
+```
+
+## Como a Vera funciona
+
+A checagem acontece em **camadas de custo crescente**, e para assim que há resposta —
+a maioria das notícias se resolve antes de chegar na LLM.
+
+| Camada | Pergunta | Status |
+| --- | --- | --- |
+| **N0** Cache | Já checei isso? | a fazer |
+| **N1** Fonte | Quem publicou? | a fazer |
+| **N2** Conteúdo | Como está escrito? | implementada |
+| **N3** Corroboração | Outros veículos publicaram? | implementada |
+| **N4** LLM | As evidências sustentam as alegações? | implementada |
+
+Cada camada registra **sinais** (`S-01` a `S-13`) com peso próprio, e o score é a média
+ponderada dos sinais disponíveis. Um sinal que não pôde ser medido sai do cálculo e não
+vale zero: não saber derruba a *confiança*, não a *veracidade*.
+
+## Análise exploratória (EDA)
+
+O desenvolvimento dos modelos e as análises exploratórias ocorrem no branch `development`.
+
+```bash
+git switch development && git pull
+uv sync
+./ml/scripts/baixar_datasets.sh    # só na primeira vez
+uv run jupyter lab
+```
+
+No VS Code, abra o notebook em `ml/notebooks/` e selecione o kernel Python de `.venv`.
+Detalhes em [ml/README.md](ml/README.md).
 
 ## Documentação
 
-A documentação do projeto vive no branch [`docs`](../../tree/docs), em MkDocs Material.
+A documentação de produto — requisitos, pesos dos sinais, persona, backlog, riscos —
+vive no branch [`docs`](../../tree/docs), em MkDocs Material, e é publicada em
+`gh-pages` por workflow. Os anexos formais ficam lá também:
+[`Relatórios/`](../../tree/docs/Relatórios) com as entregas de cada fase do CBL e
+[`Referencias_bibliograficas/`](../../tree/docs/Referencias_bibliograficas) com a
+bibliografia.
 
 ```bash
-git checkout docs
-uv sync
-uv run mkdocs serve   # http://127.0.0.1:8000
+git show origin/docs:docs/produto/classificacao.md     # ler um arquivo
+git ls-tree -r --name-only origin/docs                 # listar
 ```
 
-A cada push no branch `docs`, a Action [`deploy-docs.yml`](.github/workflows/deploy-docs.yml)
-publica o site no GitHub Pages (branch `gh-pages`).
+## Contribuindo
 
-- **Página inicial:** template em [`overrides/home.html`](overrides/home.html), no mesmo estilo
-  do projeto Paraizo. Cores em [`overrides/stylesheets/extra.css`](overrides/stylesheets/extra.css).
-- **Membros da seção "Nosso Time":** preencha `extra.equipe` no [`mkdocs.yml`](mkdocs.yml)
-  (nome, papel, foto em `docs/assets/equipe/` e usuário do GitHub).
-- **Histórico de revisão:** toda página tem uma tabela recolhível no topo; adicione uma linha
-  a cada alteração.
+Branch própria → PR para `development` → PR para `main`. Nunca commite direto nessas
+duas. Todo trabalho rastreia para um requisito (`RF-xx`), e a
+[Definition of Done](../../tree/docs/docs/backlog/dor-dod.md) exige teste, revisão de um
+colega e documentação atualizada com linha nova no histórico de revisão da página.
 
-| Página | Conteúdo |
-| --- | --- |
-| `docs/desafio.md` | Big Idea, Essential Question, Challenge e Guiding Questions |
-| `docs/metodologia.md` | Scrum adaptado: sprints, cerimônias, artefatos, papéis |
-| `docs/hipoteses.md` | Ideações preliminares (a validar na fase Investigate) |
-| `docs/relatorios.md` | Entregas formais por fase |
-| `docs/referencias.md` | Bibliografia e ferramentas citadas |
-
-## Estrutura
-
-```
-Relatorios/                  entregas formais (PDF e Markdown)
-Referencias_bibliograficas/  bibliografia (PDF)
-datasets/                    bases padronizadas em Parquet (fora do Git)
-notebooks/                   análises exploratórias divididas por camada
-scripts/                     automação de download e padronização dos dados
-docs/                        fonte da documentação MkDocs
-mkdocs.yml                   configuração do site de documentação
-pyproject.toml               especificação de dependências gerenciadas por uv
-```
-
-## Status
-
-- [x] Semana 1 — **Engage**
-- [ ] Semanas 2 e 3 — **Investigate**
-- [ ] Semanas 4 e 5 — **Act**
+Há skills em `.claude/skills/` com o passo a passo de cada área: `vera-sinais`,
+`vera-camadas`, `vera-backlog` e `vera-frontend`.

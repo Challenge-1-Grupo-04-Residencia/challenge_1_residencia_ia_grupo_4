@@ -1,0 +1,186 @@
+"""Catálogo de sinais da Vera.
+
+Cada sinal é uma evidência isolada que aponta para veracidade (``s`` perto de 1) ou
+falsidade (``s`` perto de 0). O score final é a média ponderada dos sinais
+**disponíveis** — um sinal sem dado é excluído do cálculo e nunca vale zero (RN-06).
+
+Os pesos vêm de ``docs/produto/classificacao.md`` e são hipótese de partida: a
+calibração com dataset rotulado (RNF-07) deve alterá-los, registrando a mudança no
+histórico de calibração daquela página.
+"""
+
+from enum import Enum
+
+from pydantic import BaseModel, Field
+
+
+class Dimensao(str, Enum):
+    """As três perguntas que a Vera faz sobre uma notícia."""
+
+    FONTE = "fonte"
+    CONTEUDO = "conteudo"
+    CORROBORACAO = "corroboracao"
+
+
+class DefinicaoSinal(BaseModel):
+    """Entrada imutável do catálogo: o que o sinal mede e quanto ele pesa."""
+
+    id: str
+    nome: str
+    peso: float
+    dimensao: Dimensao
+    camada: str
+
+
+class Sinal(BaseModel):
+    """Um sinal já medido para uma notícia concreta.
+
+    ``score`` em ``None`` significa que o dado não foi obtido — a camada não rodou, a
+    API não respondeu ou o sinal não se aplica. Nesse caso o sinal é ignorado no
+    cálculo (RN-06), o que derruba a cobertura e portanto a confiança.
+    """
+
+    id: str
+    nome: str
+    peso: float
+    dimensao: Dimensao
+    camada: str
+    score: float | None = Field(default=None, ge=0.0, le=1.0)
+    justificativa: str = ""
+
+    @property
+    def disponivel(self) -> bool:
+        return self.score is not None
+
+
+# --- Dimensão 1 · Fonte · 35 pontos ------------------------------------------------
+# "Quem publicou? Esse veículo teve outras notícias falsas recentemente?"
+
+S01 = DefinicaoSinal(
+    id="S-01",
+    nome="Reputação do veículo na base curada",
+    peso=12,
+    dimensao=Dimensao.FONTE,
+    camada="N1",
+)
+S02 = DefinicaoSinal(
+    id="S-02",
+    nome="Histórico recente de fakes do domínio (12 meses)",
+    peso=8,
+    dimensao=Dimensao.FONTE,
+    camada="N1",
+)
+S03 = DefinicaoSinal(
+    id="S-03",
+    nome="Idade do domínio",
+    peso=6,
+    dimensao=Dimensao.FONTE,
+    camada="N1",
+)
+S04 = DefinicaoSinal(
+    id="S-04",
+    nome="Transparência da página (autor, data, expediente, contato)",
+    peso=5,
+    dimensao=Dimensao.FONTE,
+    camada="N1",
+)
+S05 = DefinicaoSinal(
+    id="S-05",
+    nome="Autor identificável",
+    peso=4,
+    dimensao=Dimensao.FONTE,
+    camada="N1",
+)
+
+# --- Dimensão 2 · Conteúdo · 25 pontos ---------------------------------------------
+# "Como está escrito? O que no texto entrega que algo é falso?"
+
+S06 = DefinicaoSinal(
+    id="S-06",
+    nome="Classificador estilístico (TF-IDF + SVM/RL)",
+    peso=10,
+    dimensao=Dimensao.CONTEUDO,
+    camada="N2",
+)
+S07 = DefinicaoSinal(
+    id="S-07",
+    nome="Sensacionalismo",
+    peso=5,
+    dimensao=Dimensao.CONTEUDO,
+    camada="N2",
+)
+S08 = DefinicaoSinal(
+    id="S-08",
+    nome="Intensidade emocional",
+    peso=5,
+    dimensao=Dimensao.CONTEUDO,
+    camada="N2",
+)
+S09 = DefinicaoSinal(
+    id="S-09",
+    nome="Cita fontes verificáveis",
+    peso=3,
+    dimensao=Dimensao.CONTEUDO,
+    camada="N2",
+)
+# Detectores de texto gerado por IA são pouco confiáveis, e texto escrito por IA não é
+# falso por definição — por isso S-10 entra como indício fraco.
+S10 = DefinicaoSinal(
+    id="S-10",
+    nome="Probabilidade de texto gerado por IA",
+    peso=2,
+    dimensao=Dimensao.CONTEUDO,
+    camada="N2",
+)
+
+# --- Dimensão 3 · Corroboração · 40 pontos -----------------------------------------
+# "A mesma notícia está em outros sites? As fontes usadas são corretas? É plágio?"
+
+S11 = DefinicaoSinal(
+    id="S-11",
+    nome="Veículos confiáveis que publicaram o mesmo fato",
+    peso=15,
+    dimensao=Dimensao.CORROBORACAO,
+    camada="N3",
+)
+S12 = DefinicaoSinal(
+    id="S-12",
+    nome="NLI: evidências sustentam ou contradizem as alegações",
+    peso=20,
+    dimensao=Dimensao.CORROBORACAO,
+    camada="N4",
+)
+S13 = DefinicaoSinal(
+    id="S-13",
+    nome="Originalidade (é cópia alterada de outra fonte?)",
+    peso=5,
+    dimensao=Dimensao.CORROBORACAO,
+    camada="N3",
+)
+
+CATALOGO: dict[str, DefinicaoSinal] = {
+    d.id: d
+    for d in (S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13)
+}
+
+#: Soma dos pesos de todos os sinais possíveis. A cobertura de uma checagem é a
+#: fração deste total que foi efetivamente observada.
+PESO_TOTAL: float = sum(d.peso for d in CATALOGO.values())
+
+
+def medir(id_sinal: str, score: float | None, justificativa: str = "") -> Sinal:
+    """Cria um :class:`Sinal` medido a partir da definição de catálogo.
+
+    Usar esta função em vez de construir ``Sinal`` na mão garante que peso, dimensão e
+    camada venham sempre do catálogo, e não sejam redigitados em cada camada.
+    """
+    definicao = CATALOGO[id_sinal]
+    return Sinal(
+        id=definicao.id,
+        nome=definicao.nome,
+        peso=definicao.peso,
+        dimensao=definicao.dimensao,
+        camada=definicao.camada,
+        score=score,
+        justificativa=justificativa,
+    )

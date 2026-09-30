@@ -15,7 +15,20 @@ dependencies = [
     "uvicorn[standard]>=0.29.0",
     "pydantic>=2.6.4",
     "pytest>=8.0.0",
+    "joblib>=1.4.0",
+    "httpx>=0.27.0",
+]
+
+# A camada N4 carrega um modelo de NLI (mDeBERTa), que traz o torch: cerca de 2 GB.
+# Fica em extra opcional para nao pesar no `uv sync` de quem so trabalha nos notebooks
+# ou nas camadas N0 a N3.
+#     uv sync --extra nli
+[project.optional-dependencies]
+nli = [
+    "transformers>=4.44.0",
+    "torch>=2.4.0",
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]

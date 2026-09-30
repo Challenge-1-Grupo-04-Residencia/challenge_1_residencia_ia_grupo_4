@@ -20,9 +20,8 @@ COPY pyproject.toml uv.lock ./
 # Instala as dependências travadas pelo lockfile (sem as de desenvolvimento)
 RUN uv sync --frozen --no-install-project --no-dev
 
-# Agora copia o código fonte e os testes
-COPY src /app/src
-COPY tests /app/tests
+# Agora copia o código fonte e os testes (backend/ contém src/ e tests/)
+COPY backend /app/backend
 
 # Sincroniza o projeto final
 RUN uv sync --frozen --no-dev
@@ -31,4 +30,5 @@ RUN uv sync --frozen --no-dev
 EXPOSE 8000
 
 # Comando para rodar o servidor, usando o próprio UV para invocar o uvicorn
-CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --app-dir backend coloca backend/ no sys.path, mantendo os imports `from src....`
+CMD ["uv", "run", "uvicorn", "src.main:app", "--app-dir", "backend", "--host", "0.0.0.0", "--port", "8000"]

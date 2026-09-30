@@ -1,0 +1,41 @@
+# O contexto do build é a raiz do repositório, e sem este arquivo o Docker envia
+# datasets/ (vários GB), .venv/ e node_modules/ ao daemon a cada build.
+
+# Ambientes e caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Dados de treino: não entram na imagem da API
+datasets/
+ml/datasets/
+
+# Notebooks e análise: não são executados em produção
+ml/
+*.ipynb
+.ipynb_checkpoints/
+
+# Frontend: tem imagem e build próprios
+frontend/
+
+# Documentação e entregas
+docs/
+site/
+overrides/
+Relatórios/
+Referencias_bibliograficas/
+*.md
+
+# Controle de versão e ferramentas locais
+.git/
+.github/
+.gitignore
+.claude/
+.agents/
+.openclaude/
+scratch/
+
+# Sistema
+.DS_Store
