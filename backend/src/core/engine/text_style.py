@@ -1,12 +1,5 @@
-"""Heurísticas de estilo de texto usadas pela camada N2 (RF-22, RF-24).
-
-São funções puras sobre a string do texto, separadas da camada para poderem ser
-testadas e calibradas sem carregar modelo de ML. Todas devolvem um índice de 0 a 1.
-"""
-
 import re
 
-#: Palavras e expressões de urgência típicas de corrente de mensageiro.
 _URGENCIA = (
     "urgente",
     "repassem",
@@ -27,10 +20,13 @@ _URGENCIA = (
     "voce nao vai acreditar",
 )
 
-_PALAVRA = re.compile(r"\b[\wÀ-ÿ]+\b", re.UNICODE)
-_URL = re.compile(r"https?://\S+")
+# _URGENTE: é uma tupla que contem palavras-chave comuns em mensagens alarmistas ou correntes falsas de WhatsApp
 
-#: Órgãos e veículos cuja menção conta como citação verificável mesmo sem link.
+_PALAVRA = re.compile(r"\b[\wÀ-ÿ]+\b", re.UNICODE)
+# _PALAVRA: Separa apenas as palavras reais do texto, jogando fora espaços, pontos e vírgulas para a análise funcionar direito.
+_URL = re.compile(r"https?://\S+")
+# _URL: serve para encontrar links na web
+
 _FONTES_NOMEADAS = (
     "ministério",
     "ministerio",
@@ -48,39 +44,58 @@ _FONTES_NOMEADAS = (
     "revista cientifica",
 )
 
+ #FONTES_NOMEADAS: Serve para identificar quando o texto tenta dar credibilidade citando órgãos oficiais
 
 def indice_sensacionalismo(texto: str) -> float:
-    """Quanto o texto grita, de 0 (sóbrio) a 1 (corrente de WhatsApp).
 
-    Combina três marcas independentes: palavras inteiras em caixa alta, pontuação
-    repetida e vocabulário de urgência. Cada marca é normalizada e a média das três é
-    o índice — assim um texto que só usa muitas exclamações não satura sozinho.
-    """
     palavras = _PALAVRA.findall(texto)
     if not palavras:
         return 0.0
 
-    # Caixa alta: só conta palavras de 3+ letras, para não pegar siglas como "STF".
+    # ETAPA 1: Usa _PALAVRAS para separar todas as palavras e 
+    # checa se o texto está vazio (se estiver, devolve nota 0 direto).
+
     longas = [p for p in palavras if len(p) >= 3]
     caixa_alta = sum(1 for p in longas if p.isupper()) / len(longas) if longas else 0.0
 
-    # Pontuação repetida ("!!!", "???") normalizada por 100 palavras.
+    # ETAPA 2: Teste do Grito. Filtra palavras com 3+ letras 
+    # (ignorando siglas) e calcula quantas estão totalmente em CAIXA ALTA.
+
     repetida = len(re.findall(r"[!?]{2,}", texto))
     pontuacao = min(1.0, repetida / max(1, len(palavras) / 100) / 3)
+
+    # ETAPA 3: Teste da Pontuação. Conta repetições exageradas 
+    # de exclamações ou interrogações (como "!!!") e ajusta pelo tamanho do texto.
 
     baixo = texto.lower()
     urgencia = min(1.0, sum(1 for termo in _URGENCIA if termo in baixo) / 3)
 
+    # ETAPA 4: Teste do Pânico. Transforma o texto em letras minúsculas 
+    # e conta quantas palavras de urgência (da tupla _URGENCIA) aparecem nele.
+
     return min(1.0, (caixa_alta + pontuacao + urgencia) / 3)
 
+    # ETAPA 5: Junta os três testes (caixa alta, pontuação e urgência), 
+    # tira a média deles e devolve um número final de 0 a 1.
 
 def indice_citacao_de_fontes(texto: str) -> float:
-    """Proporção de citações verificáveis no texto, de 0 a 1.
 
-    Conta links e menções a órgãos nomeados, normalizando por três: um texto com três
-    ou mais citações já é considerado bem ancorado.
-    """
     baixo = texto.lower()
+
+    # ETAPA 1: Converte o texto inteiro para letras minúsculas 
+    # para garantir que a busca encontre os nomes dos órgãos, independentemente de como foram digitados.
+
     links = len(_URL.findall(texto))
+
+    # ETAPA 2: Usa a ferramenta de busca de links (_URL) 
+    # para contar quantas referências da web existem no texto.
+
     nomeadas = sum(1 for f in _FONTES_NOMEADAS if f in baixo)
+
+    # ETAPA 3: Passa pela tupla _FONTES_NOMEADAS e conta 
+    # quantas menções a órgãos oficiais ou termos de pesquisa confiáveis aparecem no texto.
+
     return min(1.0, (links + nomeadas) / 3)
+
+    # ETAPA 4: Soma os links e as menções encontradas, 
+    # divide por 3 (já que 3 ou mais citações tornam o texto bem ancorado) e limita a nota final até o teto de 1.0.
