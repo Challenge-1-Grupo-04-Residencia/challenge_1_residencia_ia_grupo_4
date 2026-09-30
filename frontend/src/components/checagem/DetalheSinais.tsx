@@ -63,7 +63,7 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
       {semDado.length > 0 && (
         <section>
           <h4 className="mb-2 text-sm font-semibold text-tinta-3">
-            Não consegui medir
+            O que eu não consegui apurar
           </h4>
           <ul className="space-y-1.5">
             {semDado.map((sinal) => (
@@ -93,7 +93,7 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
       {fontes.length > 0 && (
         <section>
           <h4 className="mb-2 text-sm font-semibold text-tinta-3">
-            Fontes que eu consultei
+            Onde eu fui conferir
           </h4>
           <ul className="space-y-1 text-sm">
             {fontes.map((url) => (

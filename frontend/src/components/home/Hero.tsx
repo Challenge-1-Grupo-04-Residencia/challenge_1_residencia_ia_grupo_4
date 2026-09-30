@@ -26,17 +26,20 @@ export function Hero() {
 
       <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-6 md:flex-row md:items-start md:gap-10">
         {/* Balão de fala */}
-        <div className="relative w-full max-w-lg">
+        <div className="estufa relative w-full max-w-lg">
           <div className="rounded-lg border-[3px] border-tinta bg-papel-2 p-5 text-tinta shadow-bloco md:p-6">
-            <p className="font-display text-4xl font-extrabold leading-none">Olá!</p>
+            <p className="font-display text-4xl font-extrabold leading-none">
+              Oi, meu bem!
+            </p>
             <p className="mt-2 font-display text-xl font-semibold leading-snug">
-              Eu sou a Vera, sua assistente na verificação de fatos.
+              Eu sou a Vera. Eu sei de tudo — mas só depois de conferir.
             </p>
             <p className="mt-3 text-base leading-relaxed text-tinta-2">
-              Cola aqui o link ou o texto que você recebeu, que eu confiro com as
-              minhas fontes e te explico o que descobri — e de onde tirei.
+              Chegou aquela notícia no grupo da família e te deu uma pulga atrás
+              da orelha? Cola aqui embaixo. Eu ligo pras minhas comadres, confiro
+              com quem é sério e te conto o que descobri — e de onde eu tirei.
             </p>
-            <span className="mt-3 block h-1 w-40 rounded-full bg-vermelho" aria-hidden />
+            <span className="risco mt-3 block h-1 w-40 rounded-full bg-vermelho" aria-hidden />
           </div>
 
           {/* Rabicho apontando para a Vera. */}
@@ -51,10 +54,18 @@ export function Hero() {
         </div>
 
         <div className="flex flex-1 items-start justify-center gap-4">
-          <VeraIlustracao humor="desconfiada" tamanho={260} className="shrink-0" />
+          <VeraIlustracao
+            humor="desconfiada"
+            tamanho={260}
+            className="surge balanca shrink-0"
+            style={{ "--atraso": "150ms" } as React.CSSProperties}
+          />
 
-          <p className="fonte-mao hidden max-w-[10rem] pt-6 text-3xl leading-tight lg:block">
-            Informação boa também é poder!
+          <p
+            className="surge fonte-mao hidden max-w-[10rem] pt-6 text-3xl leading-tight lg:block"
+            style={{ "--atraso": "350ms" } as React.CSSProperties}
+          >
+            Informação boa também é poder, visse?
             <span className="mt-1 block h-0.5 w-28 bg-white/80" aria-hidden />
           </p>
         </div>

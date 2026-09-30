@@ -85,7 +85,7 @@ export function ResultadoChecagem({ resultado }: Props) {
         {resultado.documentos_relacionados.length > 0 && (
           <section className="mt-3">
             <h4 className="text-xs font-semibold uppercase tracking-wide opacity-60">
-              Quem mais publicou
+              Quem mais publicou isso
             </h4>
             <ul className="mt-1.5 space-y-1 text-sm">
               {resultado.documentos_relacionados.map((doc, i) => (
@@ -144,7 +144,7 @@ export function ResultadoChecagem({ resultado }: Props) {
         >
           {detalhado
             ? "Esconder as contas"
-            : "Ver as contas: sinal por sinal, com o peso de cada um"}
+            : "Quer ver as minhas contas? Sinal por sinal, com o peso de cada um"}
         </button>
 
         {detalhado && (

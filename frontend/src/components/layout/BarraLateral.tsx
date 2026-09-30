@@ -103,9 +103,10 @@ export function BarraLateral() {
           ))}
         </ul>
 
-        <p className="fonte-mao mt-auto px-6 pb-8 text-2xl leading-tight text-white/90">
-          Juntos contra
-          <br />a desinformação!
+        <p className="fonte-mao mt-auto px-6 pb-12 text-xl leading-tight text-white/90">
+          Aqui ninguém repassa
+          <br />
+          sem conferir!
         </p>
       </nav>
 

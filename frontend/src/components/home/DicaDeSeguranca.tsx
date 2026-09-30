@@ -12,7 +12,7 @@ import Link from "next/link";
 export function DicaDeSeguranca() {
   return (
     <aside className="flex flex-col gap-4 rounded-md bg-papel-rosa p-5 md:p-6">
-      <h2 className="sr-only">Como desconfiar de uma notícia</h2>
+      <h2 className="sr-only">O que olhar antes de acreditar numa notícia</h2>
 
       {/* Jornal com o carimbo de fake news. */}
       <div className="relative mx-auto w-full max-w-64" aria-hidden>
@@ -67,16 +67,17 @@ export function DicaDeSeguranca() {
           <circle cx="12" cy="17.5" r="1.4" fill="#fff" />
         </svg>
         <p className="text-sm leading-relaxed text-tinta">
-          Desconfie de título alarmista, de texto sem fonte e do que te pedem
-          para repassar às pressas. Pressa é o que faz a mentira viajar.
+          Desconfia de manchete que grita, de texto que não diz de onde tirou e
+          de quem te apressa pra repassar. É a pressa que faz a mentira viajar,
+          visse?
         </p>
       </div>
 
       <Link
         href="/checar"
-        className="flex items-center justify-center gap-2 rounded-total border-[3px] border-tinta bg-vermelho px-6 py-3 font-display text-lg font-bold text-white shadow-bloco-sm transition-colors hover:bg-vermelho-forte"
+        className="pressiona flex items-center justify-center gap-2 rounded-total border-[3px] border-tinta bg-vermelho px-6 py-3 font-display text-lg font-bold text-white shadow-bloco-sm hover:bg-vermelho-forte"
       >
-        Verificar notícia
+        Me manda uma notícia
         <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
           <path d="M4 12h15m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

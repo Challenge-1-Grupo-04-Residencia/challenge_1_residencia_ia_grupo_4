@@ -37,9 +37,9 @@ export function CaixaDePergunta({
   }
 
   const dica = modoAcompanhamento
-    ? "Pergunte por que, quais fontes, como foi escrito ou o que faltou apurar."
+    ? "Me pergunte por que, quais fontes eu vi, como o texto foi escrito ou o que me faltou."
     : vazio
-      ? "Enter para enviar"
+      ? "É só apertar Enter, visse?"
       : DICA_POR_TIPO[classificarEntrada(texto).tipo];
 
   return (

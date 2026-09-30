@@ -58,34 +58,40 @@ export function UltimasChecagens() {
   return (
     <section className="rounded-md bg-papel-2 p-5 shadow-card md:p-6">
       <header className="flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-xl font-bold">Últimas checagens</h2>
+        <h2 className="font-display text-xl font-bold">O que eu já conferi</h2>
         <a
           href="/historico"
           className="text-sm font-semibold text-tinta-2 hover:text-vermelho"
         >
-          Ver todas →
+          Ver tudo →
         </a>
       </header>
 
       {checagens === null && (
-        <p className="mt-6 text-sm text-tinta-3">Buscando o que eu já conferi…</p>
+        <p className="mt-6 text-sm text-tinta-3">Deixa eu ver o que eu já conferi…</p>
       )}
 
       {checagens?.length === 0 && (
         <div className="mt-6 rounded-md border border-dashed border-borda p-6 text-center">
           <p className="text-base text-tinta-2">
-            Ainda não conferi nada por aqui.
+            Tô meio borocoxô: ainda não me trouxeram nada hoje.
           </p>
           <p className="mt-1 text-sm text-tinta-3">
-            Me manda uma notícia lá em cima que eu vou atrás.
+            Me manda uma notícia lá em cima que eu vou atrás na hora.
           </p>
         </div>
       )}
 
       {checagens && checagens.length > 0 && (
         <ul className="mt-4 divide-y divide-borda">
-          {checagens.map((c) => (
-            <li key={c.id}>
+          {checagens.map((c, i) => (
+            // Escalonar a entrada faz a lista "cair" em cascata, o que deixa
+            // claro que são itens separados e chegaram juntos.
+            <li
+              key={c.id}
+              className="surge"
+              style={{ "--atraso": `${i * 60}ms` } as React.CSSProperties}
+            >
               <a
                 href={`/checagem/${c.id}`}
                 className="flex items-start gap-4 py-4 hover:bg-papel-3"

@@ -25,9 +25,10 @@ export function BarraTopo() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-borda bg-papel-2 px-4 py-3 md:px-6">
+    <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-borda bg-papel-2 px-3 py-3 sm:gap-3 sm:px-4 md:px-6">
       <form
         role="search"
+        data-tour="busca"
         className="flex flex-1 items-center gap-3 rounded-md border border-borda bg-papel-2 px-4 py-2.5 focus-within:border-vermelho"
         onSubmit={(e) => {
           e.preventDefault();
@@ -40,13 +41,13 @@ export function BarraTopo() {
         </svg>
 
         <label htmlFor="busca" className="sr-only">
-          Cole aqui o link, o texto ou a notícia que quer checar
+          Cola aqui o link, o texto ou a notícia que você quer que eu confira
         </label>
         <input
           id="busca"
           value={texto}
           onChange={(e) => setTexto(e.target.value)}
-          placeholder="Cole aqui o link, texto ou notícia…"
+          placeholder="Cola aqui o que te mandaram, meu bem…"
           /* 16px é o mínimo: abaixo disso o Safari no iPhone dá zoom ao focar. */
           className="min-w-0 flex-1 bg-transparent text-base text-tinta placeholder:text-tinta-3 focus:outline-none"
         />
@@ -62,7 +63,7 @@ export function BarraTopo() {
 
       <button
         type="button"
-        className="relative rounded-md p-2 text-tinta-2 hover:bg-papel-3"
+        className="relative hidden rounded-md p-2 text-tinta-2 hover:bg-papel-3 sm:block"
         aria-label="Notificações"
       >
         <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2">
@@ -77,7 +78,7 @@ export function BarraTopo() {
 
       <button
         type="button"
-        className="rounded-full p-1 text-tinta-2 hover:bg-papel-3"
+        className="hidden rounded-full p-1 text-tinta-2 hover:bg-papel-3 sm:block"
         aria-label="Sua conta"
       >
         <svg viewBox="0 0 24 24" className="size-8" fill="currentColor">

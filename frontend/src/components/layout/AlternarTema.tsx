@@ -19,16 +19,18 @@ type Tema = "claro" | "escuro" | "sistema";
 const CHAVE = "vera:tema";
 
 export function AlternarTema() {
-  const [tema, setTema] = useState<Tema>("sistema");
-
-  useEffect(() => {
+  // Lido no inicializador, e não num efeito: assim a primeira pintura já sai com
+  // o tema certo, sem o piscar de claro-para-escuro. O `typeof window` protege a
+  // renderização no servidor, e o `<html>` carrega `suppressHydrationWarning`
+  // porque servidor e cliente divergem aqui por construção.
+  const [tema, setTema] = useState<Tema>(() => {
+    if (typeof window === "undefined") return "sistema";
     try {
-      const salvo = localStorage.getItem(CHAVE) as Tema | null;
-      if (salvo) setTema(salvo);
+      return (localStorage.getItem(CHAVE) as Tema | null) ?? "sistema";
     } catch {
-      // Sem localStorage seguimos no padrão do sistema.
+      return "sistema";
     }
-  }, []);
+  });
 
   useEffect(() => {
     const raiz = document.documentElement;
