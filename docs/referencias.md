@@ -6,8 +6,10 @@
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 16/09 | 1.1 | Inclusão do produto Vera, requisitos, backlog e riscos | Maykon Soares |
+    | 30/09 | 1.2 | Links dos PDFs apontando para a branch `docs` | Maykon Soares |
 
-Os PDFs estão versionados em `Referencias_bibliograficas/` no repositório.
+Os PDFs estão versionados em `Referencias_bibliograficas/` nesta branch `docs`, que é a
+fonte da documentação — e não na branch de código.
 
 ## Challenge Based Learning
 
@@ -15,7 +17,7 @@ Os PDFs estão versionados em `Referencias_bibliograficas/` no repositório.
 projeto: o fluxo Engage → Investigate → Act e a construção de Big Idea, Essential Question
 e Challenge.
 
-[:material-file-pdf-box: PDF no repositório](https://github.com/iancostag/challenge_1_residencia_ia_grupo_4/tree/main/Referencias_bibliograficas)
+[:material-file-pdf-box: PDF no repositório](https://github.com/iancostag/challenge_1_residencia_ia_grupo_4/tree/docs/Referencias_bibliograficas)
 
 ## Detecção de desinformação
 
@@ -23,7 +25,7 @@ e Challenge.
 Base da [hipótese de análise emocional](hipoteses.md#hipotese-2-analise-emocional): a
 consistência emocional de um texto como sinal para detecção de notícias falsas.
 
-[:material-file-pdf-box: PDF no repositório](https://github.com/iancostag/challenge_1_residencia_ia_grupo_4/tree/main/Referencias_bibliograficas)
+[:material-file-pdf-box: PDF no repositório](https://github.com/iancostag/challenge_1_residencia_ia_grupo_4/tree/docs/Referencias_bibliograficas)
 
 ## Ferramentas e padrões citados
 
