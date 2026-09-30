@@ -54,8 +54,10 @@ class BuscadorTfidf:
 
     def __init__(self, documentos: list[Documento], min_similaridade: float = 0.1):
         self.documentos = documentos
-        #: Abaixo deste cosseno dois textos só compartilham palavras comuns. Devolver
-        #: esses casos como "notícia semelhante" produziria corroboração falsa.
+        #: Abaixo deste cosseno dois textos só compartilham palavras comuns, e devolvê-los
+        #: como "notícia semelhante" produziria corroboração falsa. O valor 0,10 vem da
+        #: EDA do grupo em 28/09 (ver o registro de descobertas em docs/investigacao.md):
+        #: dá 79,4% de recall com 0,6% de falsos positivos.
         self.min_similaridade = min_similaridade
         self._vetorizador: TfidfVectorizer | None = None
         self._matriz = None
