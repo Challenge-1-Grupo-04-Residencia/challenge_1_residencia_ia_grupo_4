@@ -6,6 +6,7 @@
     | :---: | :---: | --- | --- |
     | 21/09 | 1.0 | Levantamento, download e verificação das bases em PT-BR | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
     | 21/09 | 1.1 | Padronização: esquema único de colunas, dicionário e ficha por dataset | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 30/09 | 1.2 | Caminho do script atualizado para `ml/scripts/`, após a reorganização do repositório | Maykon Soares |
 
 Todas as bases desta página são **em português do Brasil** e foram **baixadas e conferidas**:
 os números abaixo são a contagem real dos arquivos, não o que o artigo original anuncia.
@@ -15,10 +16,10 @@ os números abaixo são a contagem real dos arquivos, não o que o artigo origin
 Um comando baixa tudo, normaliza e gera a documentação de cada base:
 
 ```bash
-./scripts/baixar_datasets.sh              # baixa o que falta, padroniza e documenta
-./scripts/baixar_datasets.sh --docs       # só refaz a padronização e a documentação
-./scripts/baixar_datasets.sh --so fake-br # apenas um dataset
-./scripts/baixar_datasets.sh --completo   # inclui o download pesado do FKTC (460 MB)
+./ml/scripts/baixar_datasets.sh              # baixa o que falta, padroniza e documenta
+./ml/scripts/baixar_datasets.sh --docs       # só refaz a padronização e a documentação
+./ml/scripts/baixar_datasets.sh --so fake-br # apenas um dataset
+./ml/scripts/baixar_datasets.sh --completo   # inclui o download pesado do FKTC (460 MB)
 ```
 
 Toda base recebe **a mesma estrutura de pasta**, para que importar uma ou todas dê o mesmo
