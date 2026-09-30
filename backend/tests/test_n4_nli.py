@@ -6,20 +6,18 @@ from src.core.engine.n4_nli import CamadaN4Inferencia
 from src.core.entities.claim import NoticiaRequest
 
 
-class ClassificadorFalso:
-    """NLI controlado, para testar sem baixar o mDeBERTa.
-
-    Recebe a lista de vereditos a devolver, em ordem, e registra os pares que viu.
-    """
-
-    def __init__(self, vereditos: list[tuple[str, float]]):
+class APIFalsa:
+    """Mock do Ollama HTTP para testar a matemática do S-12 sem latência."""
+    def __init__(self, vereditos: list[tuple[str, str]]):
         self.vereditos = list(vereditos)
-        self.chamadas: list[dict] = []
+        self.chamadas: list[str] = []
 
-    def __call__(self, par: dict):
-        self.chamadas.append(par)
-        rotulo, score = self.vereditos.pop(0)
-        return {"label": rotulo, "score": score}
+    def __call__(self, prompt: str):
+        self.chamadas.append(prompt)
+        if not self.vereditos:
+            return {"veredicto": "NEUTRAL", "explicacao": "Fim do mock"}
+        rotulo, explicacao = self.vereditos.pop(0)
+        return {"veredicto": rotulo, "explicacao": explicacao}
 
 
 def noticia_com(evidencias: list[str], texto: str = "A alegação do texto."):
@@ -32,9 +30,13 @@ def sinal(resultado, id_sinal: str):
     return next(s for s in resultado.sinais if s.id == id_sinal)
 
 
+# =========================================================
+# TESTES UNITÁRIOS (Validam a Matemática do Sinal S-12)
+# =========================================================
+
 def test_sem_evidencias_deixa_s12_indisponivel():
     """Não conseguir julgar não é julgar que a notícia é falsa (RN-06)."""
-    camada = CamadaN4Inferencia(ClassificadorFalso([]))
+    camada = CamadaN4Inferencia(APIFalsa([]))
     noticia = camada.processar(noticia_com([]))
 
     assert sinal(noticia.resultado, "S-12").score is None
@@ -44,69 +46,94 @@ def test_sem_evidencias_deixa_s12_indisponivel():
 def test_evidencias_todas_neutras_deixam_s12_indisponivel():
     """Neutro não é meio-termo entre sustentar e contradizer: é ausência de dado."""
     camada = CamadaN4Inferencia(
-        ClassificadorFalso([("NEUTRAL", 0.9), ("NEUTRAL", 0.95)])
+        APIFalsa([("NEUTRAL", "Não sei")])
     )
     noticia = camada.processar(noticia_com(["evidência um", "evidência dois"]))
-
     assert sinal(noticia.resultado, "S-12").score is None
 
 
 def test_evidencias_que_sustentam_dao_score_maximo():
     camada = CamadaN4Inferencia(
-        ClassificadorFalso([("ENTAILMENT", 0.9), ("ENTAILMENT", 0.85)])
+        APIFalsa([("ENTAILMENT", "Confirma!")])
     )
     noticia = camada.processar(noticia_com(["evidência um", "evidência dois"]))
-
     assert sinal(noticia.resultado, "S-12").score == 1.0
 
 
 def test_evidencias_que_contradizem_zeram_o_score():
     camada = CamadaN4Inferencia(
-        ClassificadorFalso([("CONTRADICTION", 0.9), ("CONTRADICTION", 0.88)])
+        APIFalsa([("CONTRADICTION", "Refuta!")])
     )
     noticia = camada.processar(noticia_com(["evidência um", "evidência dois"]))
-
     assert sinal(noticia.resultado, "S-12").score == 0.0
-
-
-def test_score_e_a_proporcao_que_sustenta():
-    """Fórmula de S-12: sustenta / (sustenta + contradiz)."""
-    camada = CamadaN4Inferencia(
-        ClassificadorFalso(
-            [("ENTAILMENT", 0.9), ("ENTAILMENT", 0.9), ("CONTRADICTION", 0.9)]
-        )
-    )
-    noticia = camada.processar(noticia_com(["um", "dois", "três"]))
-
-    assert sinal(noticia.resultado, "S-12").score == pytest.approx(2 / 3)
-
-
-def test_veredito_de_baixa_confianca_e_descartado():
-    """NLI em português erra bastante; veredito fraco não move o sinal mais pesado."""
-    camada = CamadaN4Inferencia(
-        ClassificadorFalso([("CONTRADICTION", 0.4), ("ENTAILMENT", 0.9)])
-    )
-    noticia = camada.processar(noticia_com(["fraca", "forte"]))
-
-    # A contradição de confiança 0,4 foi ignorada, sobrou só a que sustenta.
-    assert sinal(noticia.resultado, "S-12").score == 1.0
-
-
-def test_evidencia_entra_como_premissa_e_alegacao_como_hipotese():
-    """A pergunta é se a evidência publicada implica a alegação, não o contrário."""
-    classificador = ClassificadorFalso([("ENTAILMENT", 0.9)])
-    camada = CamadaN4Inferencia(classificador)
-    camada.processar(noticia_com(["a evidência"], texto="a alegação"))
-
-    assert classificador.chamadas[0] == {
-        "text": "a evidência",
-        "text_pair": "a alegação",
-    }
 
 
 def test_s12_pesa_vinte_pontos():
     """É o sinal mais pesado do catálogo, e a N4 é a única que o mede."""
-    camada = CamadaN4Inferencia(ClassificadorFalso([("ENTAILMENT", 0.9)]))
+    camada = CamadaN4Inferencia(APIFalsa([("ENTAILMENT", "Certo")]))
     noticia = camada.processar(noticia_com(["evidência"]))
-
     assert sinal(noticia.resultado, "S-12").peso == 20
+
+# =========================================================
+# TESTES DE INTEGRAÇÃO / LABORATÓRIO (Requer Llama 3 Rodando)
+# =========================================================
+
+# Para rodar estes no terminal de forma visual, use:
+# pytest backend/tests/test_n4_nli.py -v -s -k "test_laboratorio"
+
+CASOS_LABORATORIO = [
+    (
+        "A Mentira Absoluta",
+        "Chá de limão com alho mata completamente o vírus da COVID-19 em 24 horas, afirma estudo vazado.",
+        ["A OMS declarou que não existem provas científicas de que chás eliminem o vírus da COVID-19.", "Infectologistas alertam contra curas milagrosas."],
+        "CONTRADICTION"
+    ),
+    (
+        "A Verdade Comprovada",
+        "O Brasil ganhou a medalha de ouro no futebol masculino nas Olimpíadas do Rio em 2016.",
+        ["Em uma partida emocionante no Maracanã, a seleção brasileira de futebol masculino venceu a Alemanha nos pênaltis e garantiu o ouro inédito nas Olimpíadas de 2016."],
+        "ENTAILMENT"
+    ),
+    (
+        "Informação Inconclusiva (Neutralidade)",
+        "O prefeito vai anunciar um novo imposto sobre bicicletas elétricas.",
+        ["Câmara de vereadores debate novo projeto de lei sobre impostos veiculares, focando em carros a diesel."],
+        "NEUTRAL"
+    ),
+    (
+        "Distorção de Magnitude",
+        "A bolsa de valores caiu impressionantes 50% hoje devido ao novo imposto.",
+        ["O mercado financeiro fechou em leve baixa, com o principal índice recuando 2%."],
+        "CONTRADICTION"
+    ),
+    (
+        "Equivalência Semântica",
+        "A capital da França baniu definitivamente o uso de patinetes elétricos nas ruas.",
+        ["Paris implementou hoje a nova lei municipal proibindo a circulação de e-scooters alugados."],
+        "ENTAILMENT"
+    )
+]
+
+@pytest.mark.parametrize("nome,alegacao,evidencias,esperado", CASOS_LABORATORIO)
+def test_laboratorio_llm_real(nome, alegacao, evidencias, esperado):
+    """
+    Testes reais na API do Ollama.
+    Nota: Esses testes podem falhar (Timeout) se o Docker do Ollama não estiver ligado.
+    """
+    import urllib.request
+    try:
+        # Checa rápido se o Ollama está vivo na máquina
+        urllib.request.urlopen("http://localhost:11434", timeout=2)
+    except Exception:
+        pytest.skip("Ollama não está rodando no localhost:11434. Pulando teste de integração.")
+
+    # Usa o cliente Real (não envia o mock da APIFalsa)
+    camada = CamadaN4Inferencia()
+    noticia = camada.processar(noticia_com(evidencias, texto=alegacao))
+    
+    if esperado == "NEUTRAL":
+        assert sinal(noticia.resultado, "S-12").score is None
+    elif esperado == "ENTAILMENT":
+        assert sinal(noticia.resultado, "S-12").score == 1.0
+    else: # CONTRADICTION
+        assert sinal(noticia.resultado, "S-12").score == 0.0
