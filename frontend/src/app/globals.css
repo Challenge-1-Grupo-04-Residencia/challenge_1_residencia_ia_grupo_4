@@ -1,26 +1,236 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   Tokens da Senhora Vera — estilo cordel
+   ---------------------------------------------------------------------------
+   A referência é literatura de cordel, não HQ americana: xilogravura em tinta
+   preta sobre papel barato e quente, com os balões de fala do quadrinho.
+
+   Documentação completa em .claude/skills/vera-estilo/SKILL.md.
+   Use os tokens; valor solto quebra o sistema sem ninguém perceber.
+   =========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Marca ------------------------------------------------------------ */
+  --vermelho: #c1121f;
+  --vermelho-forte: #8b0a14;
+  --vermelho-suave: #fde2e4;
+  --ocre: #e8a020;
+  --ocre-suave: #fdf0d5;
+
+  /* Preto quente: tinta sobre papel barato nunca é neutra. #000 puro daria
+     cara de terminal. */
+  --tinta: #1a1410;
+  --tinta-2: #5a4f45; /* texto secundário */
+  --tinta-3: #8d8178; /* texto terciário, placeholder */
+
+  --papel: #fdf6ec;
+  --papel-2: #ffffff;
+  --papel-3: #f5ebdd; /* faixa alternada, hover */
+
+  --borda: #e3d5c3;
+
+  /* --- Faixas de veracidade --------------------------------------------- */
+  /* De docs/produto/classificacao.md. Não são negociáveis: a cor comunica o
+     resultado. Sempre acompanhadas do rótulo escrito. */
+  --faixa-falsa: #c62828;
+  --faixa-duvidosa: #ef6c00;
+  --faixa-inconclusiva: #f9a825;
+  --faixa-verdadeira: #7cb342;
+  --faixa-confirmada: #2e7d32;
+
+  --faixa-falsa-fundo: #fdeaea;
+  --faixa-duvidosa-fundo: #fdf0e3;
+  --faixa-inconclusiva-fundo: #fdf6e0;
+  --faixa-verdadeira-fundo: #f0f7e8;
+  --faixa-confirmada-fundo: #e8f3e9;
+
+  /* --- Traço e sombra ---------------------------------------------------- */
+  --traco-fino: 1px;
+  --traco-grosso: 3px;
+  --sombra-bloco: 4px 4px 0 var(--tinta);
+  --sombra-bloco-sm: 2px 2px 0 var(--tinta);
+  --sombra-card: 0 2px 8px rgb(26 20 16 / 0.1);
+
+  /* --- Raio -------------------------------------------------------------- */
+  --raio-sm: 6px;
+  --raio-md: 12px;
+  --raio-lg: 20px;
+  --raio-total: 999px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* O tema escuro segue a preferência do sistema, a menos que a pessoa tenha
+   escolhido claro na mão. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-tema="claro"]) {
+    --vermelho: #e63946;
+    --vermelho-forte: #c1121f;
+    --vermelho-suave: #3a1418;
+    --ocre: #f4b942;
+    --ocre-suave: #3a2e18;
+
+    --tinta: #f7f1e8;
+    --tinta-2: #c4b8ab;
+    --tinta-3: #8d8178;
+
+    --papel: #171310;
+    --papel-2: #221c17;
+    --papel-3: #2b2420;
+
+    --borda: #3a312a;
+
+    --faixa-falsa: #ef5350;
+    --faixa-duvidosa: #ffa726;
+    --faixa-inconclusiva: #ffd54f;
+    --faixa-verdadeira: #9ccc65;
+    --faixa-confirmada: #66bb6a;
+
+    --faixa-falsa-fundo: #331a1a;
+    --faixa-duvidosa-fundo: #33251a;
+    --faixa-inconclusiva-fundo: #332e1a;
+    --faixa-verdadeira-fundo: #23301c;
+    --faixa-confirmada-fundo: #1c2e1f;
+
+    /* Contorno claro e grosso sobre fundo escuro "vibra": afina. */
+    --traco-grosso: 2px;
+    --sombra-card: 0 2px 8px rgb(0 0 0 / 0.4);
   }
 }
 
+/* Escolha manual do tema escuro. */
+:root[data-tema="escuro"] {
+  --vermelho: #e63946;
+  --vermelho-forte: #c1121f;
+  --vermelho-suave: #3a1418;
+  --ocre: #f4b942;
+  --ocre-suave: #3a2e18;
+
+  --tinta: #f7f1e8;
+  --tinta-2: #c4b8ab;
+  --tinta-3: #8d8178;
+
+  --papel: #171310;
+  --papel-2: #221c17;
+  --papel-3: #2b2420;
+
+  --borda: #3a312a;
+
+  --faixa-falsa: #ef5350;
+  --faixa-duvidosa: #ffa726;
+  --faixa-inconclusiva: #ffd54f;
+  --faixa-verdadeira: #9ccc65;
+  --faixa-confirmada: #66bb6a;
+
+  --faixa-falsa-fundo: #331a1a;
+  --faixa-duvidosa-fundo: #33251a;
+  --faixa-inconclusiva-fundo: #332e1a;
+  --faixa-verdadeira-fundo: #23301c;
+  --faixa-confirmada-fundo: #1c2e1f;
+
+  --traco-grosso: 2px;
+  --sombra-card: 0 2px 8px rgb(0 0 0 / 0.4);
+}
+
+/* Expõe os tokens ao Tailwind: bg-papel, text-tinta, border-borda,
+   font-display, text-2xl, rounded-lg, shadow-bloco. */
+@theme inline {
+  --color-vermelho: var(--vermelho);
+  --color-vermelho-forte: var(--vermelho-forte);
+  --color-vermelho-suave: var(--vermelho-suave);
+  --color-ocre: var(--ocre);
+  --color-ocre-suave: var(--ocre-suave);
+
+  --color-tinta: var(--tinta);
+  --color-tinta-2: var(--tinta-2);
+  --color-tinta-3: var(--tinta-3);
+
+  --color-papel: var(--papel);
+  --color-papel-2: var(--papel-2);
+  --color-papel-3: var(--papel-3);
+  --color-borda: var(--borda);
+
+  --color-falsa: var(--faixa-falsa);
+  --color-duvidosa: var(--faixa-duvidosa);
+  --color-inconclusiva: var(--faixa-inconclusiva);
+  --color-verdadeira: var(--faixa-verdadeira);
+  --color-confirmada: var(--faixa-confirmada);
+
+  --color-falsa-fundo: var(--faixa-falsa-fundo);
+  --color-duvidosa-fundo: var(--faixa-duvidosa-fundo);
+  --color-inconclusiva-fundo: var(--faixa-inconclusiva-fundo);
+  --color-verdadeira-fundo: var(--faixa-verdadeira-fundo);
+  --color-confirmada-fundo: var(--faixa-confirmada-fundo);
+
+  /* Fontes injetadas por next/font em layout.tsx. */
+  --font-display: var(--fonte-display);
+  --font-sans: var(--fonte-texto);
+  --font-mao: var(--fonte-mao);
+
+  /* Escala 1,25 ancorada em 16px. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-4xl: 3.052rem;
+
+  --radius-sm: var(--raio-sm);
+  --radius-md: var(--raio-md);
+  --radius-lg: var(--raio-lg);
+
+  --shadow-bloco: var(--sombra-bloco);
+  --shadow-bloco-sm: var(--sombra-bloco-sm);
+  --shadow-card: var(--sombra-card);
+}
+
+/* Fundo explícito no body: sem ele o tema escuro mostra faixa branca no
+   overscroll do celular. */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fonte-texto), system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+/* Display comprimida é o que dá a compressão de manchete de cordel. */
+h1,
+h2,
+h3,
+.fonte-display {
+  font-family: var(--fonte-display), system-ui, sans-serif;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.fonte-mao {
+  font-family: var(--fonte-mao), cursive;
+}
+
+/* Foco sempre visível: outline none deixa quem navega por teclado perdido. */
+:focus-visible {
+  outline: 3px solid var(--vermelho);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Retícula de pontos do quadrinho, para faixas de destaque. */
+.reticula {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 8px 8px;
+  opacity: 0.12;
+}
+
+/* Quem marcou esta preferência costuma ter enxaqueca vestibular ou epilepsia
+   fotossensível. Não é preferência estética. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
