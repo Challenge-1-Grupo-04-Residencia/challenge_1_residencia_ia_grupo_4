@@ -6,6 +6,7 @@
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 30/09 | 1.2 | Registro das descobertas de EDA das camadas N2 e N3 | Maykon Soares |
 
 Atividades da fase **Investigate** e o registro do que a equipe descobrir. O objetivo é
 transformar as hipóteses do brainstorm em decisões baseadas em evidências antes da fase Act.
@@ -73,4 +74,7 @@ Para responder à pergunta "quais sites têm maior credibilidade e publicam meno
 
 | Data | Quem | Descoberta | Impacto (peso, regra, requisito) |
 | --- | --- | --- | --- |
-| | | | |
+| 28/09 | Grupo 4 | Regressão Logística, Naive Bayes e LinearSVC superam RNF-06 (F1 > 0,80) na N2. Regressão Logística escolhida pela explicabilidade. | Valida a Camada N2 como filtro rápido (atende RF-32). |
+| 28/09 | Grupo 4 | Regressão Logística detecta 96% dos fakes humanos, mas cai para 40% em textos de LLM. | N2 gera apenas "score de estilo", não o veredito. Textos sintéticos devem escalar para N3/N4. Mantém peso baixo do S-10. |
+| 28/09 | Grupo 4 | Limiar de corroboração por similaridade (S-11) ideal é 0,10 (79,4% recall, 0,6% falsos positivos). | N3 usará TF-IDF para filtrar o Top-5. Ausência de corroboração aciona N4 em vez de reprovar. |
+| 28/09 | Grupo 4 | 25% de redundância nos desmentidos e 11% de fakes repetidos. | Reforça a eficácia do Cache (N0) para barrar falsos conhecidos sem custo de LLM. |
