@@ -28,7 +28,7 @@ A organização do código e as decisões de arquitetura estão em
 
 ```bash
 # backend — http://localhost:8010
-uv sync
+uv sync                       # use `uv sync --extra nli` para habilitar a camada N4
 uv run uvicorn src.main:app --app-dir backend --reload --port 8010
 
 # frontend — http://localhost:3000
@@ -55,7 +55,7 @@ a maioria das notícias se resolve antes de chegar na LLM.
 | **N1** Fonte | Quem publicou? | a fazer |
 | **N2** Conteúdo | Como está escrito? | implementada |
 | **N3** Corroboração | Outros veículos publicaram? | implementada |
-| **N4** LLM | As evidências sustentam as alegações? | a fazer |
+| **N4** LLM | As evidências sustentam as alegações? | implementada |
 
 Cada camada registra **sinais** (`S-01` a `S-13`) com peso próprio, e o score é a média
 ponderada dos sinais disponíveis. Um sinal que não pôde ser medido sai do cálculo e não

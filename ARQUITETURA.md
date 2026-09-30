@@ -97,12 +97,19 @@ confiança, *sei que é ruim* derruba o score.
 | N1 · Fonte | a fazer | S-01 a S-05 | issue em aberto |
 | N2 · Conteúdo | **implementada** | S-06, S-07, S-09 | — |
 | N3 · Corroboração | **implementada** | S-11, S-13 | — |
-| N4 · LLM | a fazer | S-12 | issue em aberto |
+| N4 · LLM | **implementada** | S-12 | — |
 
-Com N0, N1 e N4 pendentes a cobertura máxima é de 33 dos 100 pontos, então quase toda
-checagem cai em RN-04 (Inconclusivo) por confiança baixa. **Isso é o comportamento
-correto**, não um bug: a Vera não deve cravar veredito sem evidência. O número sobe
-conforme as camadas entram.
+Com N0 e N1 pendentes a cobertura máxima é de 53 dos 100 pontos: os 35 da dimensão
+Fonte inteira ficam de fora, mais S-08 e S-10. Por isso muita checagem ainda cai em
+RN-04 (Inconclusivo) por confiança baixa. **Isso é o comportamento correto**, não um
+bug: a Vera não deve cravar veredito sem evidência. O número sobe conforme as camadas
+entram.
+
+A N4 exige o extra opcional do NLI, que traz o torch (~2 GB):
+
+```bash
+uv sync --extra nli
+```
 
 Dois sinais estão fora por decisão consciente: **S-08** (intensidade emocional) espera a
 integração do NRC Emotion Lexicon, e **S-10** (texto gerado por IA) é `Won't` no MoSCoW,
@@ -156,5 +163,6 @@ desta máquina não tem permissão de escrita em `/opt/homebrew`.
 | Sinais em vez de mutação direta do score | A explicação (RF-32, RF-33) precisa saber *quanto cada evidência pesou*; um score mutado perde essa informação |
 | `veracidade`/`confianca` seguem graváveis | Compatibilidade com camadas ainda não migradas; o caminho correto é `registrar()` |
 | Next.js no frontend | Pedido do PO. A issue #46 especificava Vite — ver a nota registrada lá |
+| `transformers` como extra opcional `nli` | Traz o torch (~2 GB) e só a N4 usa; pesaria no `uv sync` de quem só mexe nos notebooks |
 | TF-IDF antes de embeddings na N3 | Roda offline e sem chave de API, destrava a camada agora; a porta permite trocar sem tocar no núcleo |
 | Similaridade do GDELT derivada da posição | A API não expõe score de relevância; é aproximação explícita, a refinar com embeddings |

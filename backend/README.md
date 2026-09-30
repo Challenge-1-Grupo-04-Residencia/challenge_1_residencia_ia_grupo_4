@@ -66,6 +66,7 @@ src/
 │   │   ├── orchestrator.py     Chain of Responsibility
 │   │   ├── n2_content.py       camada N2
 │   │   ├── n3_corroboration.py camada N3
+│   │   ├── n4_nli.py           camada N4 (inferência NLI)
 │   │   └── text_style.py       heurísticas de sensacionalismo e citação
 │   └── ports/            interfaces (Protocol) para a infraestrutura
 ├── infrastructure/
@@ -91,9 +92,16 @@ no histórico daquela página.
 
 ## Estado das camadas
 
-N2 e N3 estão implementadas; N0, N1 e N4 são issues em aberto de outras pessoas do grupo.
-Com isso a cobertura máxima é de 33 pontos, então quase toda checagem cai em RN-04
-(Inconclusivo). **É o comportamento correto**: a Vera não crava veredito sem evidência.
+N2, N3 e N4 estão implementadas; N0 e N1 são issues em aberto de outras pessoas do grupo.
+Com isso a cobertura máxima é de 53 pontos — a dimensão Fonte inteira (35) fica de fora,
+mais S-08 e S-10. Muita checagem ainda cai em RN-04 (Inconclusivo). **É o comportamento
+correto**: a Vera não crava veredito sem evidência.
+
+A N4 precisa do extra opcional do NLI, que traz o torch (~2 GB):
+
+```bash
+uv sync --extra nli
+```
 
 Para adicionar uma camada ou um sinal, veja as skills `vera-camadas` e `vera-sinais` em
 `.claude/skills/`.

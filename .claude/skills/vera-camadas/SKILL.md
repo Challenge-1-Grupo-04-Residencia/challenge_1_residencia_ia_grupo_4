@@ -17,8 +17,11 @@ antes de chegar na LLM.
 | **N3** Corroboração | Outros publicaram? | GDELT, busca, embeddings | < 8 s |
 | **N4** LLM | As evidências sustentam? | LLM + NLI | < 20 s |
 
-Estado atual: **N2 e N3 implementadas**. N0, N1 e N4 são issues de outras pessoas do
+Estado atual: **N2, N3 e N4 implementadas**. N0 e N1 são issues de outras pessoas do
 grupo — não as implemente sem combinar antes.
+
+A N4 exige `uv sync --extra nli` (traz o torch, ~2 GB). Sem o extra ela falha com
+mensagem explícita; os testes injetam um classificador falso e não baixam o modelo.
 
 ## Como se escreve uma camada
 
