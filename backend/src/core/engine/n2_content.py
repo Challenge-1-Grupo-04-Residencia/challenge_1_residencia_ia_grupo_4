@@ -14,7 +14,7 @@ import os
 
 import joblib
 
-from src.core.engine import text_style
+from src.core.engine import text_style, emotion
 from src.core.engine.orchestrator import CamadaVerificacao
 from src.core.entities.claim import NoticiaRequest
 from src.core.entities.signal import medir
@@ -51,6 +51,7 @@ class CamadaN2Conteudo(CamadaVerificacao):
 
         self._medir_estilo(texto, resultado)
         self._medir_sensacionalismo(texto, resultado)
+        self._medir_intensidade_emocional(texto, resultado)
         self._medir_citacao_de_fontes(texto, resultado)
 
         return self.repassar(noticia)
@@ -137,4 +138,20 @@ class CamadaN2Conteudo(CamadaVerificacao):
                 if indice == 0
                 else f"O texto traz citações verificáveis (índice {indice:.2f}).",
             )
+        )
+
+    def _medir_intensidade_emocional(self, texto: str, resultado) -> None:
+        """S-08 — avalia a carga emocional negativa (raiva, medo, nojo) para detecção de manipulação (RF-23)."""
+        indice, emocao = emotion.indice_intensidade_emocional(texto)
+        
+        # O score do S-08 deve ser o inverso do índice de manipulação (quanto mais emoção forte, menor a nota).
+        score = 1.0 - indice
+        
+        if indice == 0.0:
+            justificativa = "Texto neutro, sem carga emocional manipulativa detectada."
+        else:
+            justificativa = f"Detectada carga emocional intensa ({indice * 100:.0f}%). Predominância de: {emocao}."
+
+        resultado.registrar(
+            medir("S-08", score, justificativa)
         )
