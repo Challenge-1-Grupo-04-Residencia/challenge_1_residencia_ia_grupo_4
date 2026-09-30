@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # 1. Nossa API Backend (FastAPI + Motor da Senhora Vera)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vera_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src  # Habilita Hot-Reload para desenvolvimento local
+    environment:
+      - ENVIRONMENT=development
+      - OLLAMA_URL=http://ollama:11434  # Ensina o Python onde achar o Llama dentro do Docker
+    depends_on:
+      - ollama  # A API só sobe depois que o Ollama ligar
+
+  # 2. O Cérebro Generativo (Ollama) rodando isolado
+  ollama:
+    image: ollama/ollama:latest
+    container_name: vera_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama  # Salva o cérebro da IA no disco para não baixar de novo
+
+# Define um volume persistente (Disco virtual do Docker)
+volumes:
+  ollama_data:

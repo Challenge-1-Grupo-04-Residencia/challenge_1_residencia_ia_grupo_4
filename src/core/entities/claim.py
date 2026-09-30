@@ -6,6 +6,7 @@ class AnaliseResultado(BaseModel):
     camada_atual: str = Field(default="N0", description="A última camada executada")
     explicacao: str = Field(default="", description="Motivos da classificação")
     fontes_citadas: list[str] = Field(default_factory=list, description="Lista de URLs de corroboração")
+    evidencias: list[str] = Field(default_factory=list, description="Trechos de texto encontrados pela N3 para o NLI")
 
 class NoticiaRequest(BaseModel):
     texto: str
