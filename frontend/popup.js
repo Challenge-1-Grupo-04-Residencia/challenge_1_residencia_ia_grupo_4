@@ -16,17 +16,32 @@ function showMessage(text) {
 
 function setRating(score) {
   let rating;
+  let badgeColor;
+  let badgeText;
 
   if (score >= 70) {
     rating = "verde";
+    badgeColor = "#20834a"; // Verde
+    badgeText = "OK";
   } else if (score >= 40) {
     rating = "amarelo";
+    badgeColor = "#d39b00"; // Amarelo
+    badgeText = "ATN";
   } else {
     rating = "vermelho";
+    badgeColor = "#c53b36"; // Vermelho
+    badgeText = "PER";
   }
 
+  // 1. Atualiza o indicador dentro da janelinha do popup
   reputation.dataset.rating = rating;
   ratingLabel.textContent = `${rating[0].toUpperCase()}${rating.slice(1)} · ${Math.round(score)}/100`;
+
+  // 2. Atualiza a cor e o selo no próprio ícone do navegador Chrome (RF-37)
+  if (chrome.action?.setBadgeBackgroundColor && chrome.action?.setBadgeText) {
+    chrome.action.setBadgeBackgroundColor({ color: badgeColor });
+    chrome.action.setBadgeText({ text: badgeText });
+  }
 }
 
 async function analyzePage() {
@@ -70,7 +85,11 @@ async function analyzePage() {
     result.textContent = analysis.explicacao || "Análise concluída.";
     result.classList.add("visible");
   } catch (error) {
-    showMessage(error instanceof Error ? error.message : "Falha ao analisar a página.");
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      showMessage("Não foi possível conectar à API. Verifique se o servidor está rodando no terminal (porta 8000).");
+    } else {
+      showMessage(error instanceof Error ? error.message : "Falha ao analisar a página.");
+    }
   } finally {
     analyzeButton.disabled = false;
     analyzeButton.textContent = "Analisar texto completo";
