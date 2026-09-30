@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Senhora Vera">
+  <defs>
+    <clipPath id="c"><circle cx="64" cy="64" r="64"/></clipPath>
+  </defs>
+  <circle cx="64" cy="64" r="64" fill="#C62828"/>
+  <g clip-path="url(#c)">
+    <!-- ombros / xale -->
+    <path d="M14 132c4-26 24-38 50-38s46 12 50 38z" fill="#8E1B1B"/>
+    <path d="M50 96l14 14 14-14" fill="none" stroke="#FFCDD2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- cabelo e coque -->
+    <circle cx="64" cy="24" r="13" fill="#ECEFF1"/>
+    <ellipse cx="64" cy="58" rx="33" ry="30" fill="#ECEFF1"/>
+    <!-- rosto -->
+    <ellipse cx="64" cy="68" rx="25" ry="27" fill="#FFD9C4"/>
+    <path d="M40 56c6-12 16-16 24-16s18 4 24 16c-8-6-16-8-24-8s-16 2-24 8z" fill="#ECEFF1"/>
+    <!-- bochechas -->
+    <circle cx="49" cy="80" r="4.5" fill="#F48FB1" opacity=".6"/>
+    <circle cx="79" cy="80" r="4.5" fill="#F48FB1" opacity=".6"/>
+    <!-- sorriso -->
+    <path d="M57 85q7 6 14 0" fill="none" stroke="#5D2A2A" stroke-width="2.6" stroke-linecap="round"/>
+    <!-- óculos: lente esquerda comum, lente direita é a lupa -->
+    <circle cx="53" cy="68" r="9" fill="#FFFFFF" fill-opacity=".35" stroke="#3E1A1A" stroke-width="3.2"/>
+    <path d="M62 67q2-2 4 0" fill="none" stroke="#3E1A1A" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="76" cy="67" r="11" fill="#FFFFFF" fill-opacity=".45" stroke="#3E1A1A" stroke-width="3.6"/>
+    <path d="M70 62a7 7 0 0 1 6-3" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+    <path d="M84 75l15 15" stroke="#3E1A1A" stroke-width="6.5" stroke-linecap="round"/>
+    <!-- olhos -->
+    <circle cx="53" cy="68" r="2.4" fill="#3E1A1A"/>
+    <circle cx="76" cy="67" r="3.2" fill="#3E1A1A"/>
+  </g>
+</svg>
