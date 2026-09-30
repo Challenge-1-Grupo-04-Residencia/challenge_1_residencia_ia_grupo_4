@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Baloo_2, Caveat, Nunito } from "next/font/google";
+
+import { BarraLateral } from "@/components/layout/BarraLateral";
+import { BarraTopo } from "@/components/layout/BarraTopo";
 import "./globals.css";
 
 /**
@@ -9,7 +12,7 @@ import "./globals.css";
  * agudo: fonte que quebra acento está descartada de saída.
  */
 
-/** Display: títulos, veredito, números. Densidade de capa de cordel. */
+/** Display: títulos, veredito, números. */
 const display = Baloo_2({
   variable: "--fonte-display",
   subsets: ["latin", "latin-ext"],
@@ -25,7 +28,7 @@ const texto = Nunito({
   display: "swap",
 });
 
-/** Mão: frases curtas da Vera e ênfases. Nunca carrega informação sozinha. */
+/** Mão: frases curtas da Vera. Nunca carrega informação sozinha. */
 const mao = Caveat({
   variable: "--fonte-mao",
   subsets: ["latin", "latin-ext"],
@@ -34,7 +37,7 @@ const mao = Caveat({
 });
 
 export const metadata: Metadata = {
-  title: "Senhora Vera",
+  title: "Vera · Verificadora de Fatos",
   description:
     "Checagem de notícias em formato de conversa: a Vera cruza o que você leu com fontes confiáveis e explica por que aquilo parece verdadeiro ou falso.",
 };
@@ -44,8 +47,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="pt-BR"
       className={`${display.variable} ${texto.variable} ${mao.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="min-h-full">
+        <div className="flex min-h-dvh">
+          <BarraLateral />
+          {/* pb-20 no celular abre espaço para a barra de navegação fixa. */}
+          <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
+            <BarraTopo />
+            <main className="flex-1">{children}</main>
+          </div>
+        </div>
+      </body>
     </html>
   );
 }

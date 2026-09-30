@@ -35,20 +35,20 @@ export function Investigando() {
 
   return (
     <div
-      className="rounded-2xl border border-violet-400/30 bg-violet-500/10 p-5"
+      className="rounded-2xl border border-vermelho/30 bg-vermelho-suave p-5"
       role="status"
       aria-live="polite"
     >
       <div className="flex items-center gap-4">
         <VeraAvatar humor="investigando" tamanho={56} className="shrink-0" />
         <div className="min-w-0">
-          <p className="text-sm text-violet-100">{ETAPAS[SEQUENCIA[indice].camada]}</p>
+          <p className="text-sm text-tinta">{ETAPAS[SEQUENCIA[indice].camada]}</p>
           <ol className="mt-2 flex gap-1.5" aria-hidden>
             {SEQUENCIA.map((etapa, i) => (
               <li
                 key={etapa.camada}
                 className={`h-1 w-8 rounded-full transition-colors ${
-                  i <= indice ? "bg-violet-400" : "bg-white/15"
+                  i <= indice ? "bg-vermelho" : "bg-papel-3"
                 }`}
               />
             ))}

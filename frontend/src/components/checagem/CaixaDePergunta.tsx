@@ -49,7 +49,7 @@ export function CaixaDePergunta({
           ? "Pergunte algo sobre o resultado"
           : "Cole aqui o link, o texto ou a afirmação que quer checar"}
       </label>
-      <div className="rounded-2xl border border-white/10 bg-[#1b1630] p-2 shadow-lg focus-within:border-violet-400/60">
+      <div className="rounded-lg border border-borda bg-papel-2 p-2 shadow-card focus-within:border-vermelho">
         <textarea
           id="pergunta"
           value={texto}
@@ -68,15 +68,15 @@ export function CaixaDePergunta({
               ? "Quer saber mais alguma coisa, meu bem?"
               : "Cola aqui o link ou o texto que você recebeu…"
           }
-          className="w-full resize-none bg-transparent px-3 py-2 text-base text-white placeholder:text-white/40 focus:outline-none disabled:opacity-50"
+          className="w-full resize-none bg-transparent px-3 py-2 text-base text-tinta placeholder:text-tinta-3 focus:outline-none disabled:opacity-50"
         />
         <div className="flex items-center justify-between gap-3 px-3 pb-1">
-          <span className="text-xs text-white/40">{dica}</span>
+          <span className="text-xs text-tinta-3">{dica}</span>
           <button
             type="button"
             onClick={enviar}
             disabled={vazio || carregando}
-            className="shrink-0 rounded-full bg-violet-500 px-5 py-2 text-sm font-medium text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-40"
+            className="shrink-0 rounded-full bg-vermelho px-5 py-2 text-sm font-semibold text-white transition hover:bg-vermelho-forte disabled:cursor-not-allowed disabled:opacity-40"
           >
             {carregando
               ? "Apurando…"

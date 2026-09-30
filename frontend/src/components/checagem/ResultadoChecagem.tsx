@@ -42,7 +42,7 @@ export function ResultadoChecagem({ resultado }: Props) {
     <article className="flex gap-3">
       <VeraAvatar humor={estilo.humor} tamanho={44} className="mt-1 shrink-0" />
 
-      <div className={`min-w-0 flex-1 rounded-2xl rounded-tl-sm border p-4 ${estilo.cor}`}>
+      <div className={`min-w-0 flex-1 rounded-lg rounded-tl-sm border-2 p-4 ${estilo.cor}`}>
         {/* A frase da persona vem primeiro, mas o dado técnico vem logo abaixo, nunca
             no lugar dela (RN-11). */}
         <p className="text-base">{estilo.frase}</p>
@@ -58,7 +58,7 @@ export function ResultadoChecagem({ resultado }: Props) {
 
         {mostraPorcentagem && (
           <div
-            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-black/30"
+            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-papel-3"
             role="meter"
             aria-valuenow={Math.round(resultado.veracidade!)}
             aria-valuemin={0}
@@ -75,7 +75,7 @@ export function ResultadoChecagem({ resultado }: Props) {
         {/* Quando uma regra de negócio decidiu, ela explica por que o resultado
             publicado não bate com a média dos sinais. Sem isso o número não fecha. */}
         {resultado.regra_aplicada && resultado.explicacao && (
-          <p className="mt-3 rounded-lg border border-white/20 bg-black/20 p-3 text-sm">
+          <p className="mt-3 rounded-lg border border-borda bg-papel-3 p-3 text-sm">
             {resultado.explicacao}
           </p>
         )}
@@ -148,7 +148,7 @@ export function ResultadoChecagem({ resultado }: Props) {
         </button>
 
         {detalhado && (
-          <div className="mt-3 border-t border-white/10 pt-3">
+          <div className="mt-3 border-t border-borda pt-3">
             <DetalheSinais
               sinais={resultado.sinais}
               fontes={resultado.fontes_citadas}

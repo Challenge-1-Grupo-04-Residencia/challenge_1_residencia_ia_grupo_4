@@ -37,9 +37,9 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-white/50">
+      <p className="text-xs text-tinta-3">
         A nota é a média dos sinais que eu consegui medir, cada um com o seu peso.{" "}
-        <strong className="font-medium text-white/70">
+        <strong className="font-medium text-tinta-2">
           {pesoMedido} de 100 pontos
         </strong>{" "}
         foram medidos nesta checagem.
@@ -48,39 +48,39 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
       <Grupo
         titulo="Pesou contra"
         sinais={contra}
-        cor="text-red-300"
-        barra="bg-red-500"
+        cor="text-falsa"
+        barra="bg-falsa"
         vazio="Nada pesou contra."
       />
       <Grupo
         titulo="Pesou a favor"
         sinais={aFavor}
-        cor="text-lime-300"
-        barra="bg-lime-500"
+        cor="text-confirmada"
+        barra="bg-verdadeira"
         vazio="Nada pesou a favor."
       />
 
       {semDado.length > 0 && (
         <section>
-          <h4 className="mb-2 text-sm font-semibold text-white/50">
+          <h4 className="mb-2 text-sm font-semibold text-tinta-3">
             Não consegui medir
           </h4>
           <ul className="space-y-1.5">
             {semDado.map((sinal) => (
               <li
                 key={sinal.id}
-                className="rounded-lg border border-white/5 bg-white/2 p-3 text-sm"
+                className="rounded-lg border border-borda bg-papel-3 p-3 text-sm"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-white/60">
-                    <span className="font-mono text-xs text-white/30">{sinal.id}</span>{" "}
+                  <span className="text-tinta-2">
+                    <span className="font-mono text-xs text-tinta-3">{sinal.id}</span>{" "}
                     {sinal.nome}
                   </span>
-                  <span className="shrink-0 text-xs text-white/30">
+                  <span className="shrink-0 text-xs text-tinta-3">
                     valeria {sinal.peso}
                   </span>
                 </div>
-                <p className="mt-1 text-xs italic text-white/40">
+                <p className="mt-1 text-xs italic text-tinta-3">
                   Ficou de fora da conta — não conta como ponto contra a notícia.
                   {sinal.justificativa && ` ${sinal.justificativa}`}
                 </p>
@@ -92,7 +92,7 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
       {fontes.length > 0 && (
         <section>
-          <h4 className="mb-2 text-sm font-semibold text-white/50">
+          <h4 className="mb-2 text-sm font-semibold text-tinta-3">
             Fontes que eu consultei
           </h4>
           <ul className="space-y-1 text-sm">
@@ -102,7 +102,7 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="break-all text-violet-300 underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                  className="break-all text-vermelho underline decoration-dotted underline-offset-2 hover:decoration-solid"
                 >
                   {url}
                 </a>
@@ -131,12 +131,12 @@ function Grupo({ titulo, sinais, cor, barra, vazio }: GrupoProps) {
       <header className="mb-2 flex items-baseline justify-between">
         <h4 className={`text-sm font-semibold ${cor}`}>{titulo}</h4>
         {sinais.length > 0 && (
-          <span className="text-xs text-white/40">{peso} pontos em jogo</span>
+          <span className="text-xs text-tinta-3">{peso} pontos em jogo</span>
         )}
       </header>
 
       {sinais.length === 0 ? (
-        <p className="text-xs italic text-white/30">{vazio}</p>
+        <p className="text-xs italic text-tinta-3">{vazio}</p>
       ) : (
         <ul className="space-y-2">
           {sinais.map((sinal) => (
@@ -154,18 +154,18 @@ function LinhaDeSinal({ sinal, barra }: { sinal: Sinal; barra: string }) {
   const largura = (contribuicao(sinal.peso, sinal.score) / 20) * 100;
 
   return (
-    <li className="rounded-lg border border-white/10 bg-white/5 p-3">
+    <li className="rounded-lg border border-borda bg-papel-3 p-3">
       <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm text-white/90">
-          <span className="font-mono text-xs text-white/40">{sinal.id}</span>{" "}
+        <span className="text-sm text-tinta">
+          <span className="font-mono text-xs text-tinta-3">{sinal.id}</span>{" "}
           {sinal.nome}
         </span>
-        <span className="shrink-0 text-xs text-white/40">
+        <span className="shrink-0 text-xs text-tinta-3">
           peso {sinal.peso} · {ROTULO_DIMENSAO[sinal.dimensao]}
         </span>
       </div>
 
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-papel-3">
         <div
           className={`h-full rounded-full ${barra}`}
           style={{ width: `${Math.min(100, largura)}%` }}
@@ -173,7 +173,7 @@ function LinhaDeSinal({ sinal, barra }: { sinal: Sinal; barra: string }) {
       </div>
 
       {sinal.justificativa && (
-        <p className="mt-1.5 text-xs text-white/50">{sinal.justificativa}</p>
+        <p className="mt-1.5 text-xs text-tinta-3">{sinal.justificativa}</p>
       )}
     </li>
   );

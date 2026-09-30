@@ -1,8 +1,11 @@
 /**
- * Traduz o resultado técnico para a apresentação: cores, humor da Vera e rótulos.
+ * Traduz o resultado técnico para a apresentação: cor, humor da Vera e frase.
  *
- * As cores e os humores vêm da tabela de faixas em `docs/produto/classificacao.md`.
- * Por RN-11, o humor da persona acompanha o resultado técnico e nunca o substitui.
+ * As cores vêm dos tokens de `globals.css`, que por sua vez vêm da tabela de
+ * faixas de `docs/produto/classificacao.md`. Usar o token em vez do hex é o que
+ * faz o tema escuro funcionar sem uma segunda tabela.
+ *
+ * Por RN-11 o humor da persona acompanha o resultado técnico e nunca o substitui.
  */
 
 import type { Camada, Dificuldade, Dimensao, Faixa } from "@/types/checagem";
@@ -18,43 +21,44 @@ export type HumorDaVera =
 
 export interface EstiloDaFaixa {
   humor: HumorDaVera;
-  /** Classes Tailwind do bloco de resultado. */
+  /** Classes do bloco de resultado. */
   cor: string;
   /** Classe da barra de porcentagem. */
   barra: string;
-  /** Frase temática da Vera para esta faixa. */
+  /** Frase temática da Vera, no jeito pernambucano (ver skill `vera-voz`). */
   frase: string;
 }
 
 const ESTILOS: Record<Faixa, EstiloDaFaixa> = {
   "Provavelmente falsa": {
     humor: "brava",
-    cor: "border-red-500/40 bg-red-500/10 text-red-100",
-    barra: "bg-red-500",
-    frase: "Ih, isso aí é conversa de portão. Ninguém sério publicou.",
+    cor: "border-falsa bg-falsa-fundo text-tinta",
+    barra: "bg-falsa",
+    frase: "Ih, isso aí é conversa de portão. Ninguém sério publicou, não.",
   },
   Duvidosa: {
     humor: "desconfiada",
-    cor: "border-orange-500/40 bg-orange-500/10 text-orange-100",
-    barra: "bg-orange-500",
-    frase: "Olha, eu que não acredito nesse povo. Fica de olho.",
+    cor: "border-duvidosa bg-duvidosa-fundo text-tinta",
+    barra: "bg-duvidosa",
+    frase: "Olha, eu que não acredito nesse povo. Fica de olho, visse?",
   },
   Inconclusiva: {
     humor: "pensativa",
-    cor: "border-amber-400/40 bg-amber-400/10 text-amber-100",
-    barra: "bg-amber-400",
-    frase: "Nem eu sei dessa ainda, e olha que eu sei de tudo. Espera sair mais coisa.",
+    cor: "border-inconclusiva bg-inconclusiva-fundo text-tinta",
+    barra: "bg-inconclusiva",
+    frase:
+      "Nem eu sei dessa ainda, e olha que eu sei de tudo. Espera sair mais coisa.",
   },
   "Provavelmente verdadeira": {
     humor: "satisfeita",
-    cor: "border-lime-500/40 bg-lime-500/10 text-lime-100",
-    barra: "bg-lime-500",
+    cor: "border-verdadeira bg-verdadeira-fundo text-tinta",
+    barra: "bg-verdadeira",
     frase: "Essa parece ser verdade, viu? Mas confere as fontes aí embaixo.",
   },
   "Confirmada por fontes": {
     humor: "orgulhosa",
-    cor: "border-green-600/40 bg-green-600/10 text-green-100",
-    barra: "bg-green-600",
+    cor: "border-confirmada bg-confirmada-fundo text-tinta",
+    barra: "bg-confirmada",
     frase: "Essa é quente e é verdade! Saiu em tudo que é jornal sério.",
   },
 };
@@ -65,11 +69,11 @@ export function estiloDaFaixa(faixa: Faixa): EstiloDaFaixa {
 
 /** Etapas mostradas durante a investigação (RF-03). */
 export const ETAPAS: Record<Camada, string> = {
-  N0: "Vendo se já conferi isso antes…",
-  N1: "Olhando quem publicou…",
-  N2: "Lendo com atenção como está escrito…",
-  N3: "Ligando pras minhas comadres pra ver quem mais publicou…",
-  N4: "Conferindo alegação por alegação…",
+  N0: "Deixa eu ver se eu já não conferi isso antes…",
+  N1: "Vou espiar quem foi que publicou…",
+  N2: "Deixa eu ler com atenção o jeito que isso foi escrito…",
+  N3: "Tô ligando pras minhas comadres pra ver quem mais publicou…",
+  N4: "Agora eu confiro alegação por alegação. Tenha paciência.",
 };
 
 export const ROTULO_DIFICULDADE: Record<Dificuldade, string> = {
@@ -85,8 +89,8 @@ export const ROTULO_DIMENSAO: Record<Dimensao, string> = {
 };
 
 /**
- * Converte a confiança 0–1 em texto. A porcentagem crua confunde: quem lê "confiança
- * de 42%" tende a somar com a veracidade, que é outra coisa.
+ * Converte a confiança 0–1 em texto. A porcentagem crua confunde: quem lê
+ * "confiança de 42%" tende a somar com a veracidade, que é outra coisa.
  */
 export function rotuloDeConfianca(confianca: number): string {
   if (confianca >= 0.8) return "Alta";
@@ -97,7 +101,7 @@ export function rotuloDeConfianca(confianca: number): string {
 
 /**
  * Peso relativo de um sinal na explicação, para desenhar a barra de contribuição.
- * Sinais indisponíveis devolvem 0 — não pesaram no resultado.
+ * Sinal indisponível devolve 0 — não pesou no resultado.
  */
 export function contribuicao(peso: number, score: number | null): number {
   if (score === null) return 0;

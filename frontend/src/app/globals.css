@@ -24,11 +24,12 @@
   --tinta-2: #5a4f45; /* texto secundário */
   --tinta-3: #8d8178; /* texto terciário, placeholder */
 
-  --papel: #fdf6ec;
-  --papel-2: #ffffff;
-  --papel-3: #f5ebdd; /* faixa alternada, hover */
+  --papel: #faf7f7; /* fundo do app, levemente rosado */
+  --papel-2: #ffffff; /* cartão */
+  --papel-3: #f4eff0; /* faixa alternada, hover */
+  --papel-rosa: #fdeef0; /* cartão de dica */
 
-  --borda: #e3d5c3;
+  --borda: #ece5e6;
 
   /* --- Faixas de veracidade --------------------------------------------- */
   /* De docs/produto/classificacao.md. Não são negociáveis: a cor comunica o
@@ -73,11 +74,12 @@
     --tinta-2: #c4b8ab;
     --tinta-3: #8d8178;
 
-    --papel: #171310;
-    --papel-2: #221c17;
-    --papel-3: #2b2420;
+    --papel: #14100f;
+    --papel-2: #1e1917;
+    --papel-3: #2a2321;
+    --papel-rosa: #2e1a1c;
 
-    --borda: #3a312a;
+    --borda: #362d2c;
 
     --faixa-falsa: #ef5350;
     --faixa-duvidosa: #ffa726;
@@ -109,11 +111,12 @@
   --tinta-2: #c4b8ab;
   --tinta-3: #8d8178;
 
-  --papel: #171310;
-  --papel-2: #221c17;
-  --papel-3: #2b2420;
+  --papel: #14100f;
+  --papel-2: #1e1917;
+  --papel-3: #2a2321;
+  --papel-rosa: #2e1a1c;
 
-  --borda: #3a312a;
+  --borda: #362d2c;
 
   --faixa-falsa: #ef5350;
   --faixa-duvidosa: #ffa726;
@@ -147,6 +150,7 @@
   --color-papel: var(--papel);
   --color-papel-2: var(--papel-2);
   --color-papel-3: var(--papel-3);
+  --color-papel-rosa: var(--papel-rosa);
   --color-borda: var(--borda);
 
   --color-falsa: var(--faixa-falsa);
