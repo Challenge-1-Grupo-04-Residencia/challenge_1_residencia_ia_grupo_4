@@ -1,8 +1,29 @@
+# Ambiente Python
 .venv/
-site/
 __pycache__/
 *.pyc
-.DS_Store
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+.next/
+out/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Datasets baixados localmente (ver scripts/baixar_datasets.sh)
 datasets/
-gh
+
+# Build da documentacao (a documentacao vive na branch docs)
+site/
+
+# Ferramentas e artefatos locais
+.openclaude/
 scratch/
+gh
+gh.zip
+gh*.tar.gz
+
+# Sistema
+.DS_Store
