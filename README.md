@@ -78,7 +78,10 @@ Detalhes em [ml/README.md](ml/README.md).
 
 A documentação de produto — requisitos, pesos dos sinais, persona, backlog, riscos —
 vive no branch [`docs`](../../tree/docs), em MkDocs Material, e é publicada em
-`gh-pages` por workflow.
+`gh-pages` por workflow. Os anexos formais ficam lá também:
+[`Relatórios/`](../../tree/docs/Relatórios) com as entregas de cada fase do CBL e
+[`Referencias_bibliograficas/`](../../tree/docs/Referencias_bibliograficas) com a
+bibliografia.
 
 ```bash
 git show origin/docs:docs/produto/classificacao.md     # ler um arquivo

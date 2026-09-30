@@ -5,7 +5,9 @@ de veracidade e a interface evoluem no mesmo ritmo e compartilham o contrato da 
 
 > A documentação de **produto** (requisitos, pesos dos sinais, persona, backlog) não
 > está aqui: ela vive na branch [`docs`](../../tree/docs), em MkDocs Material, e é
-> publicada em `gh-pages`. Este arquivo cobre só a organização do **código**.
+> publicada em `gh-pages`. Os anexos formais — `Relatórios/` e
+> `Referencias_bibliograficas/` — ficam lá também, ao lado das páginas que os citam.
+> Este arquivo cobre só a organização do **código**.
 >
 > ```bash
 > git show origin/docs:docs/produto/classificacao.md
@@ -170,3 +172,4 @@ desta máquina não tem permissão de escrita em `/opt/homebrew`.
 | Similaridade do GDELT derivada da posição | A API não expõe score de relevância; é aproximação explícita, a refinar com embeddings |
 | `notebooks/`, `scripts/` e `datasets/` juntos em `ml/` | Os notebooks leem `../datasets/` e o script resolve o destino pela própria localização; mover os três juntos preserva os caminhos sem tocar em código |
 | Documentação fora da `development` | Havia duas cópias divergentes; a branch `docs` é a que o workflow publica |
+| `Relatórios/` e `Referencias_bibliograficas/` fora da `development` | Estavam triplicados; são anexos citados pelas páginas da branch `docs`, não artefatos de código |
