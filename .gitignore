@@ -85,8 +85,10 @@ site/
 # instalador cria dentro de .claude/skills/.
 .agents/
 skills-lock.json
-.claude/skills/find-skills
-.claude/skills/monorepo-management
+# Versiona só as skills do projeto; as de terceiros instaladas por
+# `npx skills add` criam symlinks aqui e são escolha de cada pessoa.
+.claude/skills/*
+!.claude/skills/vera-*
 .openclaude/
 
 # ---------------------------------------------------------------------------

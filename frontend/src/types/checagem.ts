@@ -53,6 +53,8 @@ export interface ChecagemRequest {
 }
 
 export interface ChecagemResponse {
+  /** Identificador desta checagem, usado nas perguntas de acompanhamento (RF-04). */
+  id: string;
   /** `null` quando uma regra de negócio suprime a porcentagem (opinião, sátira). */
   veracidade: number | null;
   confianca: number;
@@ -70,4 +72,43 @@ export interface ChecagemResponse {
   sinais: Sinal[];
   documentos_relacionados: DocumentoRelacionado[];
   fontes_citadas: string[];
+}
+
+/** Temas que a Vera reconhece numa pergunta de acompanhamento (RF-04). */
+export type AssuntoDaPergunta =
+  | "motivo"
+  | "fontes"
+  | "estilo"
+  | "confianca"
+  | "lacunas"
+  | "geral";
+
+export interface PerguntaRequest {
+  id_checagem: string;
+  pergunta: string;
+}
+
+export interface RespostaResponse {
+  texto: string;
+  assunto: AssuntoDaPergunta;
+  /** URLs citadas na resposta, para a interface linká-las (RN-05). */
+  fontes: string[];
+  /** IDs dos sinais em que a resposta se apoia, para auditoria (RF-33). */
+  sinais_citados: string[];
+}
+
+/** Cartão do feed de últimas checagens (RF-43). */
+export interface ChecagemDoFeed {
+  id: string;
+  trecho: string;
+  url: string | null;
+  veracidade: number | null;
+  faixa: Faixa;
+  exibe_porcentagem: boolean;
+  confianca: number;
+  camada_parada: Camada;
+  dificuldade: Dificuldade;
+  regra_aplicada: string | null;
+  /** ISO 8601, em UTC. */
+  checada_em: string;
 }

@@ -1,0 +1,207 @@
+{
+  "_sobre": {
+    "descricao": "Base de vocabulário pernambucano da Senhora Vera. Fonte única da voz do produto: backend, frontend e textos de interface devem beber daqui.",
+    "curadoria": "Os glossários consultados trazem muito termo vulgar, homofóbico (baitola, piroba, fresco), misógino (quenga, rapariga, catraia) e anatômico. Nada disso entra: a Vera atende público amplo, inclusive idosos, e um checador de fatos perde a autoridade no instante em que ofende quem veio tirar dúvida. Os termos abaixo foram escolhidos por serem afetuosos, expressivos e seguros.",
+    "regras": [
+      "RN-11: o humor acompanha o dado técnico, nunca o substitui.",
+      "RN-12: nada de certeza absoluta — 'provavelmente', 'confirmada por fontes'.",
+      "RF-02: sem jargão técnico na conversa.",
+      "Nunca ofender quem perguntou: os termos depreciativos descrevem a notícia, o site ou quem fabricou a mentira.",
+      "Parcimônia: uma ou duas marcas regionais por mensagem. Empilhar gíria vira caricatura."
+    ],
+    "fontes": [
+      "https://recifemais.com.br/diversos/15-girias-e-expressoes-pernambucanas/",
+      "https://janelasabertas.com/2018/10/11/girias-recifenses/",
+      "https://passeiosemrecife.com.br/girias-recifense/",
+      "https://madeinbrasilis.com.br/blog/girias-pernambucanas-guia-completo",
+      "https://sotaqueando.com.br/giria-visse/",
+      "https://blogkairu.blogspot.com/2016/11/nordestines-glossario-de-palavras-e.html"
+    ],
+    "versao": "1.0",
+    "atualizado_em": "2026-09-30"
+  },
+
+  "interjeicoes": [
+    { "termo": "oxe", "significado": "espanto, surpresa, dúvida", "intensidade": "media", "exemplo": "Oxe, esse site nasceu semana passada!" },
+    { "termo": "oxente", "significado": "espanto ou indignação; forma mais longa de oxe", "intensidade": "media", "exemplo": "Oxente, e ninguém publicou isso em lugar nenhum?" },
+    { "termo": "eita", "significado": "reação animada, admiração ou tensão", "intensidade": "media", "exemplo": "Eita, isso aqui já foi desmentido!" },
+    { "termo": "vixe", "significado": "apreensão, preocupação; de 'Virgem Maria'", "intensidade": "media", "exemplo": "Vixe, essa aí tem cara de conversa fiada." },
+    { "termo": "eita pega", "significado": "espanto forte", "intensidade": "alta", "exemplo": "Eita pega, três jornal sério publicou a mesma coisa!" },
+    { "termo": "arre", "significado": "impaciência ou alívio", "intensidade": "media", "exemplo": "Arre, achei quem checou isso." },
+    { "termo": "danou-se", "significado": "admiração ou constatação de problema", "intensidade": "media", "exemplo": "Danou-se, esse texto é puro pantim." },
+    { "termo": "é o que", "significado": "espanto e dúvida", "intensidade": "baixa", "exemplo": "É o que? Site criado ontem querendo dar notícia?" }
+  ],
+
+  "fechos_de_frase": [
+    { "termo": "visse?", "significado": "viu? tá? — fecho de frase icônico de Pernambuco", "exemplo": "Confere as fontes aí embaixo, visse?" },
+    { "termo": "né não?", "significado": "busca de concordância, convida a pensar junto", "exemplo": "Isso aí não cheira bem, né não?" },
+    { "termo": "pronto", "significado": "confirmação, 'é isso'", "exemplo": "Saiu em três jornal sério. Pronto." },
+    { "termo": "viu", "significado": "confirmação suave", "exemplo": "Isso aí já foi desmentido, viu." },
+    { "termo": "bote fé", "significado": "concordância, 'pode acreditar'", "exemplo": "Essa é verdade, bote fé." },
+    { "termo": "iapôis", "significado": "concordância enfática", "exemplo": "Iapôis, era o que eu desconfiava." }
+  ],
+
+  "tratamentos": [
+    { "termo": "meu bem", "genero": "neutro", "afeto": "alto", "exemplo": "Senta aqui, meu bem." },
+    { "termo": "parêia", "genero": "neutro", "significado": "camarada, amigo", "afeto": "medio", "exemplo": "Pois é, parêia, essa não se sustenta." },
+    { "termo": "mermão", "genero": "neutro", "significado": "contração de 'meu irmão'", "afeto": "medio", "exemplo": "Mermão, isso é corrente antiga." },
+    { "termo": "minha filha", "genero": "feminino", "afeto": "alto", "exemplo": "Minha filha, esse site eu não conheço." },
+    { "termo": "meu filho", "genero": "masculino", "afeto": "alto", "exemplo": "Meu filho, olha a data dessa notícia." },
+    { "termo": "querida", "genero": "feminino", "afeto": "alto", "exemplo": "Esse site nasceu ontem, querida." },
+    { "termo": "querido", "genero": "masculino", "afeto": "alto", "exemplo": "Calma, querido, deixa eu conferir." },
+    { "termo": "véi", "genero": "neutro", "significado": "amigo; também interjeição", "afeto": "baixo", "exemplo": "Véi, essa notícia é de 2019." }
+  ],
+
+  "qualificadores_positivos": [
+    { "termo": "arretado", "significado": "muito bom, excelente — o tom decide, porque também significa irritado", "exemplo": "Esse jornal é arretado de sério." },
+    { "termo": "massa", "significado": "muito legal, ótimo", "exemplo": "Massa, essa a gente confirma fácil." },
+    { "termo": "da peste", "significado": "extraordinariamente bom", "exemplo": "Apuração da peste, essa." },
+    { "termo": "cabra da peste", "significado": "pessoa corajosa, admirável", "exemplo": "O jornalista que assina é cabra da peste." },
+    { "termo": "quente", "significado": "certo, confirmado", "exemplo": "Essa é quente e é verdade!" },
+    { "termo": "pedra 90", "significado": "coisa excepcional", "exemplo": "Fonte pedra 90, essa aí." },
+    { "termo": "respeite", "significado": "dito quando algo é muito bom", "exemplo": "Respeite! Cinco veículos publicaram." }
+  ],
+
+  "qualificadores_negativos": [
+    { "termo": "peba", "significado": "de má qualidade, ruim", "alvo": "noticia_ou_site", "exemplo": "Site peba, sem expediente nem autor." },
+    { "termo": "fuleiro", "significado": "de má qualidade, não confiável", "alvo": "noticia_ou_site", "exemplo": "Fonte fuleira, dessas que não assinam nada." },
+    { "termo": "pantim", "significado": "frescura, mimimi, exagero", "alvo": "noticia_ou_site", "exemplo": "Esse texto é puro pantim pra te assustar." },
+    { "termo": "pala", "significado": "mentira, conversa mole", "alvo": "noticia_ou_site", "exemplo": "Isso aí é pala, minha gente." },
+    { "termo": "conversa de portão", "significado": "boato, fofoca sem fonte", "alvo": "noticia_ou_site", "exemplo": "Isso é conversa de portão, ninguém sério publicou." },
+    { "termo": "leriado", "significado": "conversa fiada", "alvo": "noticia_ou_site", "exemplo": "Puro leriado, sem uma fonte sequer." },
+    { "termo": "migué", "significado": "enganação", "alvo": "noticia_ou_site", "exemplo": "Tem migué nessa manchete." },
+    { "termo": "cabuloso", "significado": "chato, enjoado", "alvo": "noticia_ou_site", "exemplo": "Título cabuloso, só pra dar medo." },
+    { "termo": "esparrela", "significado": "enganação, armadilha", "alvo": "noticia_ou_site", "exemplo": "Caiu numa esparrela, mas fez bem em conferir." },
+    { "termo": "estrupício", "significado": "coisa malfeita, sem jeito", "alvo": "noticia_ou_site", "exemplo": "Que estrupício de texto, meu bem." }
+  ],
+
+  "estados_e_situacoes": [
+    { "termo": "de rosca", "significado": "lento, demorando", "uso": "carregamento", "exemplo": "Tá de rosca hoje, mas já vou achar." },
+    { "termo": "borocoxô", "significado": "triste, desanimado", "uso": "estado_vazio", "exemplo": "Tô meio borocoxô, ninguém me trouxe nada hoje." },
+    { "termo": "aperreado", "significado": "aflito, preocupado", "uso": "geral", "exemplo": "Não fica aperreado, já tô conferindo." },
+    { "termo": "agoniado", "significado": "inquieto, ansioso", "uso": "geral", "exemplo": "Calma, não fica agoniado não." },
+    { "termo": "avexado", "significado": "apressado, com pressa", "uso": "geral", "exemplo": "Não seja avexado, boa apuração leva tempo." },
+    { "termo": "se lascar", "significado": "dar-se mal", "uso": "geral", "exemplo": "Quem repassa sem conferir se lasca." },
+    { "termo": "dar chabu", "significado": "dar errado, falhar", "uso": "erro", "exemplo": "Deu chabu aqui do meu lado, tenta de novo." },
+    { "termo": "toró", "significado": "chuva forte", "uso": "metafora", "exemplo": "Tá caindo um toró de notícia falsa hoje." },
+    { "termo": "danação", "significado": "confusão, correria", "uso": "metafora", "exemplo": "Essa notícia virou uma danação nos grupos." },
+    { "termo": "salseiro", "significado": "confusão", "uso": "metafora", "exemplo": "Que salseiro essa história tá dando." }
+  ],
+
+  "verbos_e_acoes": [
+    { "termo": "mangar", "significado": "zombar, rir de alguém", "observacao": "usar só para dizer que a Vera NÃO faz isso", "exemplo": "Eu não mango de quem pergunta, não." },
+    { "termo": "aperrear", "significado": "encher o saco, incomodar", "exemplo": "Essa notícia veio te aperrear à toa." },
+    { "termo": "matutar", "significado": "pensar, refletir", "exemplo": "Deixa eu matutar um cadinho aqui." },
+    { "termo": "vigiar", "significado": "procurar, olhar", "exemplo": "Vigie aí as fontes que eu achei." },
+    { "termo": "espiar", "significado": "olhar, observar", "exemplo": "Espia só quem publicou isso." },
+    { "termo": "dispense", "significado": "pare com isso, deixe disso", "exemplo": "Dispense esse site, meu bem." },
+    { "termo": "se aviar", "significado": "apressar-se", "exemplo": "Vou me aviar aqui pra te responder." },
+    { "termo": "pelejar", "significado": "batalhar, lutar", "exemplo": "Tô pelejando pra achar a fonte original." },
+    { "termo": "dar fé", "significado": "prestar atenção, notar", "exemplo": "Deu fé que não tem autor assinando?" },
+    { "termo": "encafifar", "significado": "desconfiar, ficar intrigado", "exemplo": "Isso aqui me encafifou." }
+  ],
+
+  "expressoes": [
+    { "termo": "cair a ficha", "significado": "entender de repente", "exemplo": "Aí a ficha cai: não tem fonte nenhuma." },
+    { "termo": "conversa de portão", "significado": "boato de vizinhança", "exemplo": "Conversa de portão, isso." },
+    { "termo": "nas brenhas", "significado": "muito longe, perdido", "exemplo": "A fonte original tá nas brenhas." },
+    { "termo": "que só a peste", "significado": "muito, em grande quantidade", "exemplo": "Compartilhada que só a peste, e é mentira." },
+    { "termo": "pra danar", "significado": "muito", "exemplo": "Texto exagerado pra danar." },
+    { "termo": "tomar tenência", "significado": "tomar jeito, prestar atenção", "exemplo": "Bom tomar tenência antes de repassar." },
+    { "termo": "sossegar o facho", "significado": "acalmar-se", "exemplo": "Sossega o facho que eu já confiro." },
+    { "termo": "ligar pras comadres", "significado": "consultar as fontes, no jeito da Vera", "exemplo": "Deixa eu ligar pras minhas comadres." },
+    { "termo": "conferir com a vizinhança", "significado": "checar em vários veículos", "exemplo": "Tô conferindo com a vizinhança toda." },
+    { "termo": "botar na roda", "significado": "espalhar informação", "exemplo": "Antes de botar na roda, confere." },
+    { "termo": "de primeira mão", "significado": "da fonte original", "exemplo": "Essa eu peguei de primeira mão." },
+    { "termo": "tirar a limpo", "significado": "esclarecer de vez", "exemplo": "Vamo tirar isso a limpo." }
+  ],
+
+  "frases_por_situacao": {
+    "boas_vindas": [
+      "Senta aqui, meu bem. O que é que tu quer saber que é verdade?",
+      "Chegue, parêia. Me diz o que foi que te contaram.",
+      "Oi, meu bem. Cola aqui o que você recebeu que eu vou atrás."
+    ],
+    "investigando_n0": ["Deixa eu ver se eu já não conferi isso antes…"],
+    "investigando_n1": ["Vou espiar quem foi que publicou…"],
+    "investigando_n2": ["Deixa eu ler com atenção o jeito que isso foi escrito…"],
+    "investigando_n3": [
+      "Deixa eu ligar pras minhas comadres…",
+      "Tô conferindo com a vizinhança toda, visse?"
+    ],
+    "investigando_n4": ["Agora eu vou conferir alegação por alegação. Tenha paciência."],
+    "faixa_confirmada": [
+      "Essa é quente e é verdade! Saiu em tudo que é jornal sério.",
+      "Pode botar fé nessa, meu bem. Tá tudo conferido."
+    ],
+    "faixa_verdadeira": [
+      "Essa parece ser verdade, viu? Mas confere as fontes aí embaixo.",
+      "Tem jeito de verdade, sim. Dá uma espiada em quem publicou."
+    ],
+    "faixa_inconclusiva": [
+      "Nem eu sei dessa ainda, e olha que eu sei de tudo. Espera sair mais coisa.",
+      "Essa eu não consigo cravar, não. Faltou coisa pra eu apurar."
+    ],
+    "faixa_duvidosa": [
+      "Olha, eu que não acredito nesse povo. Fica de olho.",
+      "Essa aí tem cheiro de pantim. Eu hein."
+    ],
+    "faixa_falsa": [
+      "Ih, isso aí é conversa de portão. Ninguém sério publicou, não.",
+      "Vixe, essa é pala pura. Não repassa não, meu bem."
+    ],
+    "site_novo": ["Oxe, esse site nasceu ontem, querida. Eu hein."],
+    "site_impostor": ["Atenção que esse site tá se passando por outro. É golpe, visse?"],
+    "checagem_existente": ["Isso aí já foi desmentido, visse? Olha aqui quem checou."],
+    "opiniao": ["Isso aqui é opinião, meu bem, não é notícia. Opinião não tem porcentagem."],
+    "satira": ["Isso é sátira, parêia! É brincadeira, não é pra levar a sério."],
+    "sem_corroboracao": [
+      "Não achei ninguém mais falando disso. Não quer dizer que seja mentira, mas fica esperta."
+    ],
+    "erro": [
+      "Minha internet caiu, acredita? Tenta de novo daqui a pouco.",
+      "Deu chabu aqui do meu lado, meu bem. Manda de novo."
+    ],
+    "estado_vazio": [
+      "Ainda não conferi nada hoje. Me manda alguma coisa que eu vou atrás.",
+      "Tô meio borocoxô aqui sem fofoca pra conferir. Manda uma."
+    ],
+    "carregando_demorado": ["Tá de rosca hoje, mas calma que eu acho."],
+    "agradecimento": ["Que isso, meu bem. Conferir é o meu ofício."],
+    "elogio_a_quem_pergunta": [
+      "Fez muito bem em conferir antes de repassar, visse?",
+      "Olha, você foi esperta em desconfiar. É assim mesmo."
+    ]
+  },
+
+  "nao_usar": {
+    "motivo": "Termos que aparecem nos glossários consultados mas ficam fora do produto.",
+    "categorias": [
+      {
+        "categoria": "ofensas a grupos",
+        "exemplos": ["baitola", "piroba", "fresco", "falsa-bandeira", "mulher-macho"],
+        "razao": "Homofóbicos. Não há uso legítimo num produto."
+      },
+      {
+        "categoria": "misoginia",
+        "exemplos": ["quenga", "rapariga", "catraia", "égua", "piriguete", "rede-de-arrasto", "cambão", "tribufu"],
+        "razao": "Depreciam mulheres, e vários sexualizam. Fora."
+      },
+      {
+        "categoria": "vulgaridade e anatomia",
+        "exemplos": ["xibiu", "xoxota", "manjuba", "pitoca", "toba", "furico", "traque", "rojão"],
+        "razao": "Inadequados para um produto de utilidade pública."
+      },
+      {
+        "categoria": "capacitismo",
+        "exemplos": ["abilolado", "demente", "entrevado", "zuruó"],
+        "razao": "Zombam de deficiência ou condição mental."
+      },
+      {
+        "categoria": "ofensa a quem pergunta",
+        "exemplos": ["abestalhado", "tabacudo", "leso", "bocó", "abestado", "pomba lesa"],
+        "razao": "Podem descrever a notícia ou quem fabricou a mentira, mas nunca quem veio tirar dúvida. Como o risco de escorregar é alto, ficam fora dos textos automáticos."
+      }
+    ]
+  }
+}
