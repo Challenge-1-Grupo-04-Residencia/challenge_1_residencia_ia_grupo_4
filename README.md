@@ -15,10 +15,9 @@ Projeto conduzido pelo framework **Challenge Based Learning (CBL)**, com execuç
 ## O repositório
 
 ```
-backend/     API e motor de veracidade (FastAPI)    → backend/README.md
-frontend/    site e chat (Next.js + Tailwind)       → frontend/README.md
-datasets/    corpora brasileiros padronizados
-notebooks/   análise exploratória e treino dos modelos
+backend/     API e motor de veracidade (FastAPI)       → backend/README.md
+frontend/    site e chat (Next.js + Tailwind)          → frontend/README.md
+ml/          datasets, EDA e treino dos modelos        → ml/README.md
 ```
 
 A organização do código e as decisões de arquitetura estão em
@@ -68,11 +67,12 @@ O desenvolvimento dos modelos e as análises exploratórias ocorrem no branch `d
 ```bash
 git switch development && git pull
 uv sync
-./scripts/baixar_datasets.sh    # só na primeira vez
+./ml/scripts/baixar_datasets.sh    # só na primeira vez
 uv run jupyter lab
 ```
 
-No VS Code, abra o notebook em `notebooks/` e selecione o kernel Python de `.venv`.
+No VS Code, abra o notebook em `ml/notebooks/` e selecione o kernel Python de `.venv`.
+Detalhes em [ml/README.md](ml/README.md).
 
 ## Documentação
 

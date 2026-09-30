@@ -32,8 +32,10 @@ de veracidade e a interface evoluem no mesmo ritmo e compartilham o contrato da 
 │       ├── components/   vera/ (persona) · checagem/ (resultado) · ui/
 │       ├── lib/          api.ts (único ponto de rede) · veracidade.ts
 │       └── types/        espelho do contrato da API
-├── datasets/             corpora brasileiros padronizados em Parquet
-├── notebooks/            EDA e treino dos modelos
+├── ml/                   ciência de dados
+│   ├── notebooks/        uma EDA por camada do pipeline
+│   ├── scripts/          download e padronização dos datasets
+│   └── datasets/         corpora em Parquet (fora do controle de versão)
 └── .claude/skills/       guias de trabalho por área do projeto
 ```
 
@@ -166,3 +168,5 @@ desta máquina não tem permissão de escrita em `/opt/homebrew`.
 | `transformers` como extra opcional `nli` | Traz o torch (~2 GB) e só a N4 usa; pesaria no `uv sync` de quem só mexe nos notebooks |
 | TF-IDF antes de embeddings na N3 | Roda offline e sem chave de API, destrava a camada agora; a porta permite trocar sem tocar no núcleo |
 | Similaridade do GDELT derivada da posição | A API não expõe score de relevância; é aproximação explícita, a refinar com embeddings |
+| `notebooks/`, `scripts/` e `datasets/` juntos em `ml/` | Os notebooks leem `../datasets/` e o script resolve o destino pela própria localização; mover os três juntos preserva os caminhos sem tocar em código |
+| Documentação fora da `development` | Havia duas cópias divergentes; a branch `docs` é a que o workflow publica |

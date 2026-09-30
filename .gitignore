@@ -1,29 +1,123 @@
-# Ambiente Python
-.venv/
-__pycache__/
-*.pyc
-.pytest_cache/
+# ---------------------------------------------------------------------------
+# Segredos — nunca versionar
+# ---------------------------------------------------------------------------
+# A Vera usa chaves de provedor de LLM e de APIs de checagem. Os arquivos
+# .env.example ficam versionados de propósito, como modelo.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
+service-account*.json
 
-# Node / frontend
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Caches de ferramentas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Cobertura de testes
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ---------------------------------------------------------------------------
+# Node e frontend
+# ---------------------------------------------------------------------------
 node_modules/
 .next/
 out/
+.vercel/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
 
+# ---------------------------------------------------------------------------
 # Notebooks
+# ---------------------------------------------------------------------------
 .ipynb_checkpoints/
+.virtual_documents/
 
-# Datasets baixados localmente (ver scripts/baixar_datasets.sh)
+# ---------------------------------------------------------------------------
+# Dados e modelos
+# ---------------------------------------------------------------------------
+# Os corpora somam vários GB e são reproduzíveis por ml/scripts/baixar_datasets.sh.
+# O padrão sem barra inicial pega ml/datasets/ e qualquer outra profundidade.
 datasets/
 
-# Build da documentacao (a documentacao vive na branch docs)
+# Cache de modelos baixados do Hugging Face, quando HF_HOME aponta para o projeto.
+.cache/
+models--*/
+
+# Os modelos treinados pelos notebooks são versionados de propósito: a API os
+# carrega em backend/src/infrastructure/ml_models/. Por isso NÃO ignoramos *.joblib.
+
+# ---------------------------------------------------------------------------
+# Build da documentação
+# ---------------------------------------------------------------------------
+# A documentação vive na branch docs e é publicada por workflow em gh-pages.
 site/
 
-# Ferramentas e artefatos locais
+# ---------------------------------------------------------------------------
+# Ferramentas de agente
+# ---------------------------------------------------------------------------
+# .claude/skills/vera-* é versionado: são as skills do projeto.
+# Skills de terceiros instaladas por `npx skills add` são escolha de cada pessoa e
+# não dependência do projeto — ficam fora, junto com o lockfile e os symlinks que o
+# instalador cria dentro de .claude/skills/.
+.agents/
+skills-lock.json
+.claude/skills/find-skills
+.claude/skills/monorepo-management
 .openclaude/
+
+# ---------------------------------------------------------------------------
+# Locais e temporários
+# ---------------------------------------------------------------------------
 scratch/
+tmp/
+*.log
+logs/
+
+# Arquivos que sobram ao instalar o GitHub CLI na mão
 gh
 gh.zip
 gh*.tar.gz
 
-# Sistema
+# ---------------------------------------------------------------------------
+# Editores
+# ---------------------------------------------------------------------------
+.idea/
+*.swp
+*.swo
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# ---------------------------------------------------------------------------
+# Sistema operacional
+# ---------------------------------------------------------------------------
 .DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini

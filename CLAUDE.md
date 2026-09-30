@@ -11,6 +11,15 @@ News e Desinformação), conduzido por Challenge Based Learning com Scrum adapta
 - **Site publicado**: branch `gh-pages`, gerada por workflow (não editar à mão)
 - **Organização do código**: [ARQUITETURA.md](ARQUITETURA.md)
 
+```
+backend/   API e motor de veracidade (FastAPI)
+frontend/  site e chat (Next.js)
+ml/        notebooks, scripts de dados e datasets
+```
+
+Os três diretórios de `ml/` andam juntos: os notebooks leem `../datasets/` e o script
+resolve o destino pela própria localização.
+
 ## O que este produto é
 
 A Vera não responde "fake ou não fake". Ela mostra o caminho: quais fontes consultou,
@@ -53,7 +62,12 @@ uv run uvicorn src.main:app --app-dir backend --reload --port 8010
 export PATH="$HOME/.local/node/bin:$PATH"                      # Node não está no brew
 cd frontend && npm run dev                                     # :3000
 cd frontend && npm run build                                   # checa tipos de verdade
+
+./ml/scripts/baixar_datasets.sh                                # datasets (1ª vez)
+uv run jupyter lab                                             # notebooks em ml/
 ```
+
+A camada N4 carrega um modelo de NLI e exige `uv sync --extra nli` (traz o torch, ~2 GB).
 
 Backend na **8010**: a 8000 costuma estar ocupada pelo `mkdocs serve`. No frontend,
 `npx tsc --noEmit` falha com `Cannot find name 'LayoutProps'` — é esperado, o Next gera
