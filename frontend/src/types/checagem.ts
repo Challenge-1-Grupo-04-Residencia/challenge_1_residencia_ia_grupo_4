@@ -41,6 +41,11 @@ export interface Sinal {
   dimensao: Dimensao;
   camada: Camada;
   score: number | null;
+  /**
+   * `score: null` com `aferido: true` é "olhei e não havia o que anotar"; com
+   * `aferido: false` é "não consegui medir". Só o segundo é lacuna.
+   */
+  aferido: boolean;
   justificativa: string;
 }
 
@@ -50,6 +55,11 @@ export interface DocumentoRelacionado {
   url: string | null;
   fonte: string;
   similaridade: number;
+  /**
+   * `false` quando a `similaridade` é só a posição no ranking do buscador, e não
+   * comparação entre os textos. Não a apresente como "x% parecido" nesse caso.
+   */
+  similaridade_textual: boolean;
   fonte_confiavel: boolean;
   data_publicacao: string | null;
 }

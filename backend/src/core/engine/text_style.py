@@ -26,7 +26,13 @@ import re
 
 #: Pedidos de difusão e de urgência, só os que a medição aprovou (lift ≥ 1,3). Os
 #: números são quantas vezes mais o termo aparece em texto falso do que em verdadeiro.
-_URGENCIA = (
+#:
+#: É público porque os adaptadores de busca precisam da lista: estes termos descrevem a
+#: **embalagem** da mensagem, não o assunto dela, e se entrarem na consulta engolem o
+#: tema real. Medido: "URGENTE!!! REPASSEM!!! ... vacina tem grafeno" virava a consulta
+#: "urgente repassem antes apaguem descobriram nova", que devolve zero resultados,
+#: enquanto "vacina grafeno" devolve as checagens do G1 e do Estadão.
+VOCABULARIO_DE_URGENCIA = (
     "acordem",                 # lift 26,69
     "urgente",                 # lift 2,66
     "repassem",                # lift 2,61
@@ -43,6 +49,9 @@ _URGENCIA = (
     "você não vai acreditar",
     "voce nao vai acreditar",
 )
+
+#: Alias interno, para o resto do módulo seguir legível.
+_URGENCIA = VOCABULARIO_DE_URGENCIA
 
 #: Separa palavras de pontuação, para a contagem não ser enganada por vírgulas e pontos.
 _PALAVRA = re.compile(r"\b[\wÀ-ÿ]+\b", re.UNICODE)

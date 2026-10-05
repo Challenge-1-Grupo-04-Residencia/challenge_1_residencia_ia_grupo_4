@@ -42,13 +42,14 @@ conclusão da checagem anterior.
 
 import logging
 import re
-import threading
 import time
 
 import httpx
 
+from src.core.engine.text_style import VOCABULARIO_DE_URGENCIA
 from src.core.entities.claim import DocumentoRelacionado
 from src.core.ports.news_search import BuscaIndisponivel
+from src.infrastructure.search.resiliencia import Disjuntor, Marcapasso
 from src.infrastructure.search.tfidf_search import STOPWORDS_PT
 from src.infrastructure.sources import veiculos
 
@@ -57,7 +58,16 @@ _log = logging.getLogger(__name__)
 URL_API = "https://api.gdeltproject.org/api/v2/doc/doc"
 
 _PALAVRA = re.compile(r"\b[\wÀ-ÿ]{4,}\b", re.UNICODE)
-_STOPWORDS = frozenset(STOPWORDS_PT)
+
+#: Às stopwords da língua somam-se os termos de urgência: "urgente", "repassem" e
+#: "compartilhem" descrevem a embalagem da mensagem, não o assunto, e tomavam as vagas
+#: da consulta justamente nos textos sensacionalistas — que são os que mais precisam de
+#: corroboração. Ver ``VOCABULARIO_DE_URGENCIA``.
+_STOPWORDS = frozenset(STOPWORDS_PT) | {
+    palavra
+    for termo in VOCABULARIO_DE_URGENCIA
+    for palavra in termo.split()
+}
 
 #: Espaço é ``AND`` no GDELT: cada termo a mais restringe o resultado. Quatro termos é o
 #: ponto em que a consulta ainda identifica o assunto sem exigir a frase inteira.
@@ -98,81 +108,10 @@ def termos_de_busca(texto: str, maximo: int = MAXIMO_DE_TERMOS) -> str:
     return " ".join(melhores)
 
 
-class _Marcapasso:
-    """Garante o intervalo mínimo entre chamadas à API, entre threads.
-
-    O endpoint da API roda em *threadpool*, então duas requisições simultâneas chegariam
-    aqui ao mesmo tempo e tomariam 429 juntas. O custo é a segunda esperar; a
-    alternativa é as duas falharem.
-    """
-
-    def __init__(self, intervalo: float):
-        self._intervalo = intervalo
-        self._trava = threading.Lock()
-        self._ultima_chamada = 0.0
-
-    def aguardar(self) -> None:
-        with self._trava:
-            espera = self._intervalo - (time.monotonic() - self._ultima_chamada)
-            if espera > 0:
-                time.sleep(espera)
-            self._ultima_chamada = time.monotonic()
-
-
-#: Compartilhado por todas as instâncias: o limite do GDELT é por IP, não por objeto.
-_marcapasso = _Marcapasso(INTERVALO_MINIMO_ENTRE_CHAMADAS)
-
-
-class _Disjuntor:
-    """Para de tentar depois de algumas falhas seguidas, e volta a tentar depois.
-
-    Sem isto, com o GDELT fora do ar **toda** checagem paga o timeout inteiro — 25 s de
-    espera para chegar à mesma conclusão da checagem anterior. Era o caso na medição:
-    o serviço respondia 429 ou estourava o tempo em 100% das consultas, e cada usuário
-    esperava por nada.
-
-    Também é questão de boa vizinhança: insistir numa API que acabou de nos pedir para
-    desacelerar é o que mantém o 429 vindo.
-
-    Um sucesso fecha o disjuntor. Enquanto ele está aberto a camada recebe
-    :class:`BuscaIndisponivel` na hora, e por RN-06 S-11 fica indisponível — o mesmo
-    resultado de antes, sem a espera.
-    """
-
-    def __init__(self, falhas_para_abrir: int, descanso: float):
-        self._falhas_para_abrir = falhas_para_abrir
-        self._descanso = descanso
-        self._trava = threading.Lock()
-        self._falhas = 0
-        self._aberto_desde = 0.0
-
-    def aberto(self) -> bool:
-        with self._trava:
-            if self._falhas < self._falhas_para_abrir:
-                return False
-            if time.monotonic() - self._aberto_desde >= self._descanso:
-                # Passado o descanso, deixa uma tentativa passar para sondar o serviço.
-                self._falhas = self._falhas_para_abrir - 1
-                return False
-            return True
-
-    def registrar_falha(self) -> None:
-        with self._trava:
-            self._falhas += 1
-            if self._falhas == self._falhas_para_abrir:
-                self._aberto_desde = time.monotonic()
-                _log.warning(
-                    "GDELT: %d falhas seguidas, parando de tentar por %.0fs",
-                    self._falhas,
-                    self._descanso,
-                )
-
-    def registrar_sucesso(self) -> None:
-        with self._trava:
-            self._falhas = 0
-
-
-_disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+#: Compartilhados por todas as instâncias: os limites do GDELT são por IP, não por
+#: objeto, e o serviço fora do ar está fora para todo mundo.
+_marcapasso = Marcapasso(INTERVALO_MINIMO_ENTRE_CHAMADAS)
+_disjuntor = Disjuntor("GDELT", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
 
 
 class BuscadorGdelt:
@@ -183,8 +122,8 @@ class BuscadorGdelt:
         idioma: str = "portuguese",
         timeout: float = TIMEOUT_PADRAO,
         cliente: httpx.Client | None = None,
-        marcapasso: _Marcapasso | None = None,
-        disjuntor: "_Disjuntor | None" = None,
+        marcapasso: Marcapasso | None = None,
+        disjuntor: Disjuntor | None = None,
     ):
         self.idioma = idioma
         self.timeout = timeout
@@ -291,6 +230,9 @@ class BuscadorGdelt:
             url=url,
             fonte=artigo.get("domain", "") or (veiculos.normalizar_dominio(url) or ""),
             similaridade=round(max(0.0, min(1.0, similaridade)), 4),
+            # Posição no ranking não é comparação de texto: S-13 não pode usá-la como
+            # medida de cópia. Ver ``DocumentoRelacionado.similaridade_textual``.
+            similaridade_textual=False,
             fonte_confiavel=veiculos.e_confiavel(url or artigo.get("domain")),
             data_publicacao=artigo.get("seendate"),
         )

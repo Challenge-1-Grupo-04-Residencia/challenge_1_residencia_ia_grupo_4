@@ -11,9 +11,10 @@ GDELT, com índice TF-IDF local ou com um buscador falso em teste.
 
 import logging
 
+from src.core.engine import checagens_publicadas
 from src.core.engine.orchestrator import CamadaVerificacao
 from src.core.entities.claim import AnaliseResultado, DocumentoRelacionado, NoticiaRequest
-from src.core.entities.signal import medir
+from src.core.entities.signal import medir, nao_medido, sem_achado
 from src.core.ports.news_search import BuscadorDeNoticias, BuscaIndisponivel
 
 _log = logging.getLogger(__name__)
@@ -47,9 +48,8 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             # vai para o log: antes a camada morria em silêncio e ninguém percebia.
             _log.warning("N3 sem corroboração: %s", erro)
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-11",
-                    None,
                     "Não consegui consultar a base de notícias agora: a busca não "
                     "respondeu.",
                 )
@@ -63,11 +63,15 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         resultado.documentos_relacionados = relacionados
 
         if not relacionados:
+            # A busca rodou. Não achar publicação é informação, mas não é a mesma
+            # coisa que "nenhum veículo confiável publicou": a cobertura do buscador é
+            # enviesada para notícia recente, e dar 0,0 aqui penalizaria conteúdo
+            # antigo e verdadeiro. Fica sem achado, sem punir a cobertura.
             resultado.registrar(
-                medir(
+                sem_achado(
                     "S-11",
-                    None,
-                    "A busca funcionou e não achou nenhuma publicação semelhante.",
+                    "A busca funcionou e não achou nenhuma publicação semelhante. "
+                    "Pode ser notícia muito nova, ou assunto que ninguém cobriu.",
                 )
             )
             resultado.explicacao += (
@@ -76,6 +80,7 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             )
             return self.repassar(noticia)
 
+        self._procurar_checagem_de_agencia(noticia.texto, relacionados, resultado)
         self._medir_corroboracao(relacionados, resultado)
         self._medir_originalidade(relacionados, resultado)
         resultado.fontes_citadas.extend(d.url for d in relacionados if d.url)
@@ -83,6 +88,32 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         resultado.evidencias.extend(d.titulo for d in relacionados if d.titulo)
 
         return self.repassar(noticia)
+
+    def _procurar_checagem_de_agencia(
+        self, texto: str, relacionados: list[DocumentoRelacionado], resultado
+    ) -> None:
+        """RF-17 — alguma agência já checou esta alegação? Se sim, RN-01 decide.
+
+        Sem isto a busca por palavra-chave fazia a notícia falsa ser *corroborada pelo
+        próprio desmentido dela*: perguntada sobre uma alegação desmentida, a N3 achava
+        as checagens do G1, do Aos Fatos e do Boatos, contava três veículos confiáveis
+        publicando sobre o assunto e empurrava S-11 para o máximo.
+        """
+        checagem = checagens_publicadas.encontrar(
+            texto,
+            [(d.fonte, d.titulo) for d in relacionados],
+        )
+        if checagem is None:
+            return
+
+        resultado.veredito_agencia = checagem.veredito
+        resultado.agencia = checagem.agencia
+        _log.info(
+            "N3: checagem de agência encontrada (%s, %s): %r",
+            checagem.agencia,
+            checagem.veredito,
+            checagem.titulo,
+        )
 
     def _medir_corroboracao(
         self, relacionados: list[DocumentoRelacionado], resultado: AnaliseResultado
@@ -124,12 +155,22 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         o buscador devolveu não estabelece originalidade: só diz que entre aqueles cinco
         não havia cópia.
         """
-        quase_copias = [d for d in relacionados if d.similaridade >= LIMIAR_DE_COPIA]
+        comparados = [d for d in relacionados if d.similaridade_textual]
+        if not comparados:
+            resultado.registrar(
+                sem_achado(
+                    "S-13",
+                    "Não avalio originalidade com este buscador: ele devolve títulos e "
+                    "relevância, não comparação entre os textos.",
+                )
+            )
+            return
+
+        quase_copias = [d for d in comparados if d.similaridade >= LIMIAR_DE_COPIA]
         if not quase_copias:
             resultado.registrar(
-                medir(
+                sem_achado(
                     "S-13",
-                    None,
                     "Nenhuma das publicações encontradas é cópia quase literal deste "
                     "texto — o que não é o mesmo que atestar originalidade.",
                 )

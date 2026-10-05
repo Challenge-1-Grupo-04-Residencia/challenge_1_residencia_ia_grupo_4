@@ -44,8 +44,18 @@ class DocumentoRelacionado(BaseModel):
     titulo: str
     url: str | None = None
     fonte: str = ""
-    #: Similaridade semântica com o texto consultado, de 0 a 1.
+    #: Similaridade com o texto consultado, de 0 a 1.
     similaridade: float = Field(ge=0.0, le=1.0)
+    #: A ``similaridade`` é comparação real entre os textos, ou só a posição no ranking
+    #: do buscador?
+    #:
+    #: Faz diferença grande: o buscador que não expõe score de relevância tem a
+    #: similaridade derivada da posição, e aí o primeiro resultado vale sempre 1,0. Como
+    #: o limiar de cópia de S-13 é 0,9, isso acusava de plágio **toda** notícia cujo
+    #: primeiro resultado viesse de fora da base curada — inclusive uma matéria legítima
+    #: do IBGE. Posição é medida de relevância, não de texto, e por RN-06 S-13 fica
+    #: indisponível quando ninguém mediu texto de verdade.
+    similaridade_textual: bool = False
     #: O veículo está na base curada como confiável? Alimenta S-11 (RF-28).
     fonte_confiavel: bool = False
     data_publicacao: str | None = None

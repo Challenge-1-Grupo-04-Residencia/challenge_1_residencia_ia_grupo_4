@@ -36,7 +36,7 @@ import urllib.request
 
 from src.core.engine.orchestrator import CamadaVerificacao
 from src.core.entities.claim import AnaliseResultado, NoticiaRequest
-from src.core.entities.signal import medir
+from src.core.entities.signal import medir, nao_medido, sem_achado
 
 _log = logging.getLogger(__name__)
 
@@ -98,8 +98,10 @@ class CamadaN4Inferencia(CamadaVerificacao):
         resultado.camada_atual = "N4"
 
         if not resultado.evidencias:
+            # Sem evidência não há o que inferir, e a ausência de publicação já está
+            # refletida em S-11: contar de novo aqui puniria a mesma lacuna duas vezes.
             resultado.registrar(
-                medir("S-12", None, "A N3 não trouxe evidências para comparar.")
+                sem_achado("S-12", "A N3 não trouxe evidências para comparar.")
             )
             resultado.explicacao += (
                 " Não achei material suficiente para conferir alegação por alegação."
@@ -113,9 +115,8 @@ class CamadaN4Inferencia(CamadaVerificacao):
             # O detalhe técnico vai para o log, não para o usuário.
             _log.warning("N4 indisponível: %s", erro)
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-12",
-                    None,
                     "A conferência por inferência não pôde ser feita: o provedor de "
                     "modelo não respondeu.",
                 )
@@ -139,9 +140,8 @@ class CamadaN4Inferencia(CamadaVerificacao):
 
         if not vereditos:
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-12",
-                    None,
                     "O modelo não devolveu nenhum veredito utilizável.",
                 )
             )
@@ -152,10 +152,11 @@ class CamadaN4Inferencia(CamadaVerificacao):
 
         if decisivas == 0:
             # Neutro não é meio-termo entre sustentar e contradizer: é ausência de dado.
+            # O modelo leu e julgou: as evidências não tocam na alegação. Medição
+            # feita, nada decisivo a anotar.
             resultado.registrar(
-                medir(
+                sem_achado(
                     "S-12",
-                    None,
                     f"As {len(vereditos)} evidências analisadas são neutras: falam de "
                     "outro assunto e não tocam na alegação.",
                 )

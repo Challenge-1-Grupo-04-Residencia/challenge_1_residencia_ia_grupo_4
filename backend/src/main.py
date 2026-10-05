@@ -56,6 +56,10 @@ class SinalResponse(BaseModel):
     dimensao: str
     camada: str
     score: float | None
+    #: ``score`` nulo com ``aferido`` verdadeiro significa "olhei e não havia o que
+    #: anotar"; com ``aferido`` falso significa "não consegui medir". Os dois chegam
+    #: como ``score: null`` e querem dizer coisas opostas.
+    aferido: bool
     justificativa: str
 
 
@@ -120,10 +124,15 @@ def obter_orquestrador() -> Orquestrador:
     O classificador da N2 e o índice de busca são caros de carregar; reconstruí-los a
     cada requisição estouraria as metas de latência das camadas.
     """
-    from src.infrastructure.search.gdelt import BuscadorGdelt
+    from src.infrastructure.search.google_news import BuscadorGoogleNews
 
     n2 = CamadaN2Conteudo()
-    n3 = CamadaN3Corroboracao(BuscadorGdelt())
+    # Google Notícias e não GDELT: medidos lado a lado em 05/10, o GDELT respondia em
+    # 15 a 23 s, aceitava uma consulta a cada 5 s e devolvia zero resultados em
+    # português, o que deixava a dimensão Corroboração — 40 dos 100 pontos — sem
+    # medição nenhuma em produção. O feed do Google responde em ~1 s. O adaptador do
+    # GDELT segue no repositório atrás da mesma porta, para quem quiser comparar.
+    n3 = CamadaN3Corroboracao(BuscadorGoogleNews())
     n4 = CamadaN4Inferencia()
     # N0 e N1 ainda não existem, então a corrente começa na N2. Por RN-07 a N4 só roda
     # se as anteriores não atingirem a regra de parada — o encadeamento já garante isso.
@@ -150,6 +159,7 @@ def _para_response(sinal) -> SinalResponse:
         dimensao=sinal.dimensao.value,
         camada=sinal.camada,
         score=sinal.score,
+        aferido=sinal.aferido,
         justificativa=sinal.justificativa,
     )
 

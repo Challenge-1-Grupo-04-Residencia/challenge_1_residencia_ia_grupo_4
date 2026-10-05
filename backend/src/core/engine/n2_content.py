@@ -28,7 +28,7 @@ import joblib
 from src.core.engine import emotion, text_style
 from src.core.engine.orchestrator import CamadaVerificacao
 from src.core.entities.claim import AnaliseResultado, NoticiaRequest
-from src.core.entities.signal import medir
+from src.core.entities.signal import medir, nao_medido, sem_achado
 
 #: Resolvido a partir da localização deste arquivo, e não do diretório de trabalho: o
 #: caminho relativo antigo só funcionava quando o servidor subia da raiz do repositório.
@@ -84,9 +84,8 @@ class CamadaN2Conteudo(CamadaVerificacao):
         """S-06 — probabilidade de a notícia ser verdadeira, segundo o classificador."""
         if texto_curto:
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-06",
-                    None,
                     "Texto curto demais para uma análise de estilo confiável.",
                 )
             )
@@ -97,7 +96,7 @@ class CamadaN2Conteudo(CamadaVerificacao):
 
         if self.modelo is None:
             resultado.registrar(
-                medir("S-06", None, "Classificador de estilo não carregado.")
+                nao_medido("S-06", "Classificador de estilo não carregado.")
             )
             return
 
@@ -143,11 +142,12 @@ class CamadaN2Conteudo(CamadaVerificacao):
         """S-07 — gritaria e pedido de difusão (RF-22)."""
         indice = text_style.indice_sensacionalismo(texto)
         if indice is None:
+            # Olhei e não havia gritaria: medição feita, nada a relatar. Não é lacuna,
+            # então não derruba a cobertura.
             resultado.registrar(
-                medir(
+                sem_achado(
                     "S-07",
-                    None,
-                    "Não encontrei marcas de sensacionalismo para medir.",
+                    "Procurei marcas de sensacionalismo e não encontrei nenhuma.",
                 )
             )
             return
@@ -169,10 +169,9 @@ class CamadaN2Conteudo(CamadaVerificacao):
         indice, emocao = emotion.indice_intensidade_emocional(texto)
         if indice is None:
             resultado.registrar(
-                medir(
+                sem_achado(
                     "S-08",
-                    None,
-                    "O texto não traz vocabulário emocional manipulativo para medir.",
+                    "Procurei vocabulário emocional manipulativo e não encontrei.",
                 )
             )
             return
@@ -195,9 +194,8 @@ class CamadaN2Conteudo(CamadaVerificacao):
         """S-09 — o texto ancora o que afirma em links ou órgãos nomeados?"""
         if texto_curto:
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-09",
-                    None,
                     "Texto curto demais para esperar citação de fontes.",
                 )
             )

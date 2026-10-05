@@ -22,12 +22,18 @@ class BuscadorFalso:
         return self.documentos[:top_k]
 
 
-def documento(fonte: str, confiavel: bool, similaridade: float = 0.5):
+def documento(
+    fonte: str,
+    confiavel: bool,
+    similaridade: float = 0.5,
+    similaridade_textual: bool = True,
+):
     return DocumentoRelacionado(
         titulo=f"Matéria de {fonte}",
         url=f"https://{fonte}/materia",
         fonte=fonte,
         similaridade=similaridade,
+        similaridade_textual=similaridade_textual,
         fonte_confiavel=confiavel,
     )
 
@@ -217,6 +223,30 @@ class TestCamadaN3:
 
         assert sinal(noticia.resultado, "S-13").score == 1.0
 
+    def test_similaridade_de_ranking_nao_acusa_plagio(self):
+        """Posição no ranking não é comparação de texto.
+
+        Os buscadores por API não expõem score de relevância, então a similaridade é
+        derivada da posição — e o primeiro resultado vale sempre 1,0. Com o limiar de
+        cópia em 0,9, isso acusava de plágio **toda** notícia cujo primeiro resultado
+        viesse de fora da base curada, inclusive uma matéria legítima sobre dados do
+        IBGE. Por RN-06, sem medição de texto não há medição.
+        """
+        camada = CamadaN3Corroboracao(
+            BuscadorFalso([
+                documento(
+                    "aciara.com.br",
+                    False,
+                    similaridade=1.0,
+                    similaridade_textual=False,
+                )
+            ])
+        )
+        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+
+        assert sinal(noticia.resultado, "S-13").score is None
+        assert "originalidade" in sinal(noticia.resultado, "S-13").justificativa
+
     def test_ausencia_de_copia_nao_credita_originalidade(self):
         """Não achar plágio entre cinco resultados não atesta originalidade.
 
@@ -229,6 +259,45 @@ class TestCamadaN3:
         noticia = camada.processar(NoticiaRequest(texto="Texto."))
 
         assert sinal(noticia.resultado, "S-13").score is None
+
+    def test_checagem_de_agencia_nos_resultados_aciona_rn01(self):
+        """RF-17: a agência já checou, então RN-01 decide em vez do score.
+
+        Sem isto a busca por palavra-chave fazia a notícia falsa ser corroborada pelo
+        próprio desmentido dela: as checagens do G1 e do Aos Fatos contavam como dois
+        veículos confiáveis publicando sobre o assunto, e S-11 ia ao máximo.
+        """
+        checagem = DocumentoRelacionado(
+            titulo="É #FAKE que Lula jogou bandeira do Brasil no chão após votar",
+            url="https://g1.globo.com/fato-ou-fake/x",
+            fonte="g1.globo.com",
+            similaridade=1.0,
+            fonte_confiavel=True,
+        )
+        camada = CamadaN3Corroboracao(BuscadorFalso([checagem]))
+        noticia = camada.processar(
+            NoticiaRequest(
+                texto="o Lula jogou a bandeira do Brasil no chão depois de votar?"
+            )
+        )
+
+        assert noticia.resultado.veredito_agencia == "falso"
+        assert noticia.resultado.agencia == "g1.globo.com"
+
+    def test_checagem_de_outra_alegacao_nao_aciona_rn01(self):
+        checagem = DocumentoRelacionado(
+            titulo="É #FAKE que Lula jogou bandeira do Brasil no chão após votar",
+            url="https://g1.globo.com/fato-ou-fake/x",
+            fonte="g1.globo.com",
+            similaridade=1.0,
+            fonte_confiavel=True,
+        )
+        camada = CamadaN3Corroboracao(BuscadorFalso([checagem]))
+        noticia = camada.processar(
+            NoticiaRequest(texto="qual o resultado da eleição em Aracaju?")
+        )
+
+        assert noticia.resultado.veredito_agencia is None
 
     def test_coleta_urls_como_fontes_citadas(self):
         """RN-05 exige as fontes consultadas em todo resultado."""

@@ -17,9 +17,9 @@ from src.infrastructure.search.gdelt import (
     MAXIMO_DE_TERMOS,
     TIMEOUT_PADRAO,
     BuscadorGdelt,
-    _Disjuntor,
     termos_de_busca,
 )
+from src.infrastructure.search.resiliencia import Disjuntor
 
 
 class _MarcapassoFalso:
@@ -45,7 +45,7 @@ def _buscador(resposta_ou_erro, marcapasso=None, disjuntor=None) -> BuscadorGdel
     return BuscadorGdelt(
         cliente=ClienteFalso(),
         marcapasso=marcapasso or _MarcapassoFalso(),
-        disjuntor=disjuntor or _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
+        disjuntor=disjuntor or Disjuntor("teste", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
     )
 
 
@@ -189,7 +189,7 @@ class TestDisjuntor:
         buscador = BuscadorGdelt(
             cliente=cliente,
             marcapasso=_MarcapassoFalso(),
-            disjuntor=_Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
+            disjuntor=Disjuntor("teste", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
         )
 
         for _ in range(FALHAS_PARA_ABRIR + 4):
@@ -200,7 +200,7 @@ class TestDisjuntor:
         assert cliente.chamadas == FALHAS_PARA_ABRIR
 
     def test_disjuntor_aberto_falha_na_hora(self):
-        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        disjuntor = Disjuntor("teste", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
         buscador = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
         for _ in range(FALHAS_PARA_ABRIR):
             with pytest.raises(BuscaIndisponivel):
@@ -210,7 +210,7 @@ class TestDisjuntor:
             buscador.buscar("outra notícia sobre vacinação nacional")
 
     def test_sucesso_fecha_o_disjuntor(self):
-        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        disjuntor = Disjuntor("teste", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
         falhando = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
         for _ in range(FALHAS_PARA_ABRIR - 1):
             with pytest.raises(BuscaIndisponivel):
@@ -227,7 +227,7 @@ class TestDisjuntor:
 
     def test_depois_do_descanso_deixa_sondar_de_novo(self):
         """O disjuntor não pode fechar a camada para sempre — o serviço pode voltar."""
-        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, descanso=0.0)
+        disjuntor = Disjuntor("teste", FALHAS_PARA_ABRIR, descanso=0.0)
         buscador = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
         for _ in range(FALHAS_PARA_ABRIR):
             with pytest.raises(BuscaIndisponivel):
@@ -240,7 +240,7 @@ class TestDisjuntor:
 
     def test_consulta_vazia_nao_conta_como_falha(self):
         """Texto só com stopwords não é falha do provedor."""
-        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        disjuntor = Disjuntor("teste", FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
         buscador = _buscador(_resposta(200, '{"articles": []}'), disjuntor=disjuntor)
 
         for _ in range(FALHAS_PARA_ABRIR + 2):

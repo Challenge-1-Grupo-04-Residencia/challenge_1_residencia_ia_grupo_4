@@ -66,6 +66,20 @@ ZONA_DE_DUVIDA = (25.0, 75.0)
 #: Abaixo desta confiança o resultado final é Inconclusivo (RN-04).
 C_INCONCLUSIVO = 0.5
 
+#: Fator aplicado à concordância quando só **uma** das três dimensões foi observada.
+#:
+#: Uma dimensão sozinha não concorda com nada: o desvio padrão de um valor é zero, então
+#: a concordância daria 1,0 — a nota máxima, por não haver com o que discordar. Isso se
+#: sustentava enquanto a cobertura segurava o resultado, mas deixou de segurar quando o
+#: denominador passou a ignorar os sinais aferidos sem achado.
+#:
+#: O estrago medido: "o ministro pediu demissao hoje", cinco palavras sem sujeito
+#: definido, saía com **V = 100 e "Confirmada por fontes"**. O texto era curto demais
+#: para S-06 e S-09, e a busca por "ministro demissão" acha notícia real sobre algum
+#: ministro — então S-11 sozinho, com 15 pontos e nenhuma outra dimensão para
+#: contradizê-lo, cravava o veredito.
+PENALIDADE_DE_DIMENSAO_UNICA = 0.55
+
 
 def disponiveis(sinais: list[Sinal]) -> list[Sinal]:
     """Filtra os sinais que têm dado, aplicando RN-06."""
@@ -94,10 +108,15 @@ def peso_de_referencia(sinais: list[Sinal]) -> float:
     ``CAMADAS_ATIVAS``, e impede que a cobertura passe de 1.
     """
     registrados = {s.id for s in sinais}
+    # Sinal aferido sem achado sai do denominador: o detector rodou, não havia o que
+    # anotar, e isso não é lacuna desta notícia. Mantê-lo aqui travava a cobertura de
+    # qualquer notícia escrita em tom sóbrio — que são justamente as verdadeiras — e
+    # jogava todas em Inconclusivo por RN-04.
+    sem_achado = {s.id for s in sinais if s.score is None and s.aferido}
     return sum(
         d.peso
         for d in CATALOGO.values()
-        if mensuravel(d) or d.id in registrados
+        if (mensuravel(d) or d.id in registrados) and d.id not in sem_achado
     )
 
 
@@ -153,12 +172,15 @@ def concordancia(sinais: list[Sinal]) -> float:
     jogava toda notícia verdadeira em Inconclusivo por RN-04, medindo uma propriedade
     do nosso catálogo e não uma contradição nas evidências.
 
-    Com uma só dimensão observada o desvio é zero e a concordância vale 1; isso não
-    infla o resultado porque a cobertura, que multiplica este fator, permanece baixa.
+    Com uma só dimensão observada não há com o que concordar, e o fator vale
+    :data:`PENALIDADE_DE_DIMENSAO_UNICA` em vez de 1,0 — ver a nota lá sobre o veredito
+    de 100% que um texto de cinco palavras conseguia arrancar.
     """
     por_dimensao = list(score_por_dimensao(sinais).values())
-    if len(por_dimensao) < 2:
+    if not por_dimensao:
         return 1.0
+    if len(por_dimensao) == 1:
+        return PENALIDADE_DE_DIMENSAO_UNICA
     return max(0.0, 1.0 - pstdev(por_dimensao))
 
 

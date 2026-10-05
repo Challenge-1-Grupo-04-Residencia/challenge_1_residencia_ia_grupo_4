@@ -35,9 +35,21 @@ class DefinicaoSinal(BaseModel):
 class Sinal(BaseModel):
     """Um sinal já medido para uma notícia concreta.
 
-    ``score`` em ``None`` significa que o dado não foi obtido — a camada não rodou, a
-    API não respondeu ou o sinal não se aplica. Nesse caso o sinal é ignorado no
-    cálculo (RN-06), o que derruba a cobertura e portanto a confiança.
+    Um sinal tem **três** estados, e não dois. Confundir os dois últimos foi o que
+    deixava toda notícia verdadeira em Inconclusivo:
+
+    1. **Medido**, com ``score``. Entra no cálculo de V e conta como cobertura.
+    2. **Aferido sem achado** (``score`` nulo, ``aferido`` verdadeiro). O detector
+       rodou e não encontrou nada para relatar — texto sem gritaria para S-07, sem
+       insulto para S-08. Não entra em V, porque ausência de manipulação não é
+       evidência de verdade; mas também **não derruba a cobertura**, porque não houve
+       falha de medição: olhamos e não havia o que anotar.
+    3. **Não medido** (``score`` nulo, ``aferido`` falso). A camada não rodou, a API não
+       respondeu, o texto era curto demais. É lacuna de verdade: sai do cálculo (RN-06)
+       e derruba a cobertura, e portanto a confiança.
+
+    Os estados 2 e 3 têm a mesma aparência no JSON — ``score: null`` — e significados
+    opostos, do mesmo jeito que "medi e está ruim" e "não consegui medir" são opostos.
     """
 
     id: str
@@ -46,11 +58,18 @@ class Sinal(BaseModel):
     dimensao: Dimensao
     camada: str
     score: float | None = Field(default=None, ge=0.0, le=1.0)
+    #: A medição foi executada? Ver os três estados no docstring da classe.
+    aferido: bool = False
     justificativa: str = ""
 
     @property
     def disponivel(self) -> bool:
         return self.score is not None
+
+    @property
+    def e_lacuna(self) -> bool:
+        """Não foi possível medir — o estado que derruba a cobertura."""
+        return self.score is None and not self.aferido
 
 
 # --- Dimensão 1 · Fonte · 35 pontos ------------------------------------------------
@@ -196,11 +215,13 @@ def mensuravel(definicao: DefinicaoSinal) -> bool:
 PESO_MENSURAVEL: float = sum(d.peso for d in CATALOGO.values() if mensuravel(d))
 
 
-def medir(id_sinal: str, score: float | None, justificativa: str = "") -> Sinal:
-    """Cria um :class:`Sinal` medido a partir da definição de catálogo.
+def _montar(
+    id_sinal: str, score: float | None, aferido: bool, justificativa: str
+) -> Sinal:
+    """Monta o sinal a partir da definição de catálogo.
 
-    Usar esta função em vez de construir ``Sinal`` na mão garante que peso, dimensão e
-    camada venham sempre do catálogo, e não sejam redigitados em cada camada.
+    Usar o catálogo em vez de construir :class:`Sinal` na mão garante que peso,
+    dimensão e camada não sejam redigitados em cada camada.
     """
     definicao = CATALOGO[id_sinal]
     return Sinal(
@@ -210,5 +231,36 @@ def medir(id_sinal: str, score: float | None, justificativa: str = "") -> Sinal:
         dimensao=definicao.dimensao,
         camada=definicao.camada,
         score=score,
+        aferido=aferido,
         justificativa=justificativa,
     )
+
+
+def medir(id_sinal: str, score: float | None, justificativa: str = "") -> Sinal:
+    """Sinal medido, com valor.
+
+    Aceita ``score`` nulo por compatibilidade com as camadas que ainda não escolheram
+    entre :func:`sem_achado` e :func:`nao_medido`; nesse caso o sinal é tratado como
+    lacuna, que é o comportamento conservador.
+    """
+    return _montar(id_sinal, score, aferido=score is not None,
+                   justificativa=justificativa)
+
+
+def sem_achado(id_sinal: str, justificativa: str = "") -> Sinal:
+    """O detector rodou e não encontrou nada para relatar.
+
+    Não entra no cálculo de V e **não** derruba a cobertura. É o caso de S-07 num texto
+    sem gritaria, de S-08 num texto sem insulto, e de S-13 com um buscador que devolve
+    títulos e não compara textos: em nenhum deles houve falha de medição.
+    """
+    return _montar(id_sinal, None, aferido=True, justificativa=justificativa)
+
+
+def nao_medido(id_sinal: str, justificativa: str = "") -> Sinal:
+    """Não foi possível medir: camada não rodou, API fora, texto curto demais.
+
+    Sai do cálculo por RN-06 e derruba a cobertura — é a lacuna que deve deixar a Vera
+    menos confiante.
+    """
+    return _montar(id_sinal, None, aferido=False, justificativa=justificativa)

@@ -92,11 +92,34 @@ def test_confianca_fica_no_intervalo_valido():
 
 
 def test_uma_dimensao_sozinha_nao_infla_a_confianca():
-    """Com uma só dimensão a concordância é 1, mas a cobertura segura o resultado."""
-    sinais = [medir("S-01", 1.0), medir("S-02", 1.0)]  # só dimensão Fonte, peso 20
+    """Uma dimensão sozinha não concorda com nada, então não leva nota máxima.
 
-    assert scoring.concordancia(sinais) == 1.0
-    assert scoring.calcular_confianca(sinais) < scoring.C_MIN
+    O desvio padrão de um valor é zero, e a concordância daria 1,0 por não haver com o
+    que discordar. Medido: "o ministro pediu demissao hoje" — curto demais para S-06 e
+    S-09, e com S-11 achando notícia real sobre algum ministro — saía com V = 100 e
+    "Confirmada por fontes".
+    """
+    uma_dimensao = [medir("S-11", 1.0), medir("S-13", 1.0)]  # só Corroboração
+    duas_dimensoes = [medir("S-06", 1.0), medir("S-11", 1.0)]
+
+    assert scoring.concordancia(uma_dimensao) < 1.0
+    assert scoring.concordancia(uma_dimensao) < scoring.concordancia(duas_dimensoes)
+    assert scoring.calcular_confianca(uma_dimensao) < scoring.C_MIN
+
+
+def test_veredito_nao_sai_de_uma_dimensao_so():
+    """Corroboração cheia e nada mais não basta para publicar porcentagem (RN-04).
+
+    É o caso do texto vago que casa por palavra-chave com notícia real: a busca
+    confirma "algum ministro pediu demissão" e isso não confirma *esta* alegação.
+    """
+    so_corroboracao = [
+        medir("S-11", 1.0),
+        medir("S-12", 1.0),
+        medir("S-13", 1.0),
+    ]
+
+    assert scoring.calcular_confianca(so_corroboracao) < scoring.C_INCONCLUSIVO
 
 
 def test_cobertura_nao_desconta_camada_que_nao_existe():
