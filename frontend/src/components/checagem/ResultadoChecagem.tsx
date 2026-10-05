@@ -97,38 +97,58 @@ export function ResultadoChecagem({ resultado }: Props) {
 
         {corpo && <p className="mt-3 text-sm opacity-90">{corpo}</p>}
 
-        {resultado.documentos_relacionados.length > 0 && (
-          <section className="mt-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wide opacity-60">
-              Quem mais publicou isso
-            </h4>
-            <ul className="mt-1.5 space-y-1 text-sm">
-              {resultado.documentos_relacionados.map((doc, i) => (
-                <li key={doc.url ?? i} className="flex items-baseline gap-2">
-                  <span
-                    className="shrink-0 text-xs"
-                    title={doc.fonte_confiavel ? "Veículo da base curada" : "Fora da base curada"}
-                    aria-hidden
-                  >
-                    {doc.fonte_confiavel ? "✓" : "·"}
-                  </span>
-                  {doc.url ? (
-                    <a
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+        {/* Checagem da alegação e cobertura do fato são coisas opostas, e a tela
+            precisa dizer qual é qual: listar o desmentido do G1 sob "quem mais
+            publicou isso" afirma ao usuário o contrário do que aconteceu. */}
+        {(["checagem", "cobertura"] as const).map((grupo) => {
+          const docs = resultado.documentos_relacionados.filter((d) =>
+            grupo === "checagem" ? d.e_checagem : !d.e_checagem,
+          );
+          if (docs.length === 0) return null;
+          return (
+            <section className="mt-3" key={grupo}>
+              <h4 className="text-xs font-semibold uppercase tracking-wide opacity-60">
+                {grupo === "checagem"
+                  ? "Quem já conferiu isso"
+                  : "Quem mais publicou isso"}
+              </h4>
+              <ul className="mt-1.5 space-y-1 text-sm">
+                {docs.map((doc, i) => (
+                  <li key={doc.url ?? i} className="flex items-baseline gap-2">
+                    <span
+                      className="shrink-0 text-xs"
+                      title={
+                        doc.fonte_confiavel
+                          ? "Veículo da base curada"
+                          : "Fora da base curada"
+                      }
+                      aria-hidden
                     >
-                      {doc.titulo || doc.fonte}
-                    </a>
-                  ) : (
-                    <span>{doc.titulo}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+                      {doc.fonte_confiavel ? "✓" : "·"}
+                    </span>
+                    <span className="min-w-0">
+                      {doc.url ? (
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                        >
+                          {doc.titulo || doc.fonte}
+                        </a>
+                      ) : (
+                        <span>{doc.titulo}</span>
+                      )}
+                      {doc.fonte && (
+                        <span className="ml-1.5 opacity-60">— {doc.fonte}</span>
+                      )}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
 
         <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs opacity-60">
           <div>

@@ -167,6 +167,11 @@ def main() -> int:
         action="store_true",
         help="não consulta a busca; mostra o motor só com os sinais de conteúdo",
     )
+    analisador.add_argument(
+        "--sem-llm",
+        action="store_true",
+        help="não chama a N4, para ver o resultado sem o provedor de LLM no ar",
+    )
     argumentos = analisador.parse_args()
 
     if argumentos.sem_rede:
@@ -183,9 +188,12 @@ def main() -> int:
     cautelosos = 0
     for esperado, texto in EXEMPLOS:
         n2 = CamadaN2Conteudo()
-        n2.set_proxima(CamadaN3Corroboracao(buscador)).set_proxima(
+        n4 = (
             CamadaN4Inferencia(_provedor_desligado)
+            if argumentos.sem_llm
+            else CamadaN4Inferencia()
         )
+        n2.set_proxima(CamadaN3Corroboracao(buscador)).set_proxima(n4)
         noticia = NoticiaRequest(texto=texto)
         veredito = Orquestrador(n2).veredito(noticia)
         resultado = noticia.resultado

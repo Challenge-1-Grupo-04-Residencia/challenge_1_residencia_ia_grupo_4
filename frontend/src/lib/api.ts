@@ -11,6 +11,7 @@ import type {
   ChecagemRequest,
   ChecagemResponse,
   RespostaResponse,
+  TriagemResponse,
 } from "@/types/checagem";
 
 const URL_BASE =
@@ -133,4 +134,47 @@ export async function checagensRecentes(
   } catch {
     return [];
   }
+}
+
+/**
+ * Pergunta à API o que fazer com a mensagem: conversar, acompanhar ou checar (RF-01).
+ *
+ * A decisão vive no backend de propósito. Aqui ela era tomada pelo número de palavras,
+ * e com isso toda alegação com menos de 25 palavras ia para o acompanhamento depois da
+ * primeira checagem — e voltava como "essa sua pergunta eu ainda não sei responder".
+ *
+ * @throws {ErroDaVera} quando a API responde erro ou está fora do ar.
+ */
+export async function triar(
+  texto: string,
+  temChecagemAnterior: boolean,
+  sinal?: AbortSignal,
+): Promise<TriagemResponse> {
+  let resposta: Response;
+
+  try {
+    resposta = await fetch(`${URL_BASE}/api/v1/triagem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        texto,
+        tem_checagem_anterior: temChecagemAnterior,
+      }),
+      signal: sinal,
+    });
+  } catch (erro) {
+    if (erro instanceof DOMException && erro.name === "AbortError") throw erro;
+    throw new ErroDaVera(
+      "Minha internet caiu, acredita? Tenta de novo daqui a pouco.",
+    );
+  }
+
+  if (!resposta.ok) {
+    throw new ErroDaVera(
+      "Deu problema aqui do meu lado. Tenta de novo daqui a pouco.",
+      resposta.status,
+    );
+  }
+
+  return (await resposta.json()) as TriagemResponse;
 }

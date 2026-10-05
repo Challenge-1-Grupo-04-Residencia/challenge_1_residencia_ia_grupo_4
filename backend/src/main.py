@@ -14,7 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from src.core.engine import follow_up, scoring
+from src.core.engine import follow_up, scoring, triagem
 from src.core.engine.n2_content import CamadaN2Conteudo
 from src.core.engine.n3_corroboration import CamadaN3Corroboracao
 from src.core.engine.n4_nli import CamadaN4Inferencia
@@ -63,6 +63,24 @@ class SinalResponse(BaseModel):
     justificativa: str
 
 
+class TriagemRequest(BaseModel):
+    """O que o usuário digitou, para a API dizer o que fazer com aquilo."""
+
+    texto: str = Field(min_length=1)
+    #: Existe um resultado na tela sobre o qual a pessoa possa estar perguntando?
+    tem_checagem_anterior: bool = False
+
+
+class TriagemResponse(BaseModel):
+    """Para onde a mensagem deve ir, decidido no núcleo e não na interface."""
+
+    #: Um valor de :class:`triagem.Natureza`. Só ``alegacao`` vai para ``/checar``, e
+    #: só ``acompanhamento`` vai para ``/perguntar``.
+    natureza: str
+    #: A fala da Vera, já pronta, quando a mensagem é conversa e não checagem.
+    resposta: str | None = None
+
+
 class PerguntaRequest(BaseModel):
     """Pergunta de acompanhamento sobre um resultado já entregue (RF-04)."""
 
@@ -70,10 +88,19 @@ class PerguntaRequest(BaseModel):
     pergunta: str = Field(min_length=1)
 
 
+class FonteCitadaResponse(BaseModel):
+    """Publicação citada numa resposta de acompanhamento (RN-05)."""
+
+    titulo: str
+    url: str
+    veiculo: str
+    confiavel: bool
+
+
 class RespostaResponse(BaseModel):
     texto: str
     assunto: str
-    fontes: list[str] = []
+    fontes: list[FonteCitadaResponse] = []
     sinais_citados: list[str] = []
 
 
@@ -241,10 +268,34 @@ def _registrar_no_historico(
                 fontes_citadas=list(resultado.fontes_citadas),
                 evidencias=list(resultado.evidencias),
                 sinais=list(resultado.sinais),
+                documentos_relacionados=list(resultado.documentos_relacionados),
             )
         )
     except Exception:  # noqa: BLE001 - o feed nunca derruba a checagem
         pass
+
+
+@app.post("/api/v1/triagem", response_model=TriagemResponse)
+def triar(request: TriagemRequest) -> TriagemResponse:
+    """Diz se a mensagem é conversa, pergunta de acompanhamento ou alegação a checar.
+
+    Existe para a interface não precisar adivinhar. Ela adivinhava pelo número de
+    palavras — mandava ao acompanhamento tudo com menos de 25 — e o efeito era que,
+    depois da primeira checagem, **toda notícia curta** recebia "essa sua pergunta eu
+    ainda não sei responder direito" em vez de ser checada.
+
+    É barato: só regra de negócio, sem rede e sem modelo.
+    """
+    natureza = triagem.classificar(request.texto, request.tem_checagem_anterior)
+    conversa = natureza in (
+        triagem.Natureza.SAUDACAO,
+        triagem.Natureza.CONVERSA,
+        triagem.Natureza.AGRADECIMENTO,
+    )
+    return TriagemResponse(
+        natureza=natureza.value,
+        resposta=triagem.resposta_para(natureza) if conversa else None,
+    )
 
 
 @app.post("/api/v1/perguntar", response_model=RespostaResponse)
@@ -265,7 +316,12 @@ def perguntar(request: PerguntaRequest) -> RespostaResponse:
     return RespostaResponse(
         texto=resposta.texto,
         assunto=resposta.assunto.value,
-        fontes=resposta.fontes,
+        fontes=[
+            FonteCitadaResponse(
+                titulo=f.titulo, url=f.url, veiculo=f.veiculo, confiavel=f.confiavel
+            )
+            for f in resposta.fontes
+        ],
         sinais_citados=resposta.sinais_citados,
     )
 

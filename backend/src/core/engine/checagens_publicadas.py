@@ -65,6 +65,19 @@ SOBREPOSICAO_MINIMA = 0.5
 #: qualquer texto que mencionasse Lula.
 PALAVRAS_EM_COMUM_MINIMAS = 3
 
+#: Marcas de negação. O formato mais comum de manchete de checagem brasileira não usa
+#: fórmula nenhuma — nega direto: "Lula **não** jogou bandeira do Brasil no chão após
+#: votar, mas sim a entregou a fotógrafo". Sem reconhecer isso, essas manchetes entravam
+#: em S-11 como "veículo publicou o mesmo fato" e iam para a N4, que leu a alegação
+#: dentro do título e respondeu que a evidência a sustentava.
+_NEGACOES = (
+    r"\bnao\b",
+    r"\bnem\b",
+    r"\bnenhum[ao]?\b",
+    r"\bjamais\b",
+    r"\bsem\s+provas?\b",
+)
+
 _PALAVRA = re.compile(r"\b[\wÀ-ÿ]{4,}\b", re.UNICODE)
 
 #: Palavras que aparecem em quase toda checagem e não ajudam a identificar o assunto.
@@ -104,6 +117,23 @@ def _conteudo(texto: str) -> set[str]:
     }
 
 
+def _tem_negacao(texto: str) -> bool:
+    baixo = _sem_acento(texto)
+    return any(re.search(padrao, baixo) for padrao in _NEGACOES)
+
+
+def nega_a_alegacao(titulo: str, texto_do_usuario: str) -> bool:
+    """O título nega o que o texto do usuário afirma?
+
+    A trava importante é a segunda condição: se a própria alegação do usuário já é
+    negativa — "Lula **não** jogou a bandeira" —, um título negativo está *concordando*
+    com ela, e tratar isso como desmentido inverteria o veredito.
+    """
+    if not _tem_negacao(titulo) or _tem_negacao(texto_do_usuario):
+        return False
+    return trata_da_mesma_alegacao(titulo, texto_do_usuario)
+
+
 def veredito_no_titulo(titulo: str) -> str | None:
     """``"falso"``, ``"verdadeiro"`` ou ``None`` se o título não traz veredito.
 
@@ -133,6 +163,26 @@ def trata_da_mesma_alegacao(titulo: str, texto_do_usuario: str) -> bool:
     if len(em_comum) < PALAVRAS_EM_COMUM_MINIMAS:
         return False
     return len(em_comum) / len(da_checagem) >= SOBREPOSICAO_MINIMA
+
+
+def e_checagem_desta_alegacao(titulo: str, texto_do_usuario: str) -> bool:
+    """O título é uma checagem publicada **sobre esta alegação**?
+
+    Serve para a N3 separar checagem de cobertura. Uma matéria que desmente a alegação
+    não é um veículo "publicando o mesmo fato": contá-la em S-11 fazia a Vera narrar
+    "5 veículos confiáveis publicaram o mesmo fato" logo abaixo de "o G1 já desmentiu
+    esta alegação", e as duas frases se contradizem na cara do usuário.
+
+    Pior: mandada à N4 como evidência, a manchete "É #FAKE que <alegação>" contém a
+    alegação inteira, e o modelo respondeu ENTAILMENT para as cinco. S-12 — peso 20, o
+    sinal mais pesado — declarou que **o desmentido sustentava a alegação**. Medido: sem
+    RN-01 segurando, a alegação desmentida sairia com 76% de veracidade.
+    """
+    if veredito_no_titulo(titulo) is not None and trata_da_mesma_alegacao(
+        titulo, texto_do_usuario
+    ):
+        return True
+    return nega_a_alegacao(titulo, texto_do_usuario)
 
 
 def encontrar(

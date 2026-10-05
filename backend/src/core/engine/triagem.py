@@ -34,6 +34,8 @@ class Natureza(str, Enum):
     SAUDACAO = "saudacao"
     CONVERSA = "conversa"
     AGRADECIMENTO = "agradecimento"
+    #: Pergunta sobre o resultado que a Vera **acabou de entregar** (RF-04).
+    ACOMPANHAMENTO = "acompanhamento"
     ALEGACAO = "alegacao"
 
 
@@ -84,6 +86,18 @@ def _tem_algum(texto: str, termos: tuple[str, ...]) -> bool:
     return any(termo in texto for termo in termos)
 
 
+def e_pergunta_de_acompanhamento(texto: str) -> bool:
+    """A pessoa está perguntando sobre o resultado que acabou de receber?
+
+    Reaproveita o reconhecedor de temas de :mod:`follow_up`, que é quem sabe responder
+    essas perguntas: se ele não reconhece o tema, não há o que acompanhar, e tratar a
+    entrada como acompanhamento só produziria "ainda não sei responder direito".
+    """
+    from src.core.engine.follow_up import Assunto, identificar_assunto
+
+    return identificar_assunto(texto) is not Assunto.GERAL
+
+
 def _comeca_com_saudacao(texto: str) -> bool:
     """Saudação tem de abrir a frase: "oi" solto no meio de uma notícia não conta."""
     inicio = texto[:20]
@@ -103,12 +117,21 @@ def marcas_de_alegacao(texto: str) -> int:
     )
 
 
-def classificar(texto: str) -> Natureza:
-    """Decide se a entrada é conversa ou alegação a checar.
+def classificar(texto: str, tem_checagem_anterior: bool = False) -> Natureza:
+    """Decide o que fazer com a entrada: conversar, acompanhar ou checar.
+
+    ``tem_checagem_anterior`` diz se já existe um resultado na tela sobre o qual a
+    pessoa possa estar perguntando. Sem ele, "por que você achou isso?" é uma alegação
+    sem pé nem cabeça; com ele, é a pergunta de acompanhamento de RF-04.
 
     Na dúvida devolve :attr:`Natureza.ALEGACAO`. O erro de checar uma conversa custa
-    uma resposta estranha; o erro de tratar uma notícia falsa como conversa é deixar o
-    usuário sem a checagem que ele veio pedir — então o viés é para checar.
+    uma resposta estranha; o erro de **não** checar custa deixar o usuário sem a
+    resposta que ele veio buscar — então o viés é para checar.
+
+    Esta função é a única fonte da decisão. A interface não pode adivinhar por conta
+    própria: ela tentava, pelo número de palavras, e mandava para o acompanhamento toda
+    alegação com menos de 25 palavras — de modo que, depois da primeira checagem, cada
+    notícia curta recebia "essa sua pergunta eu ainda não sei responder direito".
     """
     limpo = _PONTUACAO_DE_BORDA.sub("", texto.strip()).lower()
     if not limpo:
@@ -118,7 +141,19 @@ def classificar(texto: str) -> Natureza:
     if len(palavras) > LIMITE_DE_PALAVRAS_DE_CONVERSA:
         return Natureza.ALEGACAO
 
-    if marcas_de_alegacao(texto) > 0:
+    tem_marca_de_alegacao = marcas_de_alegacao(texto) > 0
+
+    # Pergunta sobre o resultado anterior: tem tema reconhecido e **nada** que pareça
+    # uma afirmação nova. A segunda condição é o que separa "por que você achou isso?"
+    # de "por que o governo vai taxar o Pix em 15%?", que é alegação a checar.
+    if (
+        tem_checagem_anterior
+        and not tem_marca_de_alegacao
+        and e_pergunta_de_acompanhamento(texto)
+    ):
+        return Natureza.ACOMPANHAMENTO
+
+    if tem_marca_de_alegacao:
         return Natureza.ALEGACAO
 
     if _tem_algum(limpo, _AGRADECIMENTOS):

@@ -223,6 +223,13 @@ REGRAS DO VEREDICTO, por evidência:
 - {ROTULO_NEUTRO}: a evidência não trata do assunto da notícia. Omissão é
   {ROTULO_NEUTRO}, nunca {ROTULO_CONTRADIZ}: se a evidência fala de carros e a notícia
   de bicicletas, é {ROTULO_NEUTRO}.
+
+ATENÇÃO À NEGAÇÃO. Manchete de checagem cita a alegação inteira para desmenti-la, e
+conter as mesmas palavras NÃO é confirmar:
+- "É #FAKE que X" → a evidência diz que X é falso → {ROTULO_CONTRADIZ}
+- "É falso que X" → {ROTULO_CONTRADIZ}
+- "Fulano NÃO fez X" quando a notícia diz que fulano fez X → {ROTULO_CONTRADIZ}
+Leia o que a frase afirma, não quais palavras ela repete.
 """
         resposta = self._api_client(prompt)
         return self._ler_vereditos(resposta)

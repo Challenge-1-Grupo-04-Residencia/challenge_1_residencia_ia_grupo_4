@@ -100,31 +100,60 @@ mkdir -p "$DIRETORIO_DE_LOGS"   # já está no .gitignore
 # Portas: derruba só o que é nosso
 # ---------------------------------------------------------------------------
 
-# Mata o processo que ocupa a porta **apenas** se for um servidor de
-# desenvolvimento deste projeto. Qualquer outra coisa na porta é problema de
-# quem está na máquina, e o script para em vez de adivinhar.
+# Libera a porta derrubando **apenas** servidor de desenvolvimento deste projeto.
+# Qualquer outra coisa na porta é problema de quem está na máquina, e o script para em
+# vez de adivinhar de quem é o processo.
+#
+# O reconhecimento olha a linha de comando e também o processo pai, porque `uvicorn
+# --reload` roda em dois: o pai, que casa com "uvicorn", e um filho cuja linha de
+# comando é `python -c from multiprocessing...` e não casa com nada. A primeira versão
+# disto matava o pai, encontrava o filho ainda segurando a porta, não o reconhecia e
+# abortava a subida inteira.
 liberar_porta() {
-  local porta="$1" nome_esperado="$2" pid comando nascimento
+  local porta="$1" nome_esperado="$2"
+  local pid comando ppid nascimento
+  local nossos=() alheios=()
+
+  # Primeiro classifica todos, depois mata. Classificar e matar no mesmo laço fazia a
+  # checagem do filho acontecer antes de o pai terminar de cair.
   for pid in $(lsof -ti:"$porta" 2>/dev/null || true); do
     comando="$(ps -o command= -p "$pid" 2>/dev/null || true)"
     [[ -z "$comando" ]] && continue
-    if [[ "$comando" == *"$nome_esperado"* ]]; then
+    ppid="$(ps -o ppid= -p "$pid" 2>/dev/null | tr -d ' ' || true)"
+    ppid_comando="$(ps -o command= -p "${ppid:-0}" 2>/dev/null || true)"
+
+    if [[ "$comando" == *"$nome_esperado"* || "$ppid_comando" == *"$nome_esperado"* ]]; then
       nascimento="$(ps -o lstart= -p "$pid" 2>/dev/null | sed -e 's/^ *//' -e 's/ *$//' || true)"
-      aviso "Porta $porta ocupada por um servidor antigo (PID $pid, de $nascimento). Derrubando."
-      kill "$pid" 2>/dev/null || true
+      nossos+=("$pid")
+      aviso "Porta $porta ocupada por servidor antigo (PID $pid, de $nascimento)."
     else
-      erro "Porta $porta ocupada por algo que não é nosso (PID $pid):"
-      erro "  ${comando:0:100}"
-      erro "Libere a porta e rode de novo."
-      exit 1
+      alheios+=("$pid|$comando")
     fi
   done
-  # Dá tempo de o processo soltar o socket antes de tentarmos usá-lo.
+
+  for pid in "${nossos[@]:-}"; do
+    [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true
+  done
+
+  # Espera a porta sair do ar antes de concluir que sobrou algo alheio: o filho do
+  # reloader leva um instante para fechar o socket depois do pai.
   local tentativa=0
-  while lsof -ti:"$porta" >/dev/null 2>&1 && (( tentativa < 20 )); do
+  while lsof -ti:"$porta" >/dev/null 2>&1 && (( tentativa < 40 )); do
     sleep 0.25
     tentativa=$(( tentativa + 1 ))
   done
+
+  if lsof -ti:"$porta" >/dev/null 2>&1; then
+    for entrada in "${alheios[@]:-}"; do
+      [[ -z "${entrada:-}" ]] && continue
+      erro "Porta $porta ocupada por algo que não é nosso (PID ${entrada%%|*}):"
+      erro "  $(printf '%s' "${entrada#*|}" | cut -c1-100)"
+    done
+    erro "Libere a porta $porta e rode de novo."
+    exit 1
+  fi
+  [[ ${#nossos[@]} -gt 0 ]] && ok "Porta $porta liberada."
+  return 0
 }
 
 liberar_porta "$PORTA_BACKEND" uvicorn

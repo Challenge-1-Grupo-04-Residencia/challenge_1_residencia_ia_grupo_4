@@ -58,6 +58,11 @@ class DocumentoRelacionado(BaseModel):
     similaridade_textual: bool = False
     #: O veículo está na base curada como confiável? Alimenta S-11 (RF-28).
     fonte_confiavel: bool = False
+    #: Esta publicação é uma **checagem desta alegação**, e não cobertura do fato?
+    #:
+    #: A diferença tem de chegar à tela: listar o desmentido do G1 sob o título "quem
+    #: mais publicou isso" diz ao usuário o oposto do que aconteceu.
+    e_checagem: bool = False
     data_publicacao: str | None = None
 
 

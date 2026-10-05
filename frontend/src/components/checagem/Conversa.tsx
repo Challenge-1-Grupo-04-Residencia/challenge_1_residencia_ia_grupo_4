@@ -15,14 +15,14 @@ import { CaixaDePergunta } from "@/components/checagem/CaixaDePergunta";
 import { Investigando } from "@/components/checagem/Investigando";
 import { ResultadoChecagem } from "@/components/checagem/ResultadoChecagem";
 import { VeraAvatar } from "@/components/vera/VeraAvatar";
-import { ErroDaVera, checar, perguntar } from "@/lib/api";
+import { ErroDaVera, checar, perguntar, triar } from "@/lib/api";
 import { classificarEntrada } from "@/lib/entrada";
-import type { ChecagemResponse } from "@/types/checagem";
+import type { ChecagemResponse, FonteCitada } from "@/types/checagem";
 
 type Mensagem =
   | { tipo: "pergunta"; texto: string }
   | { tipo: "veredito"; resultado: ChecagemResponse }
-  | { tipo: "fala"; texto: string; fontes: string[] }
+  | { tipo: "fala"; texto: string; fontes: FonteCitada[] }
   | { tipo: "erro"; texto: string };
 
 export function Conversa() {
@@ -38,12 +38,15 @@ export function Conversa() {
     setMensagens((anteriores) => [...anteriores, m]);
   }
 
-  async function novaChecagem(texto: string) {
+  async function novaChecagem(
+    texto: string,
+    opcoes: { jaRegistrouPergunta?: boolean } = {},
+  ) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    acrescentar({ tipo: "pergunta", texto });
+    if (!opcoes.jaRegistrouPergunta) acrescentar({ tipo: "pergunta", texto });
     setCarregando(true);
 
     const { url } = classificarEntrada(texto);
@@ -66,10 +69,13 @@ export function Conversa() {
     }
   }
 
-  async function acompanhamento(texto: string) {
+  async function acompanhamento(
+    texto: string,
+    opcoes: { jaRegistrouPergunta?: boolean } = {},
+  ) {
     if (!idChecagem) return;
 
-    acrescentar({ tipo: "pergunta", texto });
+    if (!opcoes.jaRegistrouPergunta) acrescentar({ tipo: "pergunta", texto });
     setCarregando(true);
 
     try {
@@ -93,20 +99,54 @@ export function Conversa() {
   }
 
   /**
-   * Depois do primeiro veredito, o campo passa a servir para perguntar sobre o
-   * resultado. Uma entrada que parece link ou texto de notícia volta a ser
-   * checagem nova: quem cola outra notícia quer checá-la, não discutir a
-   * anterior.
+   * Decide o destino da mensagem perguntando à API (RF-01, RF-02, RF-04).
+   *
+   * A decisão **não** é tomada aqui. Era, e pelo número de palavras: qualquer
+   * entrada com menos de 25 ia para o acompanhamento depois da primeira
+   * checagem. Como quase toda alegação de fato é curta — "Lula jogou a bandeira
+   * do Brasil no chão após votar" tem nove palavras —, o efeito era a Vera
+   * responder "essa sua pergunta eu ainda não sei responder direito" a tudo o
+   * que a pessoa mandasse depois da primeira mensagem.
+   *
+   * Quem sabe distinguir "por que você achou isso?" de "por que o governo vai
+   * taxar o Pix em 15%?" é a triagem do núcleo, que olha marca de alegação e
+   * tema reconhecido. A interface só obedece.
    */
-  function enviar(texto: string) {
-    const { tipo } = classificarEntrada(texto);
-    const ehNovaNoticia = tipo !== "afirmacao";
+  async function enviar(texto: string) {
+    acrescentar({ tipo: "pergunta", texto });
+    setCarregando(true);
 
-    if (idChecagem && !ehNovaNoticia) {
-      void acompanhamento(texto);
-    } else {
-      void novaChecagem(texto);
+    let natureza: string;
+    let resposta: string | null;
+    try {
+      const triagem = await triar(texto, idChecagem !== null);
+      natureza = triagem.natureza;
+      resposta = triagem.resposta;
+    } catch (erro) {
+      acrescentar({
+        tipo: "erro",
+        texto:
+          erro instanceof ErroDaVera
+            ? erro.message
+            : "Deu chabu aqui do meu lado. Tenta de novo?",
+      });
+      setCarregando(false);
+      return;
     }
+
+    setCarregando(false);
+
+    if (natureza === "alegacao") {
+      void novaChecagem(texto, { jaRegistrouPergunta: true });
+      return;
+    }
+    if (natureza === "acompanhamento") {
+      void acompanhamento(texto, { jaRegistrouPergunta: true });
+      return;
+    }
+    // Saudação, conversa ou agradecimento: a fala já vem pronta do núcleo, sem
+    // gastar busca externa nem modelo.
+    acrescentar({ tipo: "fala", texto: resposta ?? "", fontes: [] });
   }
 
   // A busca do topo empurra `?q=`; dispara uma vez só.
@@ -155,17 +195,35 @@ export function Conversa() {
                 <div className="min-w-0 flex-1 rounded-lg rounded-tl-sm border border-borda bg-papel-2 p-4">
                   <p className="text-base">{m.texto}</p>
                   {m.fontes.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-sm">
-                      {m.fontes.map((url) => (
-                        <li key={url}>
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="break-all text-vermelho underline decoration-dotted underline-offset-2"
+                    <ul className="mt-2 space-y-1.5 text-sm">
+                      {m.fontes.map((fonte) => (
+                        <li key={fonte.url} className="flex items-baseline gap-2">
+                          <span
+                            className="shrink-0 text-xs"
+                            title={
+                              fonte.confiavel
+                                ? "Veículo da base curada"
+                                : "Fora da base curada"
+                            }
+                            aria-hidden
                           >
-                            {url}
-                          </a>
+                            {fonte.confiavel ? "✓" : "·"}
+                          </span>
+                          <span className="min-w-0">
+                            <a
+                              href={fonte.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-vermelho underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                            >
+                              {fonte.titulo}
+                            </a>
+                            {fonte.veiculo && (
+                              <span className="ml-1.5 opacity-60">
+                                — {fonte.veiculo}
+                              </span>
+                            )}
+                          </span>
                         </li>
                       ))}
                     </ul>

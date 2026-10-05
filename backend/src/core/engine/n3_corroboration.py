@@ -81,11 +81,39 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             return self.repassar(noticia)
 
         self._procurar_checagem_de_agencia(noticia.texto, relacionados, resultado)
-        self._medir_corroboracao(relacionados, resultado)
-        self._medir_originalidade(relacionados, resultado)
+
+        # Checagem publicada sobre a alegação **não é** cobertura da alegação. Quem
+        # desmente não está publicando o mesmo fato, e misturar as duas coisas fazia a
+        # Vera se contradizer na tela e a N4 ler o desmentido como confirmação.
+        for documento in relacionados:
+            documento.e_checagem = checagens_publicadas.e_checagem_desta_alegacao(
+                documento.titulo, noticia.texto
+            )
+        coberturas = [d for d in relacionados if not d.e_checagem]
+
+        if coberturas:
+            self._medir_corroboracao(coberturas, resultado)
+            self._medir_originalidade(coberturas, resultado)
+        else:
+            resultado.registrar(
+                sem_achado(
+                    "S-11",
+                    "As publicações que achei sobre isso são checagens da própria "
+                    "alegação, não cobertura do fato.",
+                )
+            )
+            resultado.registrar(
+                sem_achado(
+                    "S-13",
+                    "Não há cobertura do fato com que comparar o texto.",
+                )
+            )
+
+        # Os links de todas as publicações continuam na resposta: a checagem é o link
+        # mais útil que a Vera tem para oferecer (RN-01, RN-05).
         resultado.fontes_citadas.extend(d.url for d in relacionados if d.url)
-        # A N4 compara cada evidência com a alegação do texto; é a N3 que as recolhe.
-        resultado.evidencias.extend(d.titulo for d in relacionados if d.titulo)
+        # A N4 compara cada evidência com a alegação; só a cobertura serve para isso.
+        resultado.evidencias.extend(d.titulo for d in coberturas if d.titulo)
 
         return self.repassar(noticia)
 

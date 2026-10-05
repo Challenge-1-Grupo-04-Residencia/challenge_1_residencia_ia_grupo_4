@@ -61,6 +61,12 @@ export interface DocumentoRelacionado {
    */
   similaridade_textual: boolean;
   fonte_confiavel: boolean;
+  /**
+   * `true` quando a publicação é uma **checagem desta alegação**, e não cobertura do
+   * fato. Listar um desmentido sob "quem mais publicou isso" diz ao usuário o oposto
+   * do que aconteceu.
+   */
+  e_checagem: boolean;
   data_publicacao: string | null;
 }
 
@@ -108,16 +114,53 @@ export type AssuntoDaPergunta =
   | "lacunas"
   | "geral";
 
+/**
+ * O que a API decidiu que a mensagem é. Quem decide é o backend: a interface
+ * adivinhava pelo número de palavras e mandava ao acompanhamento toda alegação com
+ * menos de 25, de modo que depois da primeira checagem tudo virava "ainda não sei
+ * responder direito".
+ */
+export type NaturezaDaEntrada =
+  | "saudacao"
+  | "conversa"
+  | "agradecimento"
+  | "acompanhamento"
+  | "alegacao";
+
+export interface TriagemRequest {
+  texto: string;
+  /** Existe um resultado na tela sobre o qual a pessoa possa estar perguntando? */
+  tem_checagem_anterior: boolean;
+}
+
+export interface TriagemResponse {
+  natureza: NaturezaDaEntrada;
+  /** A fala da Vera já pronta, quando a mensagem é conversa e não checagem. */
+  resposta: string | null;
+}
+
 export interface PerguntaRequest {
   id_checagem: string;
   pergunta: string;
 }
 
+/** Uma publicação citada numa resposta de acompanhamento (RN-05). */
+export interface FonteCitada {
+  titulo: string;
+  url: string;
+  veiculo: string;
+  confiavel: boolean;
+}
+
 export interface RespostaResponse {
   texto: string;
   assunto: AssuntoDaPergunta;
-  /** URLs citadas na resposta, para a interface linká-las (RN-05). */
-  fontes: string[];
+  /**
+   * Publicações citadas na resposta, para a interface linká-las (RN-05). Era uma
+   * lista de URLs, e como o buscador devolve link de redirecionador, a tela mostrava
+   * endereços opacos de 500 caracteres em que ninguém identificava o veículo.
+   */
+  fontes: FonteCitada[];
   /** IDs dos sinais em que a resposta se apoia, para auditoria (RF-33). */
   sinais_citados: string[];
 }
