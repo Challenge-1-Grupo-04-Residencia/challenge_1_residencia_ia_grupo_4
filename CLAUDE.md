@@ -63,6 +63,9 @@ A lista completa (RN-01 a RN-12) está em `origin/docs:docs/requisitos/regras-de
 ## Comandos
 
 ```bash
+./scripts/subir.sh                                             # sobe backend + frontend
+./scripts/subir.sh --com-ollama                                # idem, com a N4 ativa
+
 uv sync                                                        # ambiente Python
 uv run pytest                                                  # testes do backend
 uv run uvicorn src.main:app --app-dir backend --reload --port 8010

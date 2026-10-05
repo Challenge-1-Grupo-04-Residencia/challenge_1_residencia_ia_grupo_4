@@ -35,6 +35,7 @@ de veracidade e a interface evoluem no mesmo ritmo e compartilham o contrato da 
 │       ├── components/   vera/ (persona) · checagem/ (resultado) · ui/
 │       ├── lib/          api.ts (único ponto de rede) · veracidade.ts
 │       └── types/        espelho do contrato da API
+├── scripts/              subir.sh — sobe o ambiente de desenvolvimento
 ├── ml/                   ciência de dados
 │   ├── notebooks/        uma EDA por camada do pipeline
 │   ├── scripts/          datasets, treino do S-06 e avaliação dos sinais
@@ -170,6 +171,14 @@ dois na mesma PR.
 ## Rodando
 
 ```bash
+./scripts/subir.sh              # backend + frontend, Ctrl+C derruba tudo
+./scripts/subir.sh --com-ollama # idem, com a camada N4 ativa
+./scripts/subir.sh --so-backend # só a API
+```
+
+Ou na mão:
+
+```bash
 # backend
 uv sync
 uv run uvicorn src.main:app --app-dir backend --reload --port 8010
@@ -179,6 +188,13 @@ uv run pytest
 export PATH="$HOME/.local/node/bin:$PATH"
 cd frontend && npm install && npm run dev      # :3000
 ```
+
+O `--reload` não é opcional: a auditoria de 05/10 encontrou um `uvicorn` e um
+`next-server` de cinco dias antes ainda no ar, os dois sem recarregamento, servindo
+código velho e dando a impressão de que o motor estava quebrado. O `subir.sh` confere as
+portas e derruba o que ficou para trás antes de subir — e só derruba o que reconhece
+como servidor de desenvolvimento deste projeto; qualquer outra coisa na porta faz o
+script parar em vez de adivinhar.
 
 A porta do backend é **8010** e não 8000 porque a 8000 costuma estar ocupada pelo
 `mkdocs serve` da documentação. O frontend lê `NEXT_PUBLIC_API_URL` de

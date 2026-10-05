@@ -26,6 +26,8 @@ A organização do código e as decisões de arquitetura estão em
 ## Rodando
 
 ```bash
+# tudo de uma vez: ./scripts/subir.sh   (Ctrl+C derruba)
+
 # backend — http://localhost:8010
 uv sync                       # a camada N4 usa o Ollama por HTTP: docker compose up -d ollama
 uv run uvicorn src.main:app --app-dir backend --reload --port 8010
