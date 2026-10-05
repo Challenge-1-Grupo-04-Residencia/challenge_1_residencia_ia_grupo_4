@@ -115,9 +115,9 @@ ATENÇÃO AO NEUTRAL: Se a evidência fala de "carros" e a notícia de "biciclet
         explicacao = resposta.get("explicacao", "Sem explicação detalhada.")
 
         # Traduz a saída do Llama para a matemática do motor (S-12)
-        if "ENTAILMENT" in veredicto:
+        if any(palavra in veredicto for palavra in ["ENTAILMENT", "VERDADEIRO", "SUSTENTA", "CONFIRMA", "TRUE"]):
             return 1, 0, explicacao
-        elif "CONTRADICTION" in veredicto:
+        elif any(palavra in veredicto for palavra in ["CONTRADICTION", "FALSO", "CONTRADIZ", "MENTIRA", "FALSE"]):
             return 0, 1, explicacao
         else:
             return 0, 0, explicacao

@@ -5,27 +5,26 @@ ela monta o pipeline, converte JSON em entidade de domínio e traduz o veredito 
 para JSON. Toda a regra vive em ``src.core``.
 """
 
-import uuid
-from datetime import datetime
 from functools import lru_cache
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from src.core.engine import follow_up, scoring
+from src.core.engine import scoring
 from src.core.engine.n2_content import CamadaN2Conteudo
 from src.core.engine.n3_corroboration import CamadaN3Corroboracao
 from src.core.engine.n4_nli import CamadaN4Inferencia
 from src.core.engine.orchestrator import Orquestrador
-from src.core.entities.checagem_registrada import ChecagemRegistrada
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
-from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
+from src.core.engine.n0_cache import CamadaN0Cache
+from src.core.engine.n1_fonte import CamadaN1Fonte
+from src.core.engine.leitor_link import CamadaLeitorLink
 
 app = FastAPI(
     title="Senhora Vera API",
     description="Motor de Veracidade de Notícias em Múltiplas Camadas",
-    version="0.3.0",
+    version="0.2.0",
 )
 
 # O frontend roda em outra porta em desenvolvimento, então precisa de CORS. Em produção
@@ -56,41 +55,9 @@ class SinalResponse(BaseModel):
     justificativa: str
 
 
-class PerguntaRequest(BaseModel):
-    """Pergunta de acompanhamento sobre um resultado já entregue (RF-04)."""
-
-    id_checagem: str = Field(description="ID devolvido pela checagem original")
-    pergunta: str = Field(min_length=1)
-
-
-class RespostaResponse(BaseModel):
-    texto: str
-    assunto: str
-    fontes: list[str] = []
-    sinais_citados: list[str] = []
-
-
-class ChecagemDoFeed(BaseModel):
-    """Cartão do feed de últimas checagens (RF-43)."""
-
-    id: str
-    trecho: str
-    url: str | None = None
-    veracidade: float | None
-    faixa: str
-    exibe_porcentagem: bool
-    confianca: float
-    camada_parada: str
-    dificuldade: str
-    regra_aplicada: str | None = None
-    checada_em: datetime
-
-
 class ChecagemResponse(BaseModel):
     """Resultado publicável. Sempre traz os campos de RN-05."""
 
-    #: Identificador desta checagem, usado nas perguntas de acompanhamento (RF-04).
-    id: str
     veracidade: float | None
     confianca: float
     faixa: str
@@ -114,25 +81,22 @@ def obter_orquestrador() -> Orquestrador:
     cada requisição estouraria as metas de latência das camadas.
     """
     from src.infrastructure.search.gdelt import BuscadorGdelt
+    from src.infrastructure.search.pgvector_search import BuscadorVetorial
+    from src.infrastructure.search.hibrido_search import BuscadorHibrido
 
+    n0 = CamadaN0Cache()
+    n1 = CamadaN1Fonte()
+    leitor = CamadaLeitorLink()
     n2 = CamadaN2Conteudo()
-    n3 = CamadaN3Corroboracao(BuscadorGdelt())
+    
+    buscador_combinado = BuscadorHibrido([BuscadorGdelt(), BuscadorVetorial()])
+    n3 = CamadaN3Corroboracao(buscador_combinado)
+    
     n4 = CamadaN4Inferencia()
-    # N0 e N1 ainda não existem, então a corrente começa na N2. Por RN-07 a N4 só roda
-    # se as anteriores não atingirem a regra de parada — o encadeamento já garante isso.
-    n2.set_proxima(n3).set_proxima(n4)
-    return Orquestrador(n2)
 
-
-@lru_cache(maxsize=1)
-def obter_historico() -> HistoricoEmMemoria:
-    """Histórico de checagens, compartilhado entre requisições.
-
-    Hoje é em memória e se perde ao reiniciar o servidor. A porta
-    ``HistoricoDeChecagens`` existe para que a troca por persistência real não toque
-    no núcleo nem nesta camada.
-    """
-    return HistoricoEmMemoria()
+    # O encadeamento garante a sequência correta da arquitetura
+    n0.set_proxima(n1).set_proxima(leitor).set_proxima(n2).set_proxima(n3).set_proxima(n4)
+    return Orquestrador(n0)
 
 
 def _para_response(sinal) -> SinalResponse:
@@ -155,19 +119,14 @@ async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
 
     veredito = orquestrador.veredito(noticia)
     resultado = noticia.resultado
-    explicacao = (veredito.motivo_regra + " " + resultado.explicacao).strip()
-    id_checagem = uuid.uuid4().hex
-
-    _registrar_no_historico(id_checagem, request, veredito, resultado, explicacao)
 
     return ChecagemResponse(
-        id=id_checagem,
         veracidade=veredito.veracidade,
         confianca=round(veredito.confianca, 4),
         faixa=veredito.faixa.value,
         camada_parada=resultado.camada_atual,
         dificuldade=resultado.dificuldade.value,
-        explicacao=explicacao,
+        explicacao=(veredito.motivo_regra + " " + resultado.explicacao).strip(),
         exibe_porcentagem=veredito.exibe_porcentagem,
         regra_aplicada=veredito.regra_aplicada,
         cobertura=round(resultado.cobertura, 4),
@@ -178,81 +137,6 @@ async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
         documentos_relacionados=resultado.documentos_relacionados,
         fontes_citadas=resultado.fontes_citadas,
     )
-
-
-def _registrar_no_historico(
-    id_checagem: str, request: ChecagemRequest, veredito, resultado, explicacao: str
-) -> None:
-    """Guarda a checagem para o feed e para as perguntas de acompanhamento.
-
-    Falha aqui não pode derrubar a resposta: perder uma entrada do feed é muito menos
-    grave do que negar ao usuário o resultado que ele pediu.
-    """
-    try:
-        obter_historico().registrar(
-            ChecagemRegistrada(
-                id=id_checagem,
-                trecho=ChecagemRegistrada.resumir(request.texto),
-                url=request.url,
-                veracidade=veredito.veracidade,
-                faixa=veredito.faixa.value,
-                exibe_porcentagem=veredito.exibe_porcentagem,
-                confianca=round(veredito.confianca, 4),
-                camada_parada=resultado.camada_atual,
-                dificuldade=resultado.dificuldade,
-                regra_aplicada=veredito.regra_aplicada,
-                explicacao=explicacao,
-                fontes_citadas=list(resultado.fontes_citadas),
-                evidencias=list(resultado.evidencias),
-                sinais=list(resultado.sinais),
-            )
-        )
-    except Exception:  # noqa: BLE001 - o feed nunca derruba a checagem
-        pass
-
-
-@app.post("/api/v1/perguntar", response_model=RespostaResponse)
-async def perguntar(request: PerguntaRequest) -> RespostaResponse:
-    """Responde uma pergunta sobre um resultado já entregue (RF-04).
-
-    Usa os sinais e as evidências que a N3 já recuperou, sem refazer a checagem: a
-    busca é cara e repeti-la para responder "quais fontes você viu?" seria desperdício.
-    """
-    checagem = obter_historico().buscar(request.id_checagem)
-    if checagem is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Não encontrei essa checagem. Ela pode ter expirado do histórico.",
-        )
-
-    resposta = follow_up.responder(request.pergunta, checagem)
-    return RespostaResponse(
-        texto=resposta.texto,
-        assunto=resposta.assunto.value,
-        fontes=resposta.fontes,
-        sinais_citados=resposta.sinais_citados,
-    )
-
-
-@app.get("/api/v1/checagens/recentes", response_model=list[ChecagemDoFeed])
-async def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
-    """Últimas checagens, para o feed da página inicial (RF-43)."""
-    return [
-        ChecagemDoFeed(
-            id=c.id,
-            trecho=c.trecho,
-            url=c.url,
-            veracidade=c.veracidade,
-            faixa=c.faixa,
-            exibe_porcentagem=c.exibe_porcentagem,
-            confianca=c.confianca,
-            camada_parada=c.camada_parada,
-            dificuldade=c.dificuldade.value,
-            regra_aplicada=c.regra_aplicada,
-            checada_em=c.checada_em,
-        )
-        for c in obter_historico().recentes(max(1, min(limite, 50)))
-    ]
 
 
 @app.get("/health")
