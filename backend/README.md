@@ -150,7 +150,14 @@ ou limiar, e atualize a linha de base no mesmo commit:
 uv run python ml/scripts/avaliar_sinais.py
 uv run python ml/scripts/treinar_classificador_n2.py   # retreina o S-06
 uv run python backend/scripts/debug_pipeline.py "o texto"
+uv run python backend/scripts/bateria_de_exemplos.py
 ```
+
+A bateria roda o pipeline em 25 exemplos com gabarito — as alegações falsas são reais,
+colhidas dos títulos das checagens publicadas pelo G1 Fato ou Fake e pelo Aos Fatos.
+Erro para o lado de "Inconclusiva" é aceitável e está contado em separado: por RN-04 e
+RN-12 a Vera deve se recusar a cravar quando não apurou. Veredito **trocado** é bug de
+produto, e aí o script sai com código 1.
 
 Teste que dá `skip` quando um serviço está desligado não é cobertura. Os casos que
 exigem o Ollama de verdade ficam em `tests/laboratorio_n4.py`, que é script e não suíte:

@@ -80,6 +80,7 @@ uv run jupyter lab                                             # notebooks em ml
 uv run python ml/scripts/avaliar_sinais.py                     # eficácia dos sinais
 uv run python ml/scripts/treinar_classificador_n2.py           # retreina o S-06
 uv run python backend/scripts/debug_pipeline.py "texto"        # pipeline no terminal
+uv run python backend/scripts/bateria_de_exemplos.py           # 25 casos com gabarito
 ```
 
 A camada N4 **não carrega modelo**: ela chama um LLM pelo Ollama em HTTP. Para exercitá-la
