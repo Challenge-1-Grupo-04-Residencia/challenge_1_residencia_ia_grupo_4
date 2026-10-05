@@ -12,9 +12,12 @@ import pytest
 
 from src.core.ports.news_search import BuscaIndisponivel
 from src.infrastructure.search.gdelt import (
+    DESCANSO_DO_DISJUNTOR,
+    FALHAS_PARA_ABRIR,
     MAXIMO_DE_TERMOS,
     TIMEOUT_PADRAO,
     BuscadorGdelt,
+    _Disjuntor,
     termos_de_busca,
 )
 
@@ -29,15 +32,20 @@ class _MarcapassoFalso:
         self.esperas += 1
 
 
-def _buscador(resposta_ou_erro, marcapasso=None) -> BuscadorGdelt:
+def _buscador(resposta_ou_erro, marcapasso=None, disjuntor=None) -> BuscadorGdelt:
     class ClienteFalso:
         def get(self, url, params=None):
             if isinstance(resposta_ou_erro, Exception):
                 raise resposta_ou_erro
             return resposta_ou_erro
 
+    # Disjuntor novo por buscador: o de produção é global de propósito, porque o
+    # GDELT fora do ar está fora para todo mundo. Em teste isso faria um caso
+    # vazar no seguinte — era o que acontecia antes desta injeção.
     return BuscadorGdelt(
-        cliente=ClienteFalso(), marcapasso=marcapasso or _MarcapassoFalso()
+        cliente=ClienteFalso(),
+        marcapasso=marcapasso or _MarcapassoFalso(),
+        disjuntor=disjuntor or _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
     )
 
 
@@ -158,3 +166,84 @@ class TestRitmoETempo:
     def test_timeout_padrao_cobre_a_latencia_real_da_api(self):
         """Latência medida: 15 a 23 s. Um timeout de 8 s falhava sempre."""
         assert TIMEOUT_PADRAO >= 25.0
+
+
+class TestDisjuntor:
+    """Com o GDELT fora, insistir custa o timeout inteiro em cada checagem.
+
+    Na medição o serviço falhava em 100% das consultas: sem disjuntor, todo usuário
+    esperava 25 s para chegar à mesma conclusão da checagem anterior. Insistir também é
+    o que mantém o 429 vindo de uma API que acabou de pedir para desacelerar.
+    """
+
+    def test_abre_depois_de_falhas_seguidas_e_nao_chama_mais(self):
+        class ClienteQueConta:
+            def __init__(self):
+                self.chamadas = 0
+
+            def get(self, url, params=None):
+                self.chamadas += 1
+                raise httpx.ConnectTimeout("estourou")
+
+        cliente = ClienteQueConta()
+        buscador = BuscadorGdelt(
+            cliente=cliente,
+            marcapasso=_MarcapassoFalso(),
+            disjuntor=_Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR),
+        )
+
+        for _ in range(FALHAS_PARA_ABRIR + 4):
+            with pytest.raises(BuscaIndisponivel):
+                buscador.buscar("notícia sobre vacinação nacional")
+
+        # Depois de abrir, nenhuma chamada nova sai.
+        assert cliente.chamadas == FALHAS_PARA_ABRIR
+
+    def test_disjuntor_aberto_falha_na_hora(self):
+        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        buscador = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
+        for _ in range(FALHAS_PARA_ABRIR):
+            with pytest.raises(BuscaIndisponivel):
+                buscador.buscar("notícia sobre vacinação nacional")
+
+        with pytest.raises(BuscaIndisponivel, match="parei de tentar"):
+            buscador.buscar("outra notícia sobre vacinação nacional")
+
+    def test_sucesso_fecha_o_disjuntor(self):
+        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        falhando = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
+        for _ in range(FALHAS_PARA_ABRIR - 1):
+            with pytest.raises(BuscaIndisponivel):
+                falhando.buscar("notícia sobre vacinação nacional")
+
+        funcionando = _buscador(_resposta(200, '{"articles": []}'), disjuntor=disjuntor)
+        assert funcionando.buscar("notícia sobre vacinação nacional") == []
+
+        # Zerado: faltam FALHAS_PARA_ABRIR novas falhas para abrir de novo.
+        for _ in range(FALHAS_PARA_ABRIR - 1):
+            with pytest.raises(BuscaIndisponivel):
+                falhando.buscar("notícia sobre vacinação nacional")
+        assert funcionando.buscar("notícia sobre vacinação nacional") == []
+
+    def test_depois_do_descanso_deixa_sondar_de_novo(self):
+        """O disjuntor não pode fechar a camada para sempre — o serviço pode voltar."""
+        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, descanso=0.0)
+        buscador = _buscador(httpx.ConnectTimeout("estourou"), disjuntor=disjuntor)
+        for _ in range(FALHAS_PARA_ABRIR):
+            with pytest.raises(BuscaIndisponivel):
+                buscador.buscar("notícia sobre vacinação nacional")
+
+        # Com descanso zero, a próxima já passa pela rede: a mensagem é a do timeout,
+        # não a do disjuntor.
+        with pytest.raises(BuscaIndisponivel, match="não respondeu"):
+            buscador.buscar("notícia sobre vacinação nacional")
+
+    def test_consulta_vazia_nao_conta_como_falha(self):
+        """Texto só com stopwords não é falha do provedor."""
+        disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+        buscador = _buscador(_resposta(200, '{"articles": []}'), disjuntor=disjuntor)
+
+        for _ in range(FALHAS_PARA_ABRIR + 2):
+            assert buscador.buscar("a de do que e para com") == []
+
+        assert buscador.buscar("notícia sobre vacinação nacional") == []

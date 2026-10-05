@@ -28,6 +28,10 @@ Mudou: o timeout passou a cobrir a latência real, as chamadas são espaçadas p
 tomar 429, a consulta usa menos termos, e qualquer falha levanta
 :class:`BuscaIndisponivel` com log em vez de sumir.
 
+Com o serviço fora do ar, um disjuntor para de tentar depois de três falhas seguidas:
+sem ele, **toda** checagem pagava o timeout inteiro — 25 s de espera para chegar à mesma
+conclusão da checagem anterior.
+
 !!! warning "Isto não fecha o orçamento de latência"
     Mesmo consertado, o plano gratuito do GDELT custa de 15 a 25 s por consulta e
     aceita uma chamada a cada 5 s. É incompatível com a meta de latência da N3 e com
@@ -65,6 +69,12 @@ INTERVALO_MINIMO_ENTRE_CHAMADAS = 5.5
 
 #: Latência medida do serviço: 15 a 23 s. Um timeout menor que isso falha sempre.
 TIMEOUT_PADRAO = 25.0
+
+#: Falhas seguidas antes de o disjuntor abrir e a camada parar de tentar.
+FALHAS_PARA_ABRIR = 3
+
+#: Quanto o disjuntor fica aberto antes de deixar uma tentativa passar.
+DESCANSO_DO_DISJUNTOR = 120.0
 
 
 def termos_de_busca(texto: str, maximo: int = MAXIMO_DE_TERMOS) -> str:
@@ -113,6 +123,58 @@ class _Marcapasso:
 _marcapasso = _Marcapasso(INTERVALO_MINIMO_ENTRE_CHAMADAS)
 
 
+class _Disjuntor:
+    """Para de tentar depois de algumas falhas seguidas, e volta a tentar depois.
+
+    Sem isto, com o GDELT fora do ar **toda** checagem paga o timeout inteiro — 25 s de
+    espera para chegar à mesma conclusão da checagem anterior. Era o caso na medição:
+    o serviço respondia 429 ou estourava o tempo em 100% das consultas, e cada usuário
+    esperava por nada.
+
+    Também é questão de boa vizinhança: insistir numa API que acabou de nos pedir para
+    desacelerar é o que mantém o 429 vindo.
+
+    Um sucesso fecha o disjuntor. Enquanto ele está aberto a camada recebe
+    :class:`BuscaIndisponivel` na hora, e por RN-06 S-11 fica indisponível — o mesmo
+    resultado de antes, sem a espera.
+    """
+
+    def __init__(self, falhas_para_abrir: int, descanso: float):
+        self._falhas_para_abrir = falhas_para_abrir
+        self._descanso = descanso
+        self._trava = threading.Lock()
+        self._falhas = 0
+        self._aberto_desde = 0.0
+
+    def aberto(self) -> bool:
+        with self._trava:
+            if self._falhas < self._falhas_para_abrir:
+                return False
+            if time.monotonic() - self._aberto_desde >= self._descanso:
+                # Passado o descanso, deixa uma tentativa passar para sondar o serviço.
+                self._falhas = self._falhas_para_abrir - 1
+                return False
+            return True
+
+    def registrar_falha(self) -> None:
+        with self._trava:
+            self._falhas += 1
+            if self._falhas == self._falhas_para_abrir:
+                self._aberto_desde = time.monotonic()
+                _log.warning(
+                    "GDELT: %d falhas seguidas, parando de tentar por %.0fs",
+                    self._falhas,
+                    self._descanso,
+                )
+
+    def registrar_sucesso(self) -> None:
+        with self._trava:
+            self._falhas = 0
+
+
+_disjuntor = _Disjuntor(FALHAS_PARA_ABRIR, DESCANSO_DO_DISJUNTOR)
+
+
 class BuscadorGdelt:
     """Busca notícias semelhantes na GDELT Doc 2.0 API."""
 
@@ -122,12 +184,15 @@ class BuscadorGdelt:
         timeout: float = TIMEOUT_PADRAO,
         cliente: httpx.Client | None = None,
         marcapasso: _Marcapasso | None = None,
+        disjuntor: "_Disjuntor | None" = None,
     ):
         self.idioma = idioma
         self.timeout = timeout
         self._cliente = cliente
-        # Injetável para o teste não esperar 5,5 s de verdade.
+        # Injetáveis para o teste não esperar 5,5 s de verdade nem herdar o estado
+        # de falha de outro teste.
         self._marcapasso = marcapasso if marcapasso is not None else _marcapasso
+        self._disjuntor = disjuntor if disjuntor is not None else _disjuntor
 
     def buscar(self, texto: str, top_k: int = 5) -> list[DocumentoRelacionado]:
         """Top-k notícias relacionadas.
@@ -140,6 +205,11 @@ class BuscadorGdelt:
         if not consulta:
             return []
 
+        if self._disjuntor.aberto():
+            raise BuscaIndisponivel(
+                "a busca está fora do ar; parei de tentar por alguns minutos"
+            )
+
         parametros = {
             "query": f"{consulta} sourcelang:{self.idioma}",
             "mode": "artlist",
@@ -148,6 +218,23 @@ class BuscadorGdelt:
             "sort": "hybridrel",
         }
 
+        try:
+            artigos, decorrido = self._consultar(parametros)
+        except BuscaIndisponivel:
+            self._disjuntor.registrar_falha()
+            raise
+
+        self._disjuntor.registrar_sucesso()
+        _log.info(
+            "GDELT: %d artigos para %r em %.1fs", len(artigos), consulta, decorrido
+        )
+        return [
+            self._converter(artigo, posicao, len(artigos))
+            for posicao, artigo in enumerate(artigos)
+        ]
+
+    def _consultar(self, parametros: dict) -> tuple[list, float]:
+        """Faz a consulta e devolve os artigos, ou levanta :class:`BuscaIndisponivel`."""
         self._marcapasso.aguardar()
         inicio = time.monotonic()
         try:
@@ -157,7 +244,9 @@ class BuscadorGdelt:
                 f"GDELT não respondeu em {self.timeout:.0f}s"
             ) from erro
         except httpx.HTTPError as erro:
-            raise BuscaIndisponivel(f"falha de rede ao consultar o GDELT: {erro}") from erro
+            raise BuscaIndisponivel(
+                f"falha de rede ao consultar o GDELT: {erro}"
+            ) from erro
 
         decorrido = time.monotonic() - inicio
 
@@ -176,16 +265,10 @@ class BuscadorGdelt:
                 f"GDELT devolveu corpo não-JSON: {resposta.text[:80]!r}"
             ) from erro
 
-        _log.info(
-            "GDELT: %d artigos para %r em %.1fs", len(artigos), consulta, decorrido
-        )
         if not isinstance(artigos, list):
             raise BuscaIndisponivel("campo 'articles' do GDELT não é uma lista")
 
-        return [
-            self._converter(artigo, posicao, len(artigos))
-            for posicao, artigo in enumerate(artigos)
-        ]
+        return artigos, decorrido
 
     def _requisitar(self, parametros: dict) -> httpx.Response:
         if self._cliente is not None:
