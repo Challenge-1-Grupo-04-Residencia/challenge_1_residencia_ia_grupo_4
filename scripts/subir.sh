@@ -35,6 +35,12 @@ PORTA_BACKEND=8010   # a 8000 costuma estar ocupada pelo `mkdocs serve` da docum
 PORTA_FRONTEND=3000
 DIRETORIO_DE_LOGS="$RAIZ/logs"
 
+IMAGEM_OLLAMA="ollama/ollama:latest"
+# Trocar por um modelo menor (llama3.2:3b baixa ~2 GB) encurta muito a primeira
+# execução, mas o S-12 pesa 20 pontos e é o sinal mais pesado do catálogo: avalie a
+# qualidade do julgamento com `backend/tests/laboratorio_n4.py` antes de trocar.
+MODELO_OLLAMA="${OLLAMA_MODEL:-llama3}"
+
 COM_OLLAMA=0
 SO_BACKEND=0
 
@@ -181,22 +187,72 @@ trap encerrar INT TERM
 # Ollama (camada N4)
 # ---------------------------------------------------------------------------
 
+# O container responde à API alguns segundos depois de `up -d`; chamar `ollama
+# pull` antes disso falha com erro de conexão.
+esperar_ollama() {
+  local tentativa=0
+  until docker exec vera_ollama ollama list >/dev/null 2>&1; do
+    sleep 1
+    tentativa=$(( tentativa + 1 ))
+    if (( tentativa > 60 )); then
+      aviso "O Ollama subiu mas não respondeu em 60s."
+      return 1
+    fi
+  done
+}
+
+modelo_presente() {
+  docker exec vera_ollama ollama list 2>/dev/null \
+    | awk 'NR>1 {print $1}' \
+    | grep -qx -e "$MODELO_OLLAMA" -e "${MODELO_OLLAMA}:latest"
+}
+
 if [[ $COM_OLLAMA -eq 1 ]]; then
   if ! command -v docker >/dev/null 2>&1; then
     aviso "Docker não encontrado — seguindo sem Ollama. O S-12 vai sair indisponível."
+  elif ! docker info >/dev/null 2>&1; then
+    aviso "O Docker está instalado mas não está rodando. Abra o Docker Desktop."
+    aviso "Seguindo sem Ollama: o S-12 vai sair indisponível."
   else
+    # A primeira execução baixa ~1,5 GB de imagem e ~4,7 GB de modelo. Avisar o
+    # tamanho antes evita a pessoa achar que travou, e o progresso vai para o
+    # terminal e não para o log — esconder uma espera de 15 minutos atrás de uma
+    # linha parada é pior do que não ter o aviso.
+    if ! docker image inspect "$IMAGEM_OLLAMA" >/dev/null 2>&1; then
+      aviso "A imagem do Ollama (~1,5 GB) ainda não está local. Baixando — demora."
+    fi
     info "Subindo o Ollama…"
-    if docker compose up -d ollama >>"$DIRETORIO_DE_LOGS/ollama.log" 2>&1; then
-      # O modelo é baixado uma vez e fica no volume; `pull` repetido é barato.
-      info "Garantindo o modelo llama3 (primeira vez baixa alguns GB)…"
-      docker exec vera_ollama ollama pull llama3 >>"$DIRETORIO_DE_LOGS/ollama.log" 2>&1 \
-        && ok "Ollama pronto em :11434" \
-        || aviso "Não consegui baixar o llama3. Veja logs/ollama.log"
+    if ! docker compose up -d ollama; then
+      aviso "Falha ao subir o Ollama. Seguindo sem a N4."
+      COM_OLLAMA=0
     else
-      aviso "Falha ao subir o Ollama. Veja logs/ollama.log"
+      # Sob `set -e`, um retorno não-zero aqui derrubaria o script inteiro; a espera
+      # que falha é tratada logo abaixo, quando o `pull` não encontrar o serviço.
+      esperar_ollama || true
+      if modelo_presente; then
+        ok "Modelo $MODELO_OLLAMA já está no volume."
+      else
+        aviso "O modelo $MODELO_OLLAMA (~4,7 GB) ainda não foi baixado."
+        aviso "Isto leva de 10 a 20 minutos numa conexão boa, e acontece só uma vez:"
+        aviso "o modelo fica no volume ollama_data e sobrevive a reinício."
+        printf "\n"
+        # Sem redirecionar: o `ollama pull` mostra barra de progresso.
+        if docker exec vera_ollama ollama pull "$MODELO_OLLAMA"; then
+          printf "\n"
+        else
+          printf "\n"
+          aviso "Não consegui baixar o $MODELO_OLLAMA. Seguindo sem a N4."
+          COM_OLLAMA=0
+        fi
+      fi
+      if [[ $COM_OLLAMA -eq 1 ]]; then
+        ok "Ollama pronto em :11434 (modelo $MODELO_OLLAMA)"
+        info "A primeira checagem carrega o modelo na RAM e leva uns 10s a mais."
+      fi
     fi
   fi
-else
+fi
+if [[ $COM_OLLAMA -eq 0 ]]; then
   info "Sem Ollama (use --com-ollama). A N4 vai marcar o S-12 como indisponível,"
   info "que é o comportamento correto por RN-06 — não é erro."
 fi
