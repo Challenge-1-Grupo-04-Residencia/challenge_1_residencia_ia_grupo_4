@@ -28,6 +28,8 @@ class Dificuldade(str, Enum):
 
 #: Camada de parada → dificuldade da checagem.
 DIFICULDADE_POR_CAMADA: dict[str, Dificuldade] = {
+    # Entrada que a triagem barrou antes do pipeline: não houve checagem para medir.
+    "TRIAGEM": Dificuldade.FACIL,
     "N0": Dificuldade.FACIL,
     "N1": Dificuldade.FACIL,
     "N2": Dificuldade.MEDIANO,
@@ -100,8 +102,13 @@ class AnaliseResultado(BaseModel):
 
     @property
     def cobertura(self) -> float:
-        """Fração do peso total dos sinais que foi observada."""
+        """Fração do que as camadas existentes sabem medir que foi observada."""
         return scoring.cobertura(self.sinais)
+
+    @property
+    def cobertura_do_catalogo(self) -> float:
+        """Fração dos 100 pontos do catálogo completo que foi observada."""
+        return scoring.cobertura_do_catalogo(self.sinais)
 
 
 class NoticiaRequest(BaseModel):

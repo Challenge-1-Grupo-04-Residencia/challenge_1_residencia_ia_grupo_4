@@ -8,8 +8,13 @@
 /** As três dimensões de sinais: fonte, conteúdo e corroboração. */
 export type Dimensao = "fonte" | "conteudo" | "corroboracao";
 
-/** Camada em que a checagem parou. Define a dificuldade. */
-export type Camada = "N0" | "N1" | "N2" | "N3" | "N4";
+/**
+ * Camada em que a checagem parou. Define a dificuldade.
+ *
+ * `TRIAGEM` significa que não houve checagem: a entrada era conversa, não alegação de
+ * fato, e o pipeline não rodou.
+ */
+export type Camada = "TRIAGEM" | "N0" | "N1" | "N2" | "N3" | "N4";
 
 export type Dificuldade = "facil" | "mediano" | "dificil";
 
@@ -17,6 +22,8 @@ export type Dificuldade = "facil" | "mediano" | "dificil";
  * Rótulos da faixa de veracidade. Nunca afirmam certeza absoluta (RN-12).
  */
 export type Faixa =
+  /** Não houve checagem: a entrada era saudação ou conversa, não notícia. */
+  | "Conversa"
   | "Provavelmente falsa"
   | "Duvidosa"
   | "Inconclusiva"
@@ -55,19 +62,27 @@ export interface ChecagemRequest {
 export interface ChecagemResponse {
   /** Identificador desta checagem, usado nas perguntas de acompanhamento (RF-04). */
   id: string;
-  /** `null` quando uma regra de negócio suprime a porcentagem (opinião, sátira). */
+  /**
+   * `null` quando uma regra de negócio suprime a porcentagem (opinião, sátira) ou
+   * quando a entrada não era uma alegação de fato.
+   */
   veracidade: number | null;
   confianca: number;
   faixa: Faixa;
   camada_parada: Camada;
   dificuldade: Dificuldade;
   explicacao: string;
-  /** RN-03: falso para opinião e sátira, que não recebem porcentagem. */
+  /** RN-03: falso para opinião, sátira e para entrada que não é notícia. */
   exibe_porcentagem: boolean;
   /** ID da regra que sobrepôs o score calculado, se houver (ex.: "RN-01"). */
   regra_aplicada: string | null;
-  /** Fração do peso total dos sinais que foi observada. */
+  /** Fração do que as camadas existentes sabem medir que foi observada. */
   cobertura: number;
+  /**
+   * Fração dos 100 pontos do catálogo completo que foi observada. Menor que
+   * `cobertura` enquanto houver camada não implementada.
+   */
+  cobertura_do_catalogo: number;
   principais_sinais: Sinal[];
   sinais: Sinal[];
   documentos_relacionados: DocumentoRelacionado[];

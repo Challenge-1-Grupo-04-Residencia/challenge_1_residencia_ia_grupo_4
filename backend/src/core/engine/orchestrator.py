@@ -10,7 +10,7 @@ bastaram (RN-07).
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from src.core.engine import business_rules, scoring
+from src.core.engine import business_rules, scoring, triagem
 from src.core.engine.business_rules import Veredito
 from src.core.entities.claim import NoticiaRequest
 
@@ -51,7 +51,18 @@ class Orquestrador:
         self.camada_inicial = camada_inicial
 
     def checar(self, noticia: NoticiaRequest) -> NoticiaRequest:
-        """Roda o pipeline. Devolve a notícia com o resultado acumulado."""
+        """Roda o pipeline. Devolve a notícia com o resultado acumulado.
+
+        A triagem vem antes da primeira camada: entrada que não é alegação de fato não
+        gasta busca externa nem chamada de modelo. Era de onde vinha o "Oi, tudo bem?"
+        com 77% de veracidade, e também um custo de GDELT e LLM por saudação recebida.
+        """
+        natureza = triagem.classificar(noticia.texto)
+        if natureza is not triagem.Natureza.ALEGACAO:
+            noticia.resultado.natureza = natureza.value
+            noticia.resultado.camada_atual = "TRIAGEM"
+            noticia.resultado.explicacao = ""
+            return noticia
         return self.camada_inicial.processar(noticia)
 
     def veredito(self, noticia: NoticiaRequest) -> Veredito:

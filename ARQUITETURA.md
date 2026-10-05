@@ -20,13 +20,14 @@ de veracidade e a interface evoluem no mesmo ritmo e compartilham o contrato da 
 │   ├── src/
 │   │   ├── core/         domínio: não importa nada de infraestrutura
 │   │   │   ├── entities/ Sinal, NoticiaRequest, AnaliseResultado
-│   │   │   ├── engine/   scoring, regras de negócio, orquestrador, camadas
+│   │   │   ├── engine/   triagem, scoring, regras, orquestrador, camadas
 │   │   │   └── ports/    interfaces que a infraestrutura implementa
 │   │   ├── infrastructure/
 │   │   │   ├── ml_models/  classificador N2 (.joblib)
 │   │   │   ├── search/     GDELT e índice TF-IDF local
 │   │   │   └── sources/    base curada de veículos
 │   │   └── main.py       FastAPI: monta o pipeline e traduz JSON ↔ domínio
+│   ├── scripts/          diagnóstico manual (debug_pipeline.py)
 │   └── tests/
 ├── frontend/             Site e chat (TypeScript · Next.js · Tailwind)
 │   └── src/
@@ -36,7 +37,7 @@ de veracidade e a interface evoluem no mesmo ritmo e compartilham o contrato da 
 │       └── types/        espelho do contrato da API
 ├── ml/                   ciência de dados
 │   ├── notebooks/        uma EDA por camada do pipeline
-│   ├── scripts/          download e padronização dos datasets
+│   ├── scripts/          datasets, treino do S-06 e avaliação dos sinais
 │   └── datasets/         corpora em Parquet (fora do controle de versão)
 └── .claude/skills/       guias de trabalho por área do projeto
 ```
@@ -65,13 +66,18 @@ a porta.
 POST /api/v1/checar
       │
       ▼
+            triagem: é alegação de fato, ou é "oi, tudo bem?"
+                 │                            │
+          não é ─┘                            └─ é ──┐
+          resposta de conversa,                      │
+          sem checagem e sem porcentagem             ▼
 NoticiaRequest ──► N0 cache ──► N1 fonte ──► N2 conteúdo ──► N3 corroboração ──► N4 LLM
                       │            │             │                │                │
                       └────────────┴─────────────┴────────────────┴────────────────┘
                                       cada camada registra SINAIS
                                                   │
                                     regra de parada após cada camada:
-                                    C ≥ 0,7 e (V ≤ 25 ou V ≥ 75) → para
+                                    C ≥ 0,6 e (V ≤ 25 ou V ≥ 75) → para
                                                   │
                                                   ▼
                                     business_rules (RN-01..RN-04)
@@ -97,28 +103,51 @@ confiança, *sei que é ruim* derruba o score.
 
 | Camada | Status | Sinais | Responsável |
 | --- | --- | --- | --- |
+| Triagem | **implementada** | — (decide se há checagem) | — |
 | N0 · Cache | a fazer | — | issue em aberto |
 | N1 · Fonte | a fazer | S-01 a S-05 | issue em aberto |
-| N2 · Conteúdo | **implementada** | S-06, S-07, S-09 | — |
+| N2 · Conteúdo | **implementada** | S-06, S-07, S-08, S-09 | — |
 | N3 · Corroboração | **implementada** | S-11, S-13 | — |
 | N4 · LLM | **implementada** | S-12 | — |
 
-Com N0 e N1 pendentes a cobertura máxima é de 53 dos 100 pontos: os 35 da dimensão
-Fonte inteira ficam de fora, mais S-08 e S-10. Por isso muita checagem ainda cai em
-RN-04 (Inconclusivo) por confiança baixa. **Isso é o comportamento correto**, não um
-bug: a Vera não deve cravar veredito sem evidência. O número sobe conforme as camadas
-entram.
+Com N0 e N1 pendentes, 37 dos 100 pontos do catálogo ficam fora: os 35 da dimensão
+Fonte inteira, mais S-10. Isso aparece na resposta como `cobertura_do_catalogo`, e é
+medida da maturidade do produto.
 
-A N4 exige o extra opcional do NLI, que traz o torch (~2 GB):
+A **confiança**, porém, não é calculada sobre os 100 pontos, e sim sobre os 63 que as
+camadas existentes sabem medir (`cobertura`). A razão está em
+`core/engine/scoring.py`: enquanto o denominador eram os 100, o teto da confiança era
+0,63, e a regra de parada — que exige `C ≥ 0,6` — nunca podia ser satisfeita antes da
+N4. RN-07 virava letra morta e a LLM rodava em 100% das checagens. Sinal que a camada
+*tentou* medir e não conseguiu continua derrubando a cobertura, que é o que RN-06 pede;
+o que saiu da conta foi a camada que ninguém escreveu ainda.
+
+A N4 **não carrega modelo no processo**: ela chama um LLM servido pelo Ollama por HTTP.
+Quem for mexer nela precisa do serviço de pé:
 
 ```bash
-uv sync --extra nli
+docker compose up -d ollama
+docker exec -it vera_ollama ollama pull llama3
 ```
 
-Dois sinais estão fora por decisão consciente: **S-08** (intensidade emocional) espera a
-integração do NRC Emotion Lexicon, e **S-10** (texto gerado por IA) é `Won't` no MoSCoW,
-porque detectores de texto por IA são pouco confiáveis e texto escrito por IA não é
-falso por definição.
+Um sinal está fora por decisão consciente: **S-10** (texto gerado por IA) é `Won't` no
+MoSCoW, porque detectores de texto por IA são pouco confiáveis e texto escrito por IA
+não é falso por definição.
+
+### Sinais que só conseguem descontar
+
+S-07 (sensacionalismo) e S-08 (intensidade emocional) entram no cálculo em `[0; 0,5]`, e
+não em `[0; 1]`, e ficam **indisponíveis** quando não encontram nada. São detectores de
+manipulação: achar gritaria ou insulto é evidência contra a notícia, mas não achar não é
+evidência a favor — mentira em tom sóbrio existe e é o caso difícil.
+
+Enquanto os dois podiam valer 1,0, somavam 10 dos 23 pontos ativos quase sempre no
+máximo, e o efeito medido nos corpora rotulados foi que só **11,9% a 25%** das notícias
+falsas chegavam à faixa "provavelmente falsa". Depois da mudança, **96,3%**. Era também
+o que dava 77% de veracidade a um "Oi, tudo bem?".
+
+O mesmo vale para S-13: não achar cópia entre cinco resultados de busca não atesta
+originalidade, então o sinal fica indisponível em vez de creditar 1,0.
 
 ## Frontend: onde mora o quê
 
@@ -167,7 +196,15 @@ desta máquina não tem permissão de escrita em `/opt/homebrew`.
 | Sinais em vez de mutação direta do score | A explicação (RF-32, RF-33) precisa saber *quanto cada evidência pesou*; um score mutado perde essa informação |
 | `veracidade`/`confianca` seguem graváveis | Compatibilidade com camadas ainda não migradas; o caminho correto é `registrar()` |
 | Next.js no frontend | Pedido do PO. A issue #46 especificava Vite — ver a nota registrada lá |
-| `transformers` como extra opcional `nli` | Traz o torch (~2 GB) e só a N4 usa; pesaria no `uv sync` de quem só mexe nos notebooks |
+| N4 por LLM servido via HTTP (Ollama), e não modelo no processo | O extra `nli` com torch (~2 GB) foi removido: nada importava `transformers`, e o desenho mDeBERTa não está no código |
+| Triagem antes da corrente, e não como camada | Ela não mede sinal nenhum, então não teria o que registrar; e a N0 do desenho é o cache, que é issue de outra pessoa |
+| Cobertura relativa ao que as camadas existentes medem | Com os 100 pontos no denominador, `C ≥ 0,6` era inalcançável e RN-07 era código morto; a lacuna do catálogo segue visível em `cobertura_do_catalogo` |
+| S-07, S-08 e S-13 só descontam | Ausência de manipulação não é evidência de verdade; com teto 1,0, só 11,9% a 25% das falsas chegavam à faixa correta |
+| Léxico do S-08 calibrado por *lift* nos corpora | O léxico anterior tratava "morte", "crise" e "doença" como carga emocional — palavras 2 a 4× mais frequentes em notícia **verdadeira**; a AUC do sinal era 0,39, abaixo do acaso |
+| Termo político fora do léxico, mesmo com *lift* alto | RN-08: viés político é contexto e não altera o score. "comunista" (3,6) e "esquerdista" (7,7) melhorariam a métrica e violariam a regra |
+| `/api/v1/checar` é `def`, não `async def` | O pipeline faz I/O bloqueante; na corrotina ele travava o event loop e duas requisições simultâneas serializavam |
+| Um veredito da N4 **por evidência**, numa chamada só | Com veredito único, o sinal de peso 20 só podia valer 0,0 ou 1,0 e movia o resultado em 32 pontos sozinho |
+| Falha de busca e de LLM levantam exceção própria | "ninguém publicou" e "não consegui procurar" chegavam como a mesma lista vazia, e a camada morria em silêncio |
 | TF-IDF antes de embeddings na N3 | Roda offline e sem chave de API, destrava a camada agora; a porta permite trocar sem tocar no núcleo |
 | Similaridade do GDELT derivada da posição | A API não expõe score de relevância; é aproximação explícita, a refinar com embeddings |
 | `notebooks/`, `scripts/` e `datasets/` juntos em `ml/` | Os notebooks leem `../datasets/` e o script resolve o destino pela própria localização; mover os três juntos preserva os caminhos sem tocar em código |

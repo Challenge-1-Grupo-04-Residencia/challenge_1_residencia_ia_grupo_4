@@ -9,10 +9,14 @@ A camada recebe um :class:`BuscadorDeNoticias` por injeção, então funciona ig
 GDELT, com índice TF-IDF local ou com um buscador falso em teste.
 """
 
+import logging
+
 from src.core.engine.orchestrator import CamadaVerificacao
-from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
+from src.core.entities.claim import AnaliseResultado, DocumentoRelacionado, NoticiaRequest
 from src.core.entities.signal import medir
-from src.core.ports.news_search import BuscadorDeNoticias
+from src.core.ports.news_search import BuscadorDeNoticias, BuscaIndisponivel
+
+_log = logging.getLogger(__name__)
 
 #: S-11 pela contagem de veículos confiáveis distintos, conforme a tabela de sinais:
 #: 0 → 0 · 1 → 0,5 · 2 → 0,8 · 3+ → 1.
@@ -36,21 +40,40 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         resultado = noticia.resultado
         resultado.camada_atual = "N3"
 
-        relacionados = self.buscador.buscar(noticia.texto, top_k=self.top_k)
-        resultado.documentos_relacionados = relacionados
-
-        if not relacionados:
-            # Pode ser "ninguém publicou" ou "a busca falhou" — são coisas diferentes e
-            # não dá para distingui-las aqui, então o sinal fica indisponível em vez de
-            # virar evidência de falsidade.
+        try:
+            relacionados = self.buscador.buscar(noticia.texto, top_k=self.top_k)
+        except BuscaIndisponivel as erro:
+            # Falha nossa não é evidência contra a notícia (RN-06). O detalhe técnico
+            # vai para o log: antes a camada morria em silêncio e ninguém percebia.
+            _log.warning("N3 sem corroboração: %s", erro)
             resultado.registrar(
                 medir(
                     "S-11",
                     None,
-                    "A busca por notícias semelhantes não devolveu resultados.",
+                    "Não consegui consultar a base de notícias agora: a busca não "
+                    "respondeu.",
                 )
             )
-            resultado.explicacao += " Não encontrei outras publicações sobre o assunto."
+            resultado.explicacao += (
+                " Não consegui procurar outras publicações sobre o assunto agora — "
+                "isso é limitação minha, não achado sobre a notícia."
+            )
+            return self.repassar(noticia)
+
+        resultado.documentos_relacionados = relacionados
+
+        if not relacionados:
+            resultado.registrar(
+                medir(
+                    "S-11",
+                    None,
+                    "A busca funcionou e não achou nenhuma publicação semelhante.",
+                )
+            )
+            resultado.explicacao += (
+                " Procurei e não encontrei outras publicações sobre o assunto. Isso "
+                "pode ser notícia muito nova, ou assunto que ninguém cobriu."
+            )
             return self.repassar(noticia)
 
         self._medir_corroboracao(relacionados, resultado)
@@ -62,7 +85,7 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         return self.repassar(noticia)
 
     def _medir_corroboracao(
-        self, relacionados: list[DocumentoRelacionado], resultado
+        self, relacionados: list[DocumentoRelacionado], resultado: AnaliseResultado
     ) -> None:
         """S-11 — quantos veículos confiáveis **distintos** publicaram o mesmo fato.
 
@@ -87,18 +110,29 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         resultado.explicacao += f" {justificativa}"
 
     def _medir_originalidade(
-        self, relacionados: list[DocumentoRelacionado], resultado
+        self, relacionados: list[DocumentoRelacionado], resultado: AnaliseResultado
     ) -> None:
         """S-13 — o texto é cópia quase literal de uma fonte não confiável?
 
         Similaridade altíssima com veículo confiável é replicação legítima de conteúdo
         de agência, e não penaliza. O sinal só aponta falsidade quando a quase-cópia
         vem de fora da base curada.
+
+        Não achar quase-cópia deixa o sinal **indisponível**, e não 1,0. Antes era 1,0,
+        e isso creditava 5 pontos de veracidade a toda checagem em que a busca trouxe
+        qualquer coisa — inclusive a uma saudação. Comparar com os cinco documentos que
+        o buscador devolveu não estabelece originalidade: só diz que entre aqueles cinco
+        não havia cópia.
         """
         quase_copias = [d for d in relacionados if d.similaridade >= LIMIAR_DE_COPIA]
         if not quase_copias:
             resultado.registrar(
-                medir("S-13", 1.0, "Não parece cópia de outra publicação.")
+                medir(
+                    "S-13",
+                    None,
+                    "Nenhuma das publicações encontradas é cópia quase literal deste "
+                    "texto — o que não é o mesmo que atestar originalidade.",
+                )
             )
             return
 

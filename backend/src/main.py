@@ -5,6 +5,7 @@ ela monta o pipeline, converte JSON em entidade de domínio e traduz o veredito 
 para JSON. Toda a regra vive em ``src.core``.
 """
 
+import logging
 import uuid
 from datetime import datetime
 from functools import lru_cache
@@ -21,6 +22,8 @@ from src.core.engine.orchestrator import Orquestrador
 from src.core.entities.checagem_registrada import ChecagemRegistrada
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
 from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
+
+_log = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Senhora Vera API",
@@ -100,6 +103,10 @@ class ChecagemResponse(BaseModel):
     exibe_porcentagem: bool
     regra_aplicada: str | None = None
     cobertura: float
+    #: Fração dos 100 pontos do catálogo completo que foi observada. Menor que
+    #: ``cobertura`` enquanto houver camada não implementada, e serve para a Vera poder
+    #: dizer quanto do que ela gostaria de olhar ainda não existe (RF-33).
+    cobertura_do_catalogo: float
     principais_sinais: list[SinalResponse] = []
     sinais: list[SinalResponse] = []
     documentos_relacionados: list[DocumentoRelacionado] = []
@@ -148,12 +155,30 @@ def _para_response(sinal) -> SinalResponse:
 
 
 @app.post("/api/v1/checar", response_model=ChecagemResponse)
-async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
-    """Roda o pipeline de camadas e devolve o veredito com o detalhamento dos sinais."""
+def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
+    """Roda o pipeline de camadas e devolve o veredito com o detalhamento dos sinais.
+
+    É ``def`` e não ``async def`` de propósito. O pipeline faz I/O **bloqueante** — a
+    busca da N3 por ``httpx.Client`` e a chamada da N4 por ``urllib`` —, e numa corrotina
+    isso trava o *event loop*: duas requisições simultâneas foram medidas serializando
+    perfeitamente (8,3 s e 16,5 s, total 16,5 s), e uma resposta já pronta ficava retida
+    até a outra liberar o laço. Com o endpoint síncrono o FastAPI executa em
+    *threadpool*, e as requisições deixam de esperar umas pelas outras.
+    """
     noticia = NoticiaRequest(texto=request.texto, url=request.url)
     orquestrador = obter_orquestrador()
 
-    veredito = orquestrador.veredito(noticia)
+    try:
+        veredito = orquestrador.veredito(noticia)
+    except Exception:  # noqa: BLE001 - nenhuma falha interna sai como traceback
+        _log.exception("pipeline falhou para texto de %d caracteres", len(request.texto))
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Me deu um branco aqui, meu bem. Tenta de novo daqui a pouquinho, "
+                "visse?"
+            ),
+        ) from None
     resultado = noticia.resultado
     explicacao = (veredito.motivo_regra + " " + resultado.explicacao).strip()
     id_checagem = uuid.uuid4().hex
@@ -171,6 +196,7 @@ async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
         exibe_porcentagem=veredito.exibe_porcentagem,
         regra_aplicada=veredito.regra_aplicada,
         cobertura=round(resultado.cobertura, 4),
+        cobertura_do_catalogo=round(resultado.cobertura_do_catalogo, 4),
         principais_sinais=[
             _para_response(s) for s in scoring.principais_sinais(resultado.sinais)
         ],
@@ -212,7 +238,7 @@ def _registrar_no_historico(
 
 
 @app.post("/api/v1/perguntar", response_model=RespostaResponse)
-async def perguntar(request: PerguntaRequest) -> RespostaResponse:
+def perguntar(request: PerguntaRequest) -> RespostaResponse:
     """Responde uma pergunta sobre um resultado já entregue (RF-04).
 
     Usa os sinais e as evidências que a N3 já recuperou, sem refazer a checagem: a
@@ -235,7 +261,7 @@ async def perguntar(request: PerguntaRequest) -> RespostaResponse:
 
 
 @app.get("/api/v1/checagens/recentes", response_model=list[ChecagemDoFeed])
-async def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
+def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
     """Últimas checagens, para o feed da página inicial (RF-43)."""
     return [
         ChecagemDoFeed(

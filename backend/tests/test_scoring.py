@@ -48,6 +48,10 @@ def test_exemplo_da_documentacao():
 
     Serve de âncora: se alguém mexer nos pesos sem atualizar a documentação, este
     teste quebra e obriga a registrar a mudança no histórico de calibração.
+
+    Os 35% do exemplo são cobertura **do catálogo**, que é a conta que a documentação
+    descreve. A ``cobertura`` que alimenta a confiança passou a ser relativa ao que as
+    camadas existentes sabem medir — ver :func:`scoring.cobertura`.
     """
     sinais = [
         medir("S-03", 0.0),   # domínio com 20 dias
@@ -60,7 +64,7 @@ def test_exemplo_da_documentacao():
     veracidade = scoring.calcular_veracidade(sinais)
 
     assert veracidade == pytest.approx(12.14, abs=0.1)
-    assert scoring.cobertura(sinais) == pytest.approx(0.35)
+    assert scoring.cobertura_do_catalogo(sinais) == pytest.approx(0.35)
     assert scoring.classificar(veracidade) is Faixa.FALSA
 
 
@@ -92,8 +96,70 @@ def test_uma_dimensao_sozinha_nao_infla_a_confianca():
     sinais = [medir("S-01", 1.0), medir("S-02", 1.0)]  # só dimensão Fonte, peso 20
 
     assert scoring.concordancia(sinais) == 1.0
-    assert scoring.calcular_confianca(sinais) == pytest.approx(0.20)
     assert scoring.calcular_confianca(sinais) < scoring.C_MIN
+
+
+def test_cobertura_nao_desconta_camada_que_nao_existe():
+    """Medir tudo o que as camadas implementadas sabem medir dá cobertura cheia.
+
+    Antes o denominador eram os 100 pontos do catálogo, então o teto da confiança era
+    0,63 enquanto N0 e N1 não existissem — e a regra de parada de RN-07, que exige
+    C ≥ 0,6, era inalcançável. A lacuna do catálogo continua visível em
+    :func:`scoring.cobertura_do_catalogo`.
+    """
+    tudo_que_sabemos_medir = [
+        medir(sid, 1.0)
+        for sid in ("S-06", "S-07", "S-08", "S-09", "S-11", "S-12", "S-13")
+    ]
+
+    assert scoring.cobertura(tudo_que_sabemos_medir) == pytest.approx(1.0)
+    assert scoring.cobertura_do_catalogo(tudo_que_sabemos_medir) == pytest.approx(0.63)
+
+
+def test_cobertura_nunca_passa_de_um_com_sinal_de_camada_futura():
+    """Quando N1 começar a emitir sinal, a conta tem de continuar fechando em 1."""
+    sinais = [
+        medir(sid, 1.0)
+        for sid in ("S-01", "S-02", "S-03", "S-04", "S-05",
+                    "S-06", "S-07", "S-08", "S-09", "S-11", "S-12", "S-13")
+    ]
+
+    assert scoring.cobertura(sinais) == pytest.approx(1.0)
+
+
+def test_dimensoes_em_discordancia_total_derrubam_a_concordancia_pela_metade():
+    """Conteúdo ótimo e corroboração péssima é o pior caso: σ = 0,5.
+
+    A fórmula é ``1 - σ`` e o desvio populacional de dois valores em [0, 1] não passa
+    de 0,5, então o piso da concordância com duas dimensões é 0,5. Amplificar isso foi
+    tentado e desfeito — ver :func:`scoring.concordancia`.
+    """
+    sinais = [medir("S-06", 1.0), medir("S-11", 0.0)]
+
+    assert scoring.concordancia(sinais) == pytest.approx(0.5)
+    assert scoring.concordancia(sinais) < scoring.concordancia(
+        [medir("S-06", 1.0), medir("S-11", 1.0)]
+    )
+
+
+def test_regra_de_parada_e_alcancavel_ao_fim_da_n3():
+    """RN-07: sem isto a LLM da N4 roda em 100% das checagens e o produto não fecha.
+
+    Estilo claramente falso e nenhuma corroboração encontrada é caso resolvido na N3 —
+    não há pergunta que a LLM responda aqui que justifique o custo.
+    """
+    ate_a_n3 = [
+        medir("S-06", 0.05),
+        medir("S-07", 0.1),
+        medir("S-08", 0.1),
+        medir("S-09", 0.0),
+        medir("S-11", 0.0),
+        medir("S-13", 0.1),
+    ]
+    veracidade = scoring.calcular_veracidade(ate_a_n3)
+    confianca = scoring.calcular_confianca(ate_a_n3)
+
+    assert scoring.deve_parar(veracidade, confianca)
 
 
 @pytest.mark.parametrize(

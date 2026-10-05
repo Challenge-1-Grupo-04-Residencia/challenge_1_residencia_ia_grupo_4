@@ -33,6 +33,21 @@ export function ResultadoChecagem({ resultado }: Props) {
   const mostraPorcentagem =
     resultado.exibe_porcentagem && resultado.veracidade !== null;
 
+  // A triagem do backend respondeu que a entrada era conversa, não notícia: não houve
+  // checagem, então não há faixa, confiança, cobertura nem dificuldade para mostrar.
+  // Exibir o arcabouço de resultado aqui — com 0% de certeza e "o que consegui apurar:
+  // 0%" — faria parecer que a Vera tentou checar um "bom dia" e não conseguiu.
+  if (resultado.faixa === "Conversa") {
+    return (
+      <article className="flex gap-3">
+        <VeraAvatar humor="satisfeita" tamanho={44} className="mt-1 shrink-0" />
+        <div className="min-w-0 flex-1 rounded-lg rounded-tl-sm border-2 border-borda bg-papel-2 p-4">
+          <p className="text-base">{resultado.explicacao}</p>
+        </div>
+      </article>
+    );
+  }
+
   // A fala em linguagem simples é a preferida; se nenhum sinal tem tradução, cai na
   // explicação vinda da API, para o balão nunca aparecer sem conteúdo (RN-05).
   const emLinguagemSimples = explicarEmLinguagemSimples(resultado.principais_sinais);

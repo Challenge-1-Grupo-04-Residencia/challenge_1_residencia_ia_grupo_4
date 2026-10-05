@@ -17,12 +17,21 @@ cálculo e não conta como zero (RN-06) — isso é o que separa "não sabemos" 
 from enum import Enum
 from statistics import pstdev
 
-from src.core.entities.signal import PESO_TOTAL, Dimensao, Sinal
+from src.core.entities.signal import (
+    CATALOGO,
+    PESO_TOTAL,
+    Dimensao,
+    Sinal,
+    mensuravel,
+)
 
 
 class Faixa(str, Enum):
     """Rótulo mostrado ao usuário. Nunca afirma certeza absoluta (RN-12)."""
 
+    #: Não houve checagem: a entrada era conversa, não alegação de fato. Não é o mesmo
+    #: que ``INCONCLUSIVA``, que é um resultado de checagem — aqui não houve checagem.
+    CONVERSA = "Conversa"
     FALSA = "Provavelmente falsa"
     DUVIDOSA = "Duvidosa"
     INCONCLUSIVA = "Inconclusiva"
@@ -41,7 +50,15 @@ _FAIXAS: tuple[tuple[float, Faixa], ...] = (
 )
 
 #: Confiança mínima para a Vera parar de subir camadas.
-C_MIN = 0.7
+#:
+#: O valor é 0,60 e não 0,70 por aritmética, não por gosto: ao fim da N3 a cobertura
+#: máxima possível é 43/63 = 0,683, porque S-12 sozinho vale 20 dos 63 pontos
+#: mensuráveis. Com o limiar em 0,70 a regra de parada nunca podia ser satisfeita antes
+#: da N4, e RN-07 — a razão econômica do produto — era código morto: a LLM rodava em
+#: 100% das checagens. Em 0,60 uma notícia de estilo claramente falso e sem nenhuma
+#: corroboração encerra na N3, e a N4 fica para os casos em que as camadas baratas
+#: discordam entre si.
+C_MIN = 0.6
 
 #: Fora deste intervalo o score é decisivo o bastante para encerrar a checagem.
 ZONA_DE_DUVIDA = (25.0, 75.0)
@@ -68,8 +85,43 @@ def calcular_veracidade(sinais: list[Sinal]) -> float | None:
     return 100.0 * sum(s.peso * s.score for s in observados) / peso_observado
 
 
+def peso_de_referencia(sinais: list[Sinal]) -> float:
+    """Denominador da cobertura: o peso que esta checagem **podia** ter observado.
+
+    É o peso dos sinais que alguma camada implementada sabe medir, mais o de qualquer
+    sinal que tenha sido efetivamente registrado — este segundo termo mantém a conta
+    correta quando uma camada nova começa a emitir sinal antes de entrar em
+    ``CAMADAS_ATIVAS``, e impede que a cobertura passe de 1.
+    """
+    registrados = {s.id for s in sinais}
+    return sum(
+        d.peso
+        for d in CATALOGO.values()
+        if mensuravel(d) or d.id in registrados
+    )
+
+
 def cobertura(sinais: list[Sinal]) -> float:
-    """Fração do peso total do catálogo que foi efetivamente observada (0 a 1)."""
+    """Fração do que a Vera **sabe medir** que foi efetivamente observada (0 a 1).
+
+    O denominador é o peso mensurável, não os 100 pontos do catálogo: sinal de camada
+    que ainda não foi escrita não é lacuna desta notícia, é lacuna do nosso código, e
+    descontá-lo aqui misturava as duas coisas — travava a confiança em 0,63 no teto e
+    com isso tornava a regra de parada de RN-07 inalcançável. Sinal que a camada tentou
+    medir e não conseguiu continua derrubando a cobertura, que é o que RN-06 pede.
+    """
+    referencia = peso_de_referencia(sinais)
+    if referencia == 0:
+        return 0.0
+    return sum(s.peso for s in disponiveis(sinais)) / referencia
+
+
+def cobertura_do_catalogo(sinais: list[Sinal]) -> float:
+    """Fração dos 100 pontos do catálogo completo que foi observada (0 a 1).
+
+    Não entra na confiança: serve à transparência de RF-33, para a Vera poder dizer
+    quanto do que ela *gostaria* de olhar ainda não existe.
+    """
     return sum(s.peso for s in disponiveis(sinais)) / PESO_TOTAL
 
 
@@ -91,14 +143,23 @@ def score_por_dimensao(sinais: list[Sinal]) -> dict[Dimensao, float]:
 def concordancia(sinais: list[Sinal]) -> float:
     """Quanto as dimensões observadas apontam para o mesmo lado (0 a 1).
 
-    É ``1 - σ`` sobre os scores por dimensão. Com uma só dimensão observada o desvio é
-    zero e a concordância vale 1; isso não infla o resultado porque a cobertura, que
-    multiplica este fator, permanece baixa.
+    É ``1 - σ`` sobre os scores por dimensão, como em
+    ``docs/produto/classificacao.md``.
+
+    Amplificar esse desvio foi tentado e desfeito: com a dimensão Conteúdo passando a
+    ficar perto de 0,5 — porque S-07 e S-08 viraram detectores silenciosos e S-09
+    raramente passa de 0,33 —, qualquer notícia verdadeira bem corroborada apresentava
+    uma diferença grande e *estrutural* entre Conteúdo e Corroboração. Punir isso
+    jogava toda notícia verdadeira em Inconclusivo por RN-04, medindo uma propriedade
+    do nosso catálogo e não uma contradição nas evidências.
+
+    Com uma só dimensão observada o desvio é zero e a concordância vale 1; isso não
+    infla o resultado porque a cobertura, que multiplica este fator, permanece baixa.
     """
     por_dimensao = list(score_por_dimensao(sinais).values())
     if len(por_dimensao) < 2:
         return 1.0
-    return 1.0 - pstdev(por_dimensao)
+    return max(0.0, 1.0 - pstdev(por_dimensao))
 
 
 def calcular_confianca(sinais: list[Sinal]) -> float:

@@ -30,6 +30,15 @@ export interface EstiloDaFaixa {
 }
 
 const ESTILOS: Record<Faixa, EstiloDaFaixa> = {
+  // Não é resultado de checagem: a pessoa mandou um "oi" e a triagem do backend
+  // devolveu conversa, sem pipeline e sem porcentagem. A frase da Vera vem da
+  // `explicacao` da resposta, então aqui a frase fica vazia para não duplicar.
+  Conversa: {
+    humor: "satisfeita",
+    cor: "border-inconclusiva bg-inconclusiva-fundo text-tinta",
+    barra: "bg-inconclusiva",
+    frase: "",
+  },
   "Provavelmente falsa": {
     humor: "brava",
     cor: "border-falsa bg-falsa-fundo text-tinta",
@@ -69,6 +78,9 @@ export function estiloDaFaixa(faixa: Faixa): EstiloDaFaixa {
 
 /** Etapas mostradas durante a investigação (RF-03). */
 export const ETAPAS: Record<Camada, string> = {
+  // A triagem não é etapa de investigação: ela decide se há investigação. Nunca aparece
+  // como andamento, mas o contrato exige a entrada.
+  TRIAGEM: "Deixa eu ver o que é que tu me mandou…",
   N0: "Deixa eu ver se eu já não conferi isso antes…",
   N1: "Vou espiar quem foi que publicou…",
   N2: "Deixa eu ler com atenção o jeito que isso foi escrito…",

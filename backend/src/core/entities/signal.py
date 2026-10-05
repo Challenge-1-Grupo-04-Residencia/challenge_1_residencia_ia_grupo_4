@@ -163,9 +163,37 @@ CATALOGO: dict[str, DefinicaoSinal] = {
     for d in (S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13)
 }
 
-#: Soma dos pesos de todos os sinais possíveis. A cobertura de uma checagem é a
-#: fração deste total que foi efetivamente observada.
+#: Soma dos pesos de todos os sinais possíveis, inclusive os que nenhuma camada mede
+#: ainda. Serve de referência de maturidade do produto, não de base da confiança.
 PESO_TOTAL: float = sum(d.peso for d in CATALOGO.values())
+
+#: Camadas que existem no código hoje. N0 (cache) e N1 (fonte) ainda não foram escritas.
+CAMADAS_ATIVAS: frozenset[str] = frozenset({"N2", "N3", "N4"})
+
+#: S-10 é ``Won't`` no MoSCoW: detectores de texto por IA são pouco confiáveis e texto
+#: escrito por IA não é falso por definição. Nunca será medido, então não pode entrar no
+#: denominador da cobertura.
+SINAIS_FORA_DE_ESCOPO: frozenset[str] = frozenset({"S-10"})
+
+
+def mensuravel(definicao: DefinicaoSinal) -> bool:
+    """O produto **sabe** medir este sinal hoje?
+
+    Distinção que o cálculo da confiança precisa fazer e que ``PESO_TOTAL`` não faz:
+    "não consegui medir nesta notícia" é informação sobre a notícia e deve derrubar a
+    confiança; "ninguém implementou esta camada ainda" é informação sobre o nosso
+    código e não diz nada sobre a notícia. Punir a segunda travava a confiança em 0,63
+    no teto, o que tornava a regra de parada de RN-07 matematicamente inalcançável.
+    """
+    return (
+        definicao.camada in CAMADAS_ATIVAS
+        and definicao.id not in SINAIS_FORA_DE_ESCOPO
+    )
+
+
+#: Soma dos pesos dos sinais que alguma camada implementada sabe medir. É o denominador
+#: da cobertura, e cresce sozinho conforme N0 e N1 entrarem — sem retocar limiar nenhum.
+PESO_MENSURAVEL: float = sum(d.peso for d in CATALOGO.values() if mensuravel(d))
 
 
 def medir(id_sinal: str, score: float | None, justificativa: str = "") -> Sinal:
