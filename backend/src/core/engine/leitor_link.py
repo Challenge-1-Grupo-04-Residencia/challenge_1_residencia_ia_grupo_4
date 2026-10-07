@@ -31,5 +31,11 @@ class CamadaLeitorLink(CamadaVerificacao):
                 print("[Leitor de Links] Texto injetado com sucesso! N2 vai ler de barriga cheia.")
             else:
                 print("[Leitor de Links] Não consegui raspar nada (Página bloqueada ou vazia).")
+                noticia.resultado.explicacao += (
+                    " Tentei ler a reportagem diretamente do link, mas o site original bloqueou "
+                    "o acesso do meu leitor automatizado (isso é super comum em sites governamentais "
+                    "ou portais com paywall). Por causa disso, eu não consegui avaliar o estilo de "
+                    "escrita (N2) do texto original."
+                )
 
         return self.repassar(noticia)
