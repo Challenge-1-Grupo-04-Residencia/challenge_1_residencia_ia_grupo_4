@@ -26,6 +26,9 @@ from src.core.engine.n4_nli import CamadaN4Inferencia
 from src.core.engine.orchestrator import Evento, Orquestrador
 from src.core.entities.checagem_registrada import ChecagemRegistrada
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
+from src.core.engine.n0_cache import CamadaN0Cache
+from src.core.engine.n1_fonte import CamadaN1Fonte
+from src.core.engine.leitor_link import CamadaLeitorLink
 from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
 
 _log = logging.getLogger(__name__)
@@ -162,19 +165,22 @@ def obter_orquestrador() -> Orquestrador:
     cada requisição estouraria as metas de latência das camadas.
     """
     from src.infrastructure.search.google_news import BuscadorGoogleNews
+    from src.infrastructure.search.pgvector_search import BuscadorVetorial
+    from src.infrastructure.search.hibrido_search import BuscadorHibrido
 
+    n0 = CamadaN0Cache()
+    n1 = CamadaN1Fonte()
+    leitor = CamadaLeitorLink()
     n2 = CamadaN2Conteudo()
-    # Google Notícias e não GDELT: medidos lado a lado em 05/10, o GDELT respondia em
-    # 15 a 23 s, aceitava uma consulta a cada 5 s e devolvia zero resultados em
-    # português, o que deixava a dimensão Corroboração — 40 dos 100 pontos — sem
-    # medição nenhuma em produção. O feed do Google responde em ~1 s. O adaptador do
-    # GDELT segue no repositório atrás da mesma porta, para quem quiser comparar.
-    n3 = CamadaN3Corroboracao(BuscadorGoogleNews())
+    
+    # O BuscadorHibrido unifica o Google News e o banco local (PGVector).
+    buscador_combinado = BuscadorHibrido([BuscadorGoogleNews(), BuscadorVetorial()])
+    n3 = CamadaN3Corroboracao(buscador_combinado)
     n4 = CamadaN4Inferencia()
-    # N0 e N1 ainda não existem, então a corrente começa na N2. Por RN-07 a N4 só roda
-    # se as anteriores não atingirem a regra de parada — o encadeamento já garante isso.
-    n2.set_proxima(n3).set_proxima(n4)
-    return Orquestrador(n2)
+
+    # O encadeamento garante a sequência correta da arquitetura
+    n0.set_proxima(n1).set_proxima(leitor).set_proxima(n2).set_proxima(n3).set_proxima(n4)
+    return Orquestrador(n0)
 
 
 @lru_cache(maxsize=1)
