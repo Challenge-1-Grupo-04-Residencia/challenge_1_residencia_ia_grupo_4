@@ -115,9 +115,7 @@ no histórico daquela página.
 
 ## Estado das camadas
 
-A triagem, a N2, a N3 e a N4 estão implementadas; N0 e N1 são issues em aberto de outras
-pessoas do grupo. Com isso 37 dos 100 pontos do catálogo ficam fora — a dimensão Fonte
-inteira (35) e S-10 —, o que aparece em `cobertura_do_catalogo`.
+A triagem, a N2, a N3 e a N4 estão implementadas; N0 (Cache), N1 (Fonte) e LeitorLink também estão implementadas. Agora apenas o sinal S-10 fica fora do catálogo, além do fato da cobertura levar em conta os sinais medidos pela N1.
 
 A N4 **não carrega modelo no processo**: ela chama um LLM servido pelo Ollama por HTTP.
 Sem o serviço de pé, S-12 fica indisponível e a explicação diz que a conferência não foi

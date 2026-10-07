@@ -105,15 +105,13 @@ confiança, *sei que é ruim* derruba o score.
 | Camada | Status | Sinais | Responsável |
 | --- | --- | --- | --- |
 | Triagem | **implementada** | — (decide se há checagem) | — |
-| N0 · Cache | a fazer | — | issue em aberto |
-| N1 · Fonte | a fazer | S-01 a S-05 | issue em aberto |
+| N0 · Cache | **implementada** | S-00 (Fast-track) | — |
+| N1 · Fonte | **implementada** | S-01 | — |
 | N2 · Conteúdo | **implementada** | S-06, S-07, S-08, S-09 | — |
 | N3 · Corroboração | **implementada** | S-11, S-13 | — |
 | N4 · LLM | **implementada** | S-12 | — |
 
-Com N0 e N1 pendentes, 37 dos 100 pontos do catálogo ficam fora: os 35 da dimensão
-Fonte inteira, mais S-10. Isso aparece na resposta como `cobertura_do_catalogo`, e é
-medida da maturidade do produto.
+Agora que N0 e N1 estão ativas, a cobertura do catálogo abrange a dimensão de fonte (S-01 medido via histórico local de reputação). O único sinal ausente por design é S-10.
 
 A **confiança**, porém, não é calculada sobre os 100 pontos, e sim sobre os 63 que as
 camadas existentes sabem medir (`cobertura`). A razão está em

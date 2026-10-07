@@ -52,8 +52,8 @@ a maioria das notícias se resolve antes de chegar na LLM.
 
 | Camada | Pergunta | Status |
 | --- | --- | --- |
-| **N0** Cache | Já checei isso? | a fazer |
-| **N1** Fonte | Quem publicou? | a fazer |
+| **N0** Cache | Já checei isso? | implementada |
+| **N1** Fonte | Quem publicou? | implementada |
 | **N2** Conteúdo | Como está escrito? | implementada |
 | **N3** Corroboração | Outros veículos publicaram? | implementada |
 | **N4** LLM | As evidências sustentam as alegações? | implementada |
