@@ -37,13 +37,15 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-tinta-3">
-        A nota é a média dos sinais que eu consegui medir, cada um com o seu peso.{" "}
-        <strong className="font-medium text-tinta-2">
-          {pesoMedido} de 100 pontos
-        </strong>{" "}
-        foram medidos nesta checagem.
-      </p>
+      {pesoMedido > 0 && (
+        <p className="text-xs text-tinta-3">
+          A nota é a média dos sinais que eu consegui medir, cada um com o seu peso.{" "}
+          <strong className="font-medium text-tinta-2">
+            {pesoMedido} de 100 pontos
+          </strong>{" "}
+          foram medidos nesta checagem.
+        </p>
+      )}
 
       <Grupo
         titulo="Pesou contra"
