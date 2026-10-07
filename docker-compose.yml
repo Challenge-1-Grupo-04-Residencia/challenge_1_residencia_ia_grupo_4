@@ -23,6 +23,7 @@ services:
       - OLLAMA_URL=http://ollama:11434  # Ensina o Python onde achar o Llama dentro do Docker
     depends_on:
       - ollama  # A API só sobe depois que o Ollama ligar
+      - postgres
 
   # 2. O Cérebro Generativo (Ollama) rodando isolado
   ollama:
@@ -33,6 +34,20 @@ services:
     volumes:
       - ollama_data:/root/.ollama  # Salva o cérebro da IA no disco para não baixar de novo
 
+  # 3. Banco de Dados com suporte Vetorial (PGVector)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: vera_db
+    environment:
+      POSTGRES_USER: vera_user
+      POSTGRES_PASSWORD: vera_pass
+      POSTGRES_DB: vera_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
 # Define um volume persistente (Disco virtual do Docker)
 volumes:
   ollama_data:
+  postgres_data:
