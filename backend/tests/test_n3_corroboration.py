@@ -4,6 +4,7 @@ import pytest
 
 from src.core.engine.n3_corroboration import CamadaN3Corroboracao
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
+from src.core.ports.news_search import BuscaIndisponivel
 from src.infrastructure.search.gdelt import termos_de_busca
 from src.infrastructure.search.tfidf_search import BuscadorTfidf, Documento
 from src.infrastructure.sources import veiculos
@@ -21,14 +22,30 @@ class BuscadorFalso:
         return self.documentos[:top_k]
 
 
-def documento(fonte: str, confiavel: bool, similaridade: float = 0.5):
+def documento(
+    fonte: str,
+    confiavel: bool,
+    similaridade: float = 0.5,
+    similaridade_textual: bool = True,
+):
     return DocumentoRelacionado(
         titulo=f"Matéria de {fonte}",
         url=f"https://{fonte}/materia",
         fonte=fonte,
         similaridade=similaridade,
+        similaridade_textual=similaridade_textual,
         fonte_confiavel=confiavel,
     )
+
+
+class BuscadorQueFalha:
+    """Buscador indisponível: rede fora, provedor fora ou limite de uso estourado."""
+
+    def __init__(self, motivo: str = "GDELT não respondeu em 25s"):
+        self.motivo = motivo
+
+    def buscar(self, texto: str, top_k: int = 5) -> list[DocumentoRelacionado]:
+        raise BuscaIndisponivel(self.motivo)
 
 
 def sinal(resultado, id_sinal: str):
@@ -145,11 +162,49 @@ class TestCamadaN3:
         assert sinal(noticia.resultado, "S-11").score == pytest.approx(0.5)
 
     def test_busca_vazia_deixa_s11_indisponivel(self):
-        """Falha de rede não é evidência de falsidade (RN-06)."""
+        """Ninguém publicou nada: não é evidência de falsidade (RN-06)."""
         camada = CamadaN3Corroboracao(BuscadorFalso([]))
         noticia = camada.processar(NoticiaRequest(texto="Texto."))
 
         assert sinal(noticia.resultado, "S-11").score is None
+
+    def test_busca_indisponivel_deixa_s11_indisponivel(self):
+        """Falha nossa também não é evidência de falsidade (RN-06)."""
+        camada = CamadaN3Corroboracao(BuscadorQueFalha())
+        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+
+        assert sinal(noticia.resultado, "S-11").score is None
+
+    def test_falha_de_busca_nao_e_confundida_com_ausencia_de_publicacao(self):
+        """São coisas opostas, e o usuário precisa saber qual das duas aconteceu.
+
+        Antes as duas chegavam aqui como a mesma lista vazia, então a Vera dizia "não
+        encontrei outras publicações" quando o que houve foi o GDELT estourando o
+        timeout — apresentando uma falha nossa como achado sobre a notícia.
+        """
+        falhou = CamadaN3Corroboracao(BuscadorQueFalha()).processar(
+            NoticiaRequest(texto="Texto.")
+        )
+        nada = CamadaN3Corroboracao(BuscadorFalso([])).processar(
+            NoticiaRequest(texto="Texto.")
+        )
+
+        assert sinal(falhou.resultado, "S-11").justificativa != sinal(
+            nada.resultado, "S-11"
+        ).justificativa
+        assert "não respondeu" in sinal(falhou.resultado, "S-11").justificativa
+        assert "limitação minha" in falhou.resultado.explicacao
+        assert "não encontrei" in nada.resultado.explicacao.lower()
+
+    def test_erro_tecnico_da_busca_nao_vaza_para_a_explicacao(self):
+        camada = CamadaN3Corroboracao(
+            BuscadorQueFalha("httpx.ConnectTimeout: [Errno 60] Operation timed out")
+        )
+        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+
+        for vazamento in ("Errno", "httpx", "Timeout"):
+            assert vazamento not in noticia.resultado.explicacao
+            assert vazamento not in sinal(noticia.resultado, "S-11").justificativa
 
     def test_quase_copia_de_fonte_nao_confiavel_zera_s13(self):
         camada = CamadaN3Corroboracao(
@@ -167,6 +222,82 @@ class TestCamadaN3:
         noticia = camada.processar(NoticiaRequest(texto="Texto."))
 
         assert sinal(noticia.resultado, "S-13").score == 1.0
+
+    def test_similaridade_de_ranking_nao_acusa_plagio(self):
+        """Posição no ranking não é comparação de texto.
+
+        Os buscadores por API não expõem score de relevância, então a similaridade é
+        derivada da posição — e o primeiro resultado vale sempre 1,0. Com o limiar de
+        cópia em 0,9, isso acusava de plágio **toda** notícia cujo primeiro resultado
+        viesse de fora da base curada, inclusive uma matéria legítima sobre dados do
+        IBGE. Por RN-06, sem medição de texto não há medição.
+        """
+        camada = CamadaN3Corroboracao(
+            BuscadorFalso([
+                documento(
+                    "aciara.com.br",
+                    False,
+                    similaridade=1.0,
+                    similaridade_textual=False,
+                )
+            ])
+        )
+        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+
+        assert sinal(noticia.resultado, "S-13").score is None
+        assert "originalidade" in sinal(noticia.resultado, "S-13").justificativa
+
+    def test_ausencia_de_copia_nao_credita_originalidade(self):
+        """Não achar plágio entre cinco resultados não atesta originalidade.
+
+        S-13 valia 1,0 aqui, o que dava 5 pontos de veracidade de graça a toda checagem
+        em que o buscador trouxesse qualquer coisa — inclusive a uma saudação.
+        """
+        camada = CamadaN3Corroboracao(
+            BuscadorFalso([documento("g1.globo.com", True, similaridade=0.4)])
+        )
+        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+
+        assert sinal(noticia.resultado, "S-13").score is None
+
+    def test_checagem_de_agencia_nos_resultados_aciona_rn01(self):
+        """RF-17: a agência já checou, então RN-01 decide em vez do score.
+
+        Sem isto a busca por palavra-chave fazia a notícia falsa ser corroborada pelo
+        próprio desmentido dela: as checagens do G1 e do Aos Fatos contavam como dois
+        veículos confiáveis publicando sobre o assunto, e S-11 ia ao máximo.
+        """
+        checagem = DocumentoRelacionado(
+            titulo="É #FAKE que Lula jogou bandeira do Brasil no chão após votar",
+            url="https://g1.globo.com/fato-ou-fake/x",
+            fonte="g1.globo.com",
+            similaridade=1.0,
+            fonte_confiavel=True,
+        )
+        camada = CamadaN3Corroboracao(BuscadorFalso([checagem]))
+        noticia = camada.processar(
+            NoticiaRequest(
+                texto="o Lula jogou a bandeira do Brasil no chão depois de votar?"
+            )
+        )
+
+        assert noticia.resultado.veredito_agencia == "falso"
+        assert noticia.resultado.agencia == "g1.globo.com"
+
+    def test_checagem_de_outra_alegacao_nao_aciona_rn01(self):
+        checagem = DocumentoRelacionado(
+            titulo="É #FAKE que Lula jogou bandeira do Brasil no chão após votar",
+            url="https://g1.globo.com/fato-ou-fake/x",
+            fonte="g1.globo.com",
+            similaridade=1.0,
+            fonte_confiavel=True,
+        )
+        camada = CamadaN3Corroboracao(BuscadorFalso([checagem]))
+        noticia = camada.processar(
+            NoticiaRequest(texto="qual o resultado da eleição em Aracaju?")
+        )
+
+        assert noticia.resultado.veredito_agencia is None
 
     def test_coleta_urls_como_fontes_citadas(self):
         """RN-05 exige as fontes consultadas em todo resultado."""

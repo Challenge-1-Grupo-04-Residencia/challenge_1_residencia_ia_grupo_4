@@ -5,15 +5,14 @@ recuperou — que é o que a história de usuário pede como contexto.
 
 ## Por que por templates, e não por LLM
 
-A N4 de hoje usa um modelo de **NLI** (mDeBERTa), que classifica pares
-premissa/hipótese em sustenta/contradiz/neutro. Ela não gera texto e, portanto, não
-responde pergunta aberta. Enquanto um provedor generativo não entrar, esta é a
-explicação em **modo econômico** descrita em ``docs/produto/funcionamento.md``:
-"explicação montada por templates com as frases da Vera".
+A N4 chama um LLM, mas com uma tarefa fechada: julgar, por evidência, se ela sustenta
+ou contradiz a alegação. Usá-la para redigir resposta aberta sobre o resultado é outro
+problema, e por ora esta é a explicação em **modo econômico** descrita em
+``docs/produto/funcionamento.md``: "explicação montada por templates com as frases da
+Vera". Templates também custam zero e não inventam.
 
 A troca futura é substituir :func:`responder` por uma chamada ao provedor, passando os
-mesmos sinais e evidências como contexto. A forma do contexto já está pronta; falta o
-gerador.
+mesmos sinais e evidências como contexto. A forma do contexto já está pronta.
 
 Isto tem um limite honesto: perguntas fora dos temas reconhecidos recebem uma resposta
 que diz o que a Vera **sabe** sobre aquela checagem, em vez de inventar. Preferimos
@@ -72,13 +71,27 @@ _TERMOS: tuple[tuple[Assunto, tuple[str, ...]], ...] = (
 
 
 @dataclass(frozen=True)
+class FonteCitada:
+    """Uma publicação citada na resposta, com o que o usuário precisa para conferir.
+
+    Só a URL não basta: o buscador devolve link de redirecionador, e uma lista de
+    endereços opacos de 500 caracteres não deixa ninguém ver quem publicou.
+    """
+
+    titulo: str
+    url: str
+    veiculo: str
+    confiavel: bool
+
+
+@dataclass(frozen=True)
 class Resposta:
     """Resposta a uma pergunta de acompanhamento."""
 
     texto: str
     assunto: Assunto
-    #: URLs citadas na resposta, para a interface poder linká-las (RN-05).
-    fontes: list[str]
+    #: Publicações citadas na resposta, para a interface poder linká-las (RN-05).
+    fontes: list[FonteCitada]
     #: IDs dos sinais em que a resposta se apoia, para auditoria (RF-33).
     sinais_citados: list[str]
 
@@ -109,6 +122,20 @@ def responder(pergunta: str, checagem: ChecagemRegistrada) -> Resposta:
     return _resposta_geral(checagem)
 
 
+def _fontes_de(checagem: ChecagemRegistrada) -> list[FonteCitada]:
+    """Converte as publicações guardadas em algo clicável e identificável."""
+    return [
+        FonteCitada(
+            titulo=documento.titulo or documento.fonte or "publicação sem título",
+            url=documento.url,
+            veiculo=documento.fonte,
+            confiavel=documento.fonte_confiavel,
+        )
+        for documento in checagem.documentos_relacionados
+        if documento.url
+    ]
+
+
 def _sobre_fontes(checagem: ChecagemRegistrada) -> Resposta:
     if not checagem.fontes_citadas:
         texto = (
@@ -118,14 +145,15 @@ def _sobre_fontes(checagem: ChecagemRegistrada) -> Resposta:
         )
         return Resposta(texto, Assunto.FONTES, [], ["S-11"])
 
-    quantas = len(checagem.fontes_citadas)
+    fontes = _fontes_de(checagem)
+    quantas = len(fontes) or len(checagem.fontes_citadas)
     plural = "publicações" if quantas > 1 else "publicação"
     texto = (
         f"Olha, eu fui conferir com as comadres e achei {quantas} {plural} sobre isso. "
         "Tá tudo aí embaixo pra você clicar e ler com seus próprios olhos — não precisa "
         "acreditar em mim, não."
     )
-    return Resposta(texto, Assunto.FONTES, list(checagem.fontes_citadas), ["S-11"])
+    return Resposta(texto, Assunto.FONTES, fontes, ["S-11"])
 
 
 def _sobre_estilo(checagem: ChecagemRegistrada) -> Resposta:
@@ -150,7 +178,10 @@ def _sobre_estilo(checagem: ChecagemRegistrada) -> Resposta:
 
 def _sobre_confianca(checagem: ChecagemRegistrada) -> Resposta:
     medidos = [s for s in checagem.sinais if s.disponivel]
-    faltando = [s for s in checagem.sinais if not s.disponivel]
+    # Só lacuna de verdade conta como "faltou": o detector que rodou e não achou nada
+    # não é coisa que a Vera deixou de apurar. Contá-lo fazia a resposta dizer que
+    # faltaram sinais justamente nas notícias em que tudo foi olhado.
+    faltando = [s for s in checagem.sinais if s.e_lacuna]
     peso_medido = sum(s.peso for s in medidos)
 
     texto = (
@@ -169,7 +200,7 @@ def _sobre_confianca(checagem: ChecagemRegistrada) -> Resposta:
 
 
 def _sobre_lacunas(checagem: ChecagemRegistrada) -> Resposta:
-    faltando = [s for s in checagem.sinais if not s.disponivel]
+    faltando = [s for s in checagem.sinais if s.e_lacuna]
     if not faltando:
         return Resposta(
             "Nessa eu consegui apurar tudo o que costumo olhar, viu?",
@@ -192,7 +223,7 @@ def _sobre_motivo(checagem: ChecagemRegistrada) -> Resposta:
         return Resposta(
             checagem.explicacao.strip(),
             Assunto.MOTIVO,
-            list(checagem.fontes_citadas),
+            _fontes_de(checagem),
             [],
         )
 
@@ -208,7 +239,7 @@ def _sobre_motivo(checagem: ChecagemRegistrada) -> Resposta:
     motivos = " ".join(s.justificativa for s in principais if s.justificativa)
     texto = f"O que mais pesou foi isso: {motivos}"
     return Resposta(
-        texto, Assunto.MOTIVO, list(checagem.fontes_citadas), [s.id for s in principais]
+        texto, Assunto.MOTIVO, _fontes_de(checagem), [s.id for s in principais]
     )
 
 

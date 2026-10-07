@@ -13,6 +13,9 @@ import type { Faixa } from "@/types/checagem";
 
 /** Forma curta de cada faixa, para caber no selo sem perder o sentido. */
 const ROTULO_CURTO: Record<Faixa, string> = {
+  // A entrada não era notícia, então não há veredito para carimbar: quem chama o selo
+  // nesse caso é que está errado, mas o rótulo existe para não exibir `undefined`.
+  Conversa: "CONVERSA",
   "Provavelmente falsa": "PROVAVELMENTE FALSA",
   Duvidosa: "DUVIDOSA",
   Inconclusiva: "EM ANÁLISE",
@@ -21,6 +24,7 @@ const ROTULO_CURTO: Record<Faixa, string> = {
 };
 
 const CORES: Record<Faixa, string> = {
+  Conversa: "bg-inconclusiva text-tinta",
   "Provavelmente falsa": "bg-falsa text-white",
   Duvidosa: "bg-duvidosa text-white",
   Inconclusiva: "bg-inconclusiva text-tinta",

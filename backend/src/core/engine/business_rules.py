@@ -10,6 +10,7 @@ registra em ``regra_aplicada`` por que o score publicado difere do score calcula
 
 from dataclasses import dataclass
 
+from src.core.engine import triagem
 from src.core.engine.scoring import C_INCONCLUSIVO, Faixa, classificar
 
 
@@ -38,7 +39,8 @@ class Contexto:
     #: RN-02 — o domínio imita um veículo conhecido (typosquatting)?
     dominio_impostor: bool = False
     veiculo_imitado: str | None = None
-    #: RN-03 — o conteúdo é opinião ou sátira?
+    #: RN-03 — natureza do conteúdo: ``opiniao``, ``satira``, ou um dos valores de
+    #: :class:`triagem.Natureza` quando a entrada não era alegação de fato.
     natureza: str | None = None
     #: A checagem já passou por todas as camadas? RN-04 só vale no fim do pipeline.
     pipeline_encerrado: bool = False
@@ -55,6 +57,26 @@ def aplicar(
     (RN-02), porque a agência já avaliou o conteúdo concreto, e ambas vencem o corte de
     confiança (RN-04), que só existe para o caso em que nada decisivo foi encontrado.
     """
+    # Antes de tudo: a entrada era uma alegação de fato? Saudação, conversa e
+    # agradecimento não são checagem, então não recebem veredito nenhum. Sem esta
+    # guarda, "Oi, tudo bem?" saía com 77% de veracidade (ver ``triagem``).
+    naturezas_de_conversa = {
+        triagem.Natureza.SAUDACAO.value,
+        triagem.Natureza.CONVERSA.value,
+        triagem.Natureza.AGRADECIMENTO.value,
+    }
+    if contexto.natureza in naturezas_de_conversa:
+        return Veredito(
+            veracidade=None,
+            confianca=0.0,
+            faixa=Faixa.CONVERSA,
+            regra_aplicada="TRIAGEM",
+            motivo_regra=triagem.resposta_para(
+                triagem.Natureza(contexto.natureza)
+            ),
+            exibe_porcentagem=False,
+        )
+
     # RN-03 — opinião e sátira não são alegações de fato: não recebem porcentagem.
     if contexto.natureza in ("opiniao", "satira"):
         rotulo = "opinião" if contexto.natureza == "opiniao" else "sátira"

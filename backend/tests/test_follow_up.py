@@ -4,6 +4,7 @@ import pytest
 
 from src.core.engine.follow_up import Assunto, identificar_assunto, responder
 from src.core.entities.checagem_registrada import ChecagemRegistrada
+from src.core.entities.claim import DocumentoRelacionado
 from src.core.entities.signal import medir
 
 
@@ -47,16 +48,53 @@ class TestIdentificacaoDeAssunto:
         assert identificar_assunto("Por que essas fontes?") is Assunto.FONTES
 
 
+def publicacao(fonte: str, titulo: str, confiavel: bool = True):
+    return DocumentoRelacionado(
+        titulo=titulo,
+        url=f"https://news.google.com/rss/articles/{fonte}",
+        fonte=fonte,
+        similaridade=0.8,
+        fonte_confiavel=confiavel,
+    )
+
+
 class TestSobreFontes:
     def test_lista_as_fontes_conferidas(self):
         r = responder(
             "quais fontes?",
-            checagem(fontes_citadas=["https://g1.globo.com/a", "https://folha.uol.com.br/b"]),
+            checagem(
+                fontes_citadas=["https://a", "https://b"],
+                documentos_relacionados=[
+                    publicacao("g1.globo.com", "Matéria do G1 sobre o assunto"),
+                    publicacao("folha.uol.com.br", "Matéria da Folha"),
+                ],
+            ),
         )
 
         assert r.assunto is Assunto.FONTES
         assert len(r.fontes) == 2
         assert "2" in r.texto
+
+    def test_fonte_citada_diz_quem_publicou(self):
+        """RN-05 pede que o usuário possa conferir, e para isso precisa saber de quem é.
+
+        O buscador devolve link de redirecionador: uma lista de endereços opacos de 500
+        caracteres de ``news.google.com/rss/articles/CBMijwJB...`` não permite a ninguém
+        ver quem publicou.
+        """
+        r = responder(
+            "quais fontes?",
+            checagem(
+                fontes_citadas=["https://a"],
+                documentos_relacionados=[
+                    publicacao("g1.globo.com", "Matéria do G1 sobre o assunto")
+                ],
+            ),
+        )
+
+        assert r.fontes[0].veiculo == "g1.globo.com"
+        assert r.fontes[0].titulo == "Matéria do G1 sobre o assunto"
+        assert r.fontes[0].confiavel is True
 
     def test_sem_fontes_explica_sem_acusar(self):
         """Ausência de corroboração não é prova de falsidade — a fala reflete isso."""

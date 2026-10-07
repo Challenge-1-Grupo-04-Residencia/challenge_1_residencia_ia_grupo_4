@@ -18,6 +18,9 @@ function sinal(id: string, score: number | null): Sinal {
     dimensao: "conteudo",
     camada: "N2",
     score,
+    // `aferido` acompanha o score: medido com valor é sempre aferido. Os casos de
+    // "olhei e não achei nada" vivem nos testes do backend, que é quem decide.
+    aferido: score !== null,
     justificativa: "justificativa técnica",
   };
 }

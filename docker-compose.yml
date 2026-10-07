@@ -6,9 +6,18 @@ services:
       dockerfile: Dockerfile
     container_name: vera_api
     ports:
-      - "8000:8000"
+      # 8010 e nao 8000: a 8000 costuma estar ocupada pelo `mkdocs serve` da
+      # documentacao, e a convencao do time e a 8010 em todo lugar.
+      - "8010:8000"
     volumes:
-      - ./backend:/app/backend  # Habilita Hot-Reload para desenvolvimento local
+      - ./backend:/app/backend  # Monta o codigo do host dentro do container
+    # O volume sozinho nao recarrega nada: o `--reload` e o que faz o uvicorn reagir ao
+    # arquivo alterado. Sem ele, o container servia indefinidamente o codigo da imagem,
+    # que foi como um servidor de 5 dias atras ficou respondendo com sinais que o codigo
+    # novo ja media de outro jeito.
+    command: >
+      uv run uvicorn src.main:app --app-dir backend
+      --host 0.0.0.0 --port 8000 --reload --reload-dir backend
     environment:
       - ENVIRONMENT=development
       - OLLAMA_URL=http://ollama:11434  # Ensina o Python onde achar o Llama dentro do Docker

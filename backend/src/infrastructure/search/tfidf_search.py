@@ -96,6 +96,9 @@ class BuscadorTfidf:
                 url=doc.url,
                 fonte=doc.fonte or (veiculos.normalizar_dominio(doc.url) or ""),
                 similaridade=float(sim),
+                # Cosseno entre os textos completos: é comparação de texto de verdade,
+                # então S-13 pode avaliar originalidade a partir dela.
+                similaridade_textual=True,
                 fonte_confiavel=veiculos.e_confiavel(doc.url or doc.fonte),
                 data_publicacao=doc.data_publicacao,
             )

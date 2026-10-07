@@ -5,22 +5,30 @@ ela monta o pipeline, converte JSON em entidade de domínio e traduz o veredito 
 para JSON. Toda a regra vive em ``src.core``.
 """
 
+import json
+import logging
+import queue
+import threading
 import uuid
+from collections.abc import Iterator
 from datetime import datetime
 from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from src.core.engine import follow_up, scoring
+from src.core.engine import follow_up, scoring, triagem
 from src.core.engine.n2_content import CamadaN2Conteudo
 from src.core.engine.n3_corroboration import CamadaN3Corroboracao
 from src.core.engine.n4_nli import CamadaN4Inferencia
-from src.core.engine.orchestrator import Orquestrador
+from src.core.engine.orchestrator import Evento, Orquestrador
 from src.core.entities.checagem_registrada import ChecagemRegistrada
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
 from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
+
+_log = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Senhora Vera API",
@@ -53,7 +61,29 @@ class SinalResponse(BaseModel):
     dimensao: str
     camada: str
     score: float | None
+    #: ``score`` nulo com ``aferido`` verdadeiro significa "olhei e não havia o que
+    #: anotar"; com ``aferido`` falso significa "não consegui medir". Os dois chegam
+    #: como ``score: null`` e querem dizer coisas opostas.
+    aferido: bool
     justificativa: str
+
+
+class TriagemRequest(BaseModel):
+    """O que o usuário digitou, para a API dizer o que fazer com aquilo."""
+
+    texto: str = Field(min_length=1)
+    #: Existe um resultado na tela sobre o qual a pessoa possa estar perguntando?
+    tem_checagem_anterior: bool = False
+
+
+class TriagemResponse(BaseModel):
+    """Para onde a mensagem deve ir, decidido no núcleo e não na interface."""
+
+    #: Um valor de :class:`triagem.Natureza`. Só ``alegacao`` vai para ``/checar``, e
+    #: só ``acompanhamento`` vai para ``/perguntar``.
+    natureza: str
+    #: A fala da Vera, já pronta, quando a mensagem é conversa e não checagem.
+    resposta: str | None = None
 
 
 class PerguntaRequest(BaseModel):
@@ -63,10 +93,19 @@ class PerguntaRequest(BaseModel):
     pergunta: str = Field(min_length=1)
 
 
+class FonteCitadaResponse(BaseModel):
+    """Publicação citada numa resposta de acompanhamento (RN-05)."""
+
+    titulo: str
+    url: str
+    veiculo: str
+    confiavel: bool
+
+
 class RespostaResponse(BaseModel):
     texto: str
     assunto: str
-    fontes: list[str] = []
+    fontes: list[FonteCitadaResponse] = []
     sinais_citados: list[str] = []
 
 
@@ -99,7 +138,16 @@ class ChecagemResponse(BaseModel):
     explicacao: str
     exibe_porcentagem: bool
     regra_aplicada: str | None = None
+    #: Só a frase da regra, sem a narração das camadas colada.
+    #:
+    #: ``explicacao`` traz as duas juntas, e a tela ficava com um parágrafo em que o
+    #: motivo do veredito se perdia no meio do relato técnico de cada camada.
+    motivo_regra: str = ""
     cobertura: float
+    #: Fração dos 100 pontos do catálogo completo que foi observada. Menor que
+    #: ``cobertura`` enquanto houver camada não implementada, e serve para a Vera poder
+    #: dizer quanto do que ela gostaria de olhar ainda não existe (RF-33).
+    cobertura_do_catalogo: float
     principais_sinais: list[SinalResponse] = []
     sinais: list[SinalResponse] = []
     documentos_relacionados: list[DocumentoRelacionado] = []
@@ -113,10 +161,15 @@ def obter_orquestrador() -> Orquestrador:
     O classificador da N2 e o índice de busca são caros de carregar; reconstruí-los a
     cada requisição estouraria as metas de latência das camadas.
     """
-    from src.infrastructure.search.gdelt import BuscadorGdelt
+    from src.infrastructure.search.google_news import BuscadorGoogleNews
 
     n2 = CamadaN2Conteudo()
-    n3 = CamadaN3Corroboracao(BuscadorGdelt())
+    # Google Notícias e não GDELT: medidos lado a lado em 05/10, o GDELT respondia em
+    # 15 a 23 s, aceitava uma consulta a cada 5 s e devolvia zero resultados em
+    # português, o que deixava a dimensão Corroboração — 40 dos 100 pontos — sem
+    # medição nenhuma em produção. O feed do Google responde em ~1 s. O adaptador do
+    # GDELT segue no repositório atrás da mesma porta, para quem quiser comparar.
+    n3 = CamadaN3Corroboracao(BuscadorGoogleNews())
     n4 = CamadaN4Inferencia()
     # N0 e N1 ainda não existem, então a corrente começa na N2. Por RN-07 a N4 só roda
     # se as anteriores não atingirem a regra de parada — o encadeamento já garante isso.
@@ -143,18 +196,43 @@ def _para_response(sinal) -> SinalResponse:
         dimensao=sinal.dimensao.value,
         camada=sinal.camada,
         score=sinal.score,
+        aferido=sinal.aferido,
         justificativa=sinal.justificativa,
     )
 
 
 @app.post("/api/v1/checar", response_model=ChecagemResponse)
-async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
-    """Roda o pipeline de camadas e devolve o veredito com o detalhamento dos sinais."""
+def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
+    """Roda o pipeline de camadas e devolve o veredito com o detalhamento dos sinais.
+
+    É ``def`` e não ``async def`` de propósito. O pipeline faz I/O **bloqueante** — a
+    busca da N3 por ``httpx.Client`` e a chamada da N4 por ``urllib`` —, e numa corrotina
+    isso trava o *event loop*: duas requisições simultâneas foram medidas serializando
+    perfeitamente (8,3 s e 16,5 s, total 16,5 s), e uma resposta já pronta ficava retida
+    até a outra liberar o laço. Com o endpoint síncrono o FastAPI executa em
+    *threadpool*, e as requisições deixam de esperar umas pelas outras.
+    """
     noticia = NoticiaRequest(texto=request.texto, url=request.url)
     orquestrador = obter_orquestrador()
 
-    veredito = orquestrador.veredito(noticia)
-    resultado = noticia.resultado
+    try:
+        veredito = orquestrador.veredito(noticia)
+    except Exception:  # noqa: BLE001 - nenhuma falha interna sai como traceback
+        _log.exception("pipeline falhou para texto de %d caracteres", len(request.texto))
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Me deu um branco aqui, meu bem. Tenta de novo daqui a pouquinho, "
+                "visse?"
+            ),
+        ) from None
+    return _montar_resposta(request, veredito, noticia.resultado)
+
+
+def _montar_resposta(
+    request: ChecagemRequest, veredito, resultado
+) -> ChecagemResponse:
+    """Traduz veredito e sinais para o JSON publicável, e registra no histórico."""
     explicacao = (veredito.motivo_regra + " " + resultado.explicacao).strip()
     id_checagem = uuid.uuid4().hex
 
@@ -170,7 +248,9 @@ async def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
         explicacao=explicacao,
         exibe_porcentagem=veredito.exibe_porcentagem,
         regra_aplicada=veredito.regra_aplicada,
+        motivo_regra=veredito.motivo_regra,
         cobertura=round(resultado.cobertura, 4),
+        cobertura_do_catalogo=round(resultado.cobertura_do_catalogo, 4),
         principais_sinais=[
             _para_response(s) for s in scoring.principais_sinais(resultado.sinais)
         ],
@@ -205,14 +285,123 @@ def _registrar_no_historico(
                 fontes_citadas=list(resultado.fontes_citadas),
                 evidencias=list(resultado.evidencias),
                 sinais=list(resultado.sinais),
+                documentos_relacionados=list(resultado.documentos_relacionados),
             )
         )
     except Exception:  # noqa: BLE001 - o feed nunca derruba a checagem
         pass
 
 
+#: Sentinela que encerra a fila de eventos do fluxo.
+_FIM = object()
+
+
+def _sse(tipo: str, dados: dict) -> str:
+    """Formata um evento no protocolo Server-Sent Events."""
+    return f"event: {tipo}\ndata: {json.dumps(dados, ensure_ascii=False)}\n\n"
+
+
+@app.post("/api/v1/checar/stream")
+def checar_em_fluxo(request: ChecagemRequest) -> StreamingResponse:
+    """Igual a ``/checar``, mas emitindo o andamento conforme ele acontece (RF-03).
+
+    Existe porque a interface mostrava o progresso por **temporizador**: avançava as
+    etapas em 400 ms, 1,8 s, 1,2 s, 6 s e 12 s, independentemente do que a Vera estivesse
+    fazendo. Com a N3 levando de 1 a 25 s e a N4 dependendo de um modelo externo, o que a
+    pessoa via não tinha relação com a investigação — e num produto cujo valor é a
+    explicação, inventar o andamento é inventar parte do produto.
+
+    O pipeline é síncrono e bloqueante, então roda numa thread e empurra os eventos para
+    uma fila que este gerador consome. O gerador é ``def`` e não ``async def``: assim o
+    Starlette o itera em *threadpool* e o laço de eventos não fica preso.
+    """
+    noticia = NoticiaRequest(texto=request.texto, url=request.url)
+    orquestrador = obter_orquestrador()
+    eventos: queue.Queue = queue.Queue()
+
+    def rodar() -> None:
+        try:
+            veredito = orquestrador.veredito(noticia, observador=eventos.put)
+            eventos.put(("veredito", veredito))
+        except Exception as erro:  # noqa: BLE001 - vai para o fluxo como evento
+            _log.exception("pipeline falhou em fluxo")
+            eventos.put(("falhou", erro))
+        finally:
+            eventos.put(_FIM)
+
+    threading.Thread(target=rodar, daemon=True).start()
+
+    def gerar() -> Iterator[str]:
+        while True:
+            item = eventos.get()
+            if item is _FIM:
+                return
+            if isinstance(item, Evento):
+                yield _sse(
+                    "etapa",
+                    {
+                        "tipo": item.tipo,
+                        "camada": item.camada,
+                        "mensagem": item.mensagem,
+                        "sinais": [
+                            _para_response(s).model_dump() for s in item.sinais
+                        ],
+                    },
+                )
+                continue
+            rotulo, carga = item
+            if rotulo == "falhou":
+                yield _sse(
+                    "falhou",
+                    {
+                        "mensagem": (
+                            "Me deu um branco aqui, meu bem. Tenta de novo daqui a "
+                            "pouquinho, visse?"
+                        )
+                    },
+                )
+                return
+            yield _sse(
+                "veredito", _montar_resposta(request, carga, noticia.resultado).model_dump()
+            )
+
+    return StreamingResponse(
+        gerar(),
+        media_type="text/event-stream",
+        headers={
+            # Sem isto, proxy e navegador seguram o corpo e o andamento chega todo de
+            # uma vez no fim — que é o mesmo que não ter andamento.
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.post("/api/v1/triagem", response_model=TriagemResponse)
+def triar(request: TriagemRequest) -> TriagemResponse:
+    """Diz se a mensagem é conversa, pergunta de acompanhamento ou alegação a checar.
+
+    Existe para a interface não precisar adivinhar. Ela adivinhava pelo número de
+    palavras — mandava ao acompanhamento tudo com menos de 25 — e o efeito era que,
+    depois da primeira checagem, **toda notícia curta** recebia "essa sua pergunta eu
+    ainda não sei responder direito" em vez de ser checada.
+
+    É barato: só regra de negócio, sem rede e sem modelo.
+    """
+    natureza = triagem.classificar(request.texto, request.tem_checagem_anterior)
+    conversa = natureza in (
+        triagem.Natureza.SAUDACAO,
+        triagem.Natureza.CONVERSA,
+        triagem.Natureza.AGRADECIMENTO,
+    )
+    return TriagemResponse(
+        natureza=natureza.value,
+        resposta=triagem.resposta_para(natureza) if conversa else None,
+    )
+
+
 @app.post("/api/v1/perguntar", response_model=RespostaResponse)
-async def perguntar(request: PerguntaRequest) -> RespostaResponse:
+def perguntar(request: PerguntaRequest) -> RespostaResponse:
     """Responde uma pergunta sobre um resultado já entregue (RF-04).
 
     Usa os sinais e as evidências que a N3 já recuperou, sem refazer a checagem: a
@@ -229,13 +418,18 @@ async def perguntar(request: PerguntaRequest) -> RespostaResponse:
     return RespostaResponse(
         texto=resposta.texto,
         assunto=resposta.assunto.value,
-        fontes=resposta.fontes,
+        fontes=[
+            FonteCitadaResponse(
+                titulo=f.titulo, url=f.url, veiculo=f.veiculo, confiavel=f.confiavel
+            )
+            for f in resposta.fontes
+        ],
         sinais_citados=resposta.sinais_citados,
     )
 
 
 @app.get("/api/v1/checagens/recentes", response_model=list[ChecagemDoFeed])
-async def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
+def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
     """Últimas checagens, para o feed da página inicial (RF-43)."""
     return [
         ChecagemDoFeed(
