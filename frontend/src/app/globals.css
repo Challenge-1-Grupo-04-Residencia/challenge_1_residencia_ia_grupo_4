@@ -333,3 +333,43 @@ h3,
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0 var(--tinta);
 }
+
+/* ===========================================================================
+   Caminho da investigação (RF-03)
+   ---------------------------------------------------------------------------
+   A etapa em execução pulsa; as concluídas ficam quietas. O pulso é o que
+   diferencia "a Vera está nisso agora" de "a Vera já passou por aqui", e a
+   diferença precisa existir sem depender de cor — quem tem daltonia perde o
+   verde e o vermelho, mas percebe movimento.
+   =========================================================================== */
+
+@keyframes vera-pulsa {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
+  }
+}
+
+.etapa-ativa {
+  animation: vera-pulsa 1.4s ease-in-out infinite;
+}
+
+/* A linha que liga as etapas se desenha conforme a investigação avança. */
+@keyframes vera-trilha {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.trilha-feita {
+  transform-origin: top center;
+  animation: vera-trilha 0.4s ease-out both;
+}

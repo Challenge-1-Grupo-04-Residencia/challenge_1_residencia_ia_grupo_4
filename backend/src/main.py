@@ -5,20 +5,25 @@ ela monta o pipeline, converte JSON em entidade de domínio e traduz o veredito 
 para JSON. Toda a regra vive em ``src.core``.
 """
 
+import json
 import logging
+import queue
+import threading
 import uuid
+from collections.abc import Iterator
 from datetime import datetime
 from functools import lru_cache
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from src.core.engine import follow_up, scoring, triagem
 from src.core.engine.n2_content import CamadaN2Conteudo
 from src.core.engine.n3_corroboration import CamadaN3Corroboracao
 from src.core.engine.n4_nli import CamadaN4Inferencia
-from src.core.engine.orchestrator import Orquestrador
+from src.core.engine.orchestrator import Evento, Orquestrador
 from src.core.entities.checagem_registrada import ChecagemRegistrada
 from src.core.entities.claim import DocumentoRelacionado, NoticiaRequest
 from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
@@ -133,6 +138,11 @@ class ChecagemResponse(BaseModel):
     explicacao: str
     exibe_porcentagem: bool
     regra_aplicada: str | None = None
+    #: Só a frase da regra, sem a narração das camadas colada.
+    #:
+    #: ``explicacao`` traz as duas juntas, e a tela ficava com um parágrafo em que o
+    #: motivo do veredito se perdia no meio do relato técnico de cada camada.
+    motivo_regra: str = ""
     cobertura: float
     #: Fração dos 100 pontos do catálogo completo que foi observada. Menor que
     #: ``cobertura`` enquanto houver camada não implementada, e serve para a Vera poder
@@ -216,7 +226,13 @@ def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
                 "visse?"
             ),
         ) from None
-    resultado = noticia.resultado
+    return _montar_resposta(request, veredito, noticia.resultado)
+
+
+def _montar_resposta(
+    request: ChecagemRequest, veredito, resultado
+) -> ChecagemResponse:
+    """Traduz veredito e sinais para o JSON publicável, e registra no histórico."""
     explicacao = (veredito.motivo_regra + " " + resultado.explicacao).strip()
     id_checagem = uuid.uuid4().hex
 
@@ -232,6 +248,7 @@ def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
         explicacao=explicacao,
         exibe_porcentagem=veredito.exibe_porcentagem,
         regra_aplicada=veredito.regra_aplicada,
+        motivo_regra=veredito.motivo_regra,
         cobertura=round(resultado.cobertura, 4),
         cobertura_do_catalogo=round(resultado.cobertura_do_catalogo, 4),
         principais_sinais=[
@@ -273,6 +290,91 @@ def _registrar_no_historico(
         )
     except Exception:  # noqa: BLE001 - o feed nunca derruba a checagem
         pass
+
+
+#: Sentinela que encerra a fila de eventos do fluxo.
+_FIM = object()
+
+
+def _sse(tipo: str, dados: dict) -> str:
+    """Formata um evento no protocolo Server-Sent Events."""
+    return f"event: {tipo}\ndata: {json.dumps(dados, ensure_ascii=False)}\n\n"
+
+
+@app.post("/api/v1/checar/stream")
+def checar_em_fluxo(request: ChecagemRequest) -> StreamingResponse:
+    """Igual a ``/checar``, mas emitindo o andamento conforme ele acontece (RF-03).
+
+    Existe porque a interface mostrava o progresso por **temporizador**: avançava as
+    etapas em 400 ms, 1,8 s, 1,2 s, 6 s e 12 s, independentemente do que a Vera estivesse
+    fazendo. Com a N3 levando de 1 a 25 s e a N4 dependendo de um modelo externo, o que a
+    pessoa via não tinha relação com a investigação — e num produto cujo valor é a
+    explicação, inventar o andamento é inventar parte do produto.
+
+    O pipeline é síncrono e bloqueante, então roda numa thread e empurra os eventos para
+    uma fila que este gerador consome. O gerador é ``def`` e não ``async def``: assim o
+    Starlette o itera em *threadpool* e o laço de eventos não fica preso.
+    """
+    noticia = NoticiaRequest(texto=request.texto, url=request.url)
+    orquestrador = obter_orquestrador()
+    eventos: queue.Queue = queue.Queue()
+
+    def rodar() -> None:
+        try:
+            veredito = orquestrador.veredito(noticia, observador=eventos.put)
+            eventos.put(("veredito", veredito))
+        except Exception as erro:  # noqa: BLE001 - vai para o fluxo como evento
+            _log.exception("pipeline falhou em fluxo")
+            eventos.put(("falhou", erro))
+        finally:
+            eventos.put(_FIM)
+
+    threading.Thread(target=rodar, daemon=True).start()
+
+    def gerar() -> Iterator[str]:
+        while True:
+            item = eventos.get()
+            if item is _FIM:
+                return
+            if isinstance(item, Evento):
+                yield _sse(
+                    "etapa",
+                    {
+                        "tipo": item.tipo,
+                        "camada": item.camada,
+                        "mensagem": item.mensagem,
+                        "sinais": [
+                            _para_response(s).model_dump() for s in item.sinais
+                        ],
+                    },
+                )
+                continue
+            rotulo, carga = item
+            if rotulo == "falhou":
+                yield _sse(
+                    "falhou",
+                    {
+                        "mensagem": (
+                            "Me deu um branco aqui, meu bem. Tenta de novo daqui a "
+                            "pouquinho, visse?"
+                        )
+                    },
+                )
+                return
+            yield _sse(
+                "veredito", _montar_resposta(request, carga, noticia.resultado).model_dump()
+            )
+
+    return StreamingResponse(
+        gerar(),
+        media_type="text/event-stream",
+        headers={
+            # Sem isto, proxy e navegador seguram o corpo e o andamento chega todo de
+            # uma vez no fim — que é o mesmo que não ter andamento.
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.post("/api/v1/triagem", response_model=TriagemResponse)

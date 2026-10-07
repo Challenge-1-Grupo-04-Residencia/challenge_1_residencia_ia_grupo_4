@@ -87,6 +87,8 @@ def chamada_ollama_real(prompt: str) -> dict:
 class CamadaN4Inferencia(CamadaVerificacao):
     """Avalia se as evidências da N3 sustentam ou contradizem a alegação."""
 
+    nome = "N4"
+
     def __init__(self, api_client=None):
         super().__init__()
         # Injetável para que os testes rodem sem Ollama no ar — por convenção do

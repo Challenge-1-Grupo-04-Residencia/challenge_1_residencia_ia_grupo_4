@@ -31,6 +31,8 @@ LIMIAR_DE_COPIA = 0.9
 class CamadaN3Corroboracao(CamadaVerificacao):
     """Busca notícias semelhantes e mede a corroboração por veículos confiáveis."""
 
+    nome = "N3"
+
     def __init__(self, buscador: BuscadorDeNoticias, top_k: int = 5):
         super().__init__()
         self.buscador = buscador

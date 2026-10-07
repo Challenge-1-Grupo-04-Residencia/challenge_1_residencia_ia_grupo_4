@@ -50,6 +50,8 @@ TETO_DOS_DETECTORES = 0.5
 class CamadaN2Conteudo(CamadaVerificacao):
     """Analisa estilo, sensacionalismo, carga emocional e ancoragem em fontes."""
 
+    nome = "N2"
+
     def __init__(self, caminho_modelo: str = CAMINHO_MODELO_PADRAO):
         super().__init__()
         self.caminho_modelo = caminho_modelo

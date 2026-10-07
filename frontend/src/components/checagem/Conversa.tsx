@@ -12,24 +12,28 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { CaixaDePergunta } from "@/components/checagem/CaixaDePergunta";
-import { Investigando } from "@/components/checagem/Investigando";
+import { CaminhoDaInvestigacao } from "@/components/checagem/CaminhoDaInvestigacao";
 import { ResultadoChecagem } from "@/components/checagem/ResultadoChecagem";
 import { VeraAvatar } from "@/components/vera/VeraAvatar";
-import { ErroDaVera, checar, perguntar, triar } from "@/lib/api";
+import type { EtapaDoAndamento } from "@/lib/api";
+import { ErroDaVera, checarComAndamento, perguntar, triar } from "@/lib/api";
 import { classificarEntrada } from "@/lib/entrada";
 import type { ChecagemResponse, FonteCitada } from "@/types/checagem";
 
 type Mensagem =
   | { tipo: "pergunta"; texto: string }
-  | { tipo: "veredito"; resultado: ChecagemResponse }
+  /** O caminho percorrido acompanha o veredito: é a primeira coisa que se pergunta. */
+  | { tipo: "veredito"; resultado: ChecagemResponse; etapas: EtapaDoAndamento[] }
   | { tipo: "fala"; texto: string; fontes: FonteCitada[] }
   | { tipo: "erro"; texto: string };
 
 export function Conversa() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [carregando, setCarregando] = useState(false);
+  const [etapas, setEtapas] = useState<EtapaDoAndamento[]>([]);
   const [idChecagem, setIdChecagem] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const fimDaConversa = useRef<HTMLDivElement | null>(null);
   const parametros = useSearchParams();
   const consultaInicial = parametros.get("q");
   const jaDisparou = useRef(false);
@@ -37,6 +41,27 @@ export function Conversa() {
   function acrescentar(m: Mensagem) {
     setMensagens((anteriores) => [...anteriores, m]);
   }
+
+  /**
+   * Leva a conversa para o fim a cada mudança.
+   *
+   * Roda também a cada etapa do andamento, porque o bloco da investigação cresce
+   * enquanto a Vera trabalha: sem isso a pessoa manda uma pergunta, a tela fica onde
+   * estava e parece que nada aconteceu. `scroll-behavior` suave vem do CSS e é
+   * desligado por `prefers-reduced-motion`.
+   */
+  useEffect(() => {
+    // `scrollIntoView` não obedece ao `scroll-behavior` do CSS, então a preferência de
+    // movimento reduzido é checada aqui. Quem a marcou costuma ter enxaqueca
+    // vestibular; rolagem suave é exatamente o que incomoda.
+    const semMovimento = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    fimDaConversa.current?.scrollIntoView({
+      block: "end",
+      behavior: semMovimento ? "auto" : "smooth",
+    });
+  }, [mensagens, etapas, carregando]);
 
   async function novaChecagem(
     texto: string,
@@ -48,13 +73,22 @@ export function Conversa() {
 
     if (!opcoes.jaRegistrouPergunta) acrescentar({ tipo: "pergunta", texto });
     setCarregando(true);
+    setEtapas([]);
 
     const { url } = classificarEntrada(texto);
+    const percorridas: EtapaDoAndamento[] = [];
 
     try {
-      const resultado = await checar({ texto, url }, controller.signal);
+      const resultado = await checarComAndamento(
+        { texto, url },
+        (etapa) => {
+          percorridas.push(etapa);
+          setEtapas([...percorridas]);
+        },
+        controller.signal,
+      );
       setIdChecagem(resultado.id);
-      acrescentar({ tipo: "veredito", resultado });
+      acrescentar({ tipo: "veredito", resultado, etapas: percorridas });
     } catch (erro) {
       if (erro instanceof DOMException && erro.name === "AbortError") return;
       acrescentar({
@@ -66,6 +100,7 @@ export function Conversa() {
       });
     } finally {
       setCarregando(false);
+      setEtapas([]);
     }
   }
 
@@ -177,7 +212,7 @@ export function Conversa() {
             return (
               <p
                 key={i}
-                className="max-w-[85%] self-end rounded-lg rounded-br-sm bg-vermelho px-4 py-2.5 text-base text-tinta"
+                className="surge max-w-[85%] self-end rounded-lg rounded-br-sm bg-vermelho px-4 py-2.5 text-base text-white"
               >
                 {m.texto}
               </p>
@@ -185,12 +220,17 @@ export function Conversa() {
           }
 
           if (m.tipo === "veredito") {
-            return <ResultadoChecagem key={i} resultado={m.resultado} />;
+            return (
+              <div key={i} className="flex flex-col gap-3">
+                <CaminhoDaInvestigacao etapas={m.etapas} concluida />
+                <ResultadoChecagem resultado={m.resultado} />
+              </div>
+            );
           }
 
           if (m.tipo === "fala") {
             return (
-              <div key={i} className="flex items-start gap-3">
+              <div key={i} className="surge flex items-start gap-3">
                 <VeraAvatar humor="pensativa" tamanho={44} className="mt-1 shrink-0" />
                 <div className="min-w-0 flex-1 rounded-lg rounded-tl-sm border border-borda bg-papel-2 p-4">
                   <p className="text-base">{m.texto}</p>
@@ -236,23 +276,46 @@ export function Conversa() {
           return (
             <p
               key={i}
-              className="rounded-lg border border-falsa/40 bg-falsa-fundo p-4 text-base text-tinta"
+              className="surge rounded-lg border border-falsa/40 bg-falsa-fundo p-4 text-base text-tinta"
             >
               {m.texto}
             </p>
           );
         })}
 
-        {carregando && <Investigando />}
+        {/* Enquanto a Vera trabalha, o caminho é o conteúdo principal da tela: é o
+            que responde "o que está acontecendo?" sem a pessoa ter de adivinhar. */}
+        {carregando && etapas.length > 0 && (
+          <div className="surge flex items-start gap-3">
+            <VeraAvatar humor="investigando" tamanho={44} className="mt-1 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <CaminhoDaInvestigacao etapas={etapas} />
+            </div>
+          </div>
+        )}
+        {carregando && etapas.length === 0 && (
+          <p className="surge text-sm text-tinta-2">Já vou ver isso, meu bem…</p>
+        )}
+
       </section>
 
-      <div className="sticky bottom-24 mt-2 md:bottom-4">
+      {/* `sticky` com `bottom`: a caixa ocupa o espaço dela no fim da conversa e só
+          flutua quando a pessoa rola para cima. Deixá-la fora do fluxo, ou puxá-la com
+          margem negativa, fazia a última mensagem — a que se quer ler — ficar escondida
+          atrás dela. */}
+      <div className="sticky bottom-24 z-10 mt-2 md:bottom-4">
         <CaixaDePergunta
           onPerguntar={enviar}
           carregando={carregando}
           modoAcompanhamento={idChecagem !== null}
         />
       </div>
+
+      {/* Âncora da rolagem automática, **depois** da caixa de pergunta.
+          Antes dela, o navegador parava com a última mensagem rente ao fim da janela —
+          e a caixa, que é `sticky`, aterrissava justamente em cima dela. Rolando até
+          aqui, a caixa fica inteira na tela e a mensagem acima dela também. */}
+      <div ref={fimDaConversa} aria-hidden className="h-2 shrink-0" />
     </div>
   );
 }

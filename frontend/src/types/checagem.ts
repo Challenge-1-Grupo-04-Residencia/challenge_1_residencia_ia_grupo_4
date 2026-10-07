@@ -92,6 +92,12 @@ export interface ChecagemResponse {
   exibe_porcentagem: boolean;
   /** ID da regra que sobrepôs o score calculado, se houver (ex.: "RN-01"). */
   regra_aplicada: string | null;
+  /**
+   * Só a frase da regra. `explicacao` traz esta frase mais a narração de cada camada
+   * colada, e num parágrafo só o motivo do veredito se perdia no meio do relato
+   * técnico.
+   */
+  motivo_regra: string;
   /** Fração do que as camadas existentes sabem medir que foi observada. */
   cobertura: number;
   /**
