@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Senhora Vera - Checagem de Fatos",
+  "version": "0.2.0",
+  "description": "Analisa o conteúdo jornalístico de páginas sob demanda com foco em privacidade e minimização de dados (LGPD).",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8010/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Verificar esta página com a Senhora Vera",
+    "default_popup": "popup.html"
+  }
+}
