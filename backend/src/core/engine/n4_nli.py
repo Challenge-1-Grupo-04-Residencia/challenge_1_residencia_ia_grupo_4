@@ -129,10 +129,10 @@ class CamadaN4Inferencia(CamadaVerificacao):
             )
             return self.repassar(noticia)
 
-        self._registrar_s12(vereditos, resultado)
+        self._registrar_sinais(vereditos, resultado)
         return self.repassar(noticia)
 
-    def _registrar_s12(
+    def _registrar_sinais(
         self, vereditos: list[tuple[str, str]], resultado: AnaliseResultado
     ) -> None:
         """Converte os vereditos por evidência no score de S-12."""
@@ -168,6 +168,35 @@ class CamadaN4Inferencia(CamadaVerificacao):
             )
             return
 
+        
+        # --- Cálculo do S-11 (Corroboração por Veículos Confiáveis) ---
+        # S-11 só deve contar os veículos confiáveis que REALMENTE sustentaram a alegação.
+        confiaveis_que_sustentam = set()
+        evidencias_texto = resultado.evidencias[:MAXIMO_DE_EVIDENCIAS]
+        
+        for i, (rotulo, motivo) in enumerate(vereditos):
+            if rotulo == ROTULO_SUSTENTA:
+                evidencia_atual = evidencias_texto[i]
+                # Busca a fonte original dessa evidência
+                for doc in resultado.documentos_relacionados:
+                    if doc.titulo == evidencia_atual and doc.fonte_confiavel and doc.fonte:
+                        confiaveis_que_sustentam.add(doc.fonte)
+                        break
+        
+        qtd_confiaveis = len(confiaveis_que_sustentam)
+        tabela_s11 = {0: 0.0, 1: 0.5, 2: 0.8}
+        score_s11 = tabela_s11.get(qtd_confiaveis, 1.0)
+        
+        if qtd_confiaveis == 0:
+            justificativa_s11 = "Das evidências analisadas, nenhuma publicação de veículo confiável confirmou o fato."
+        else:
+            nomes = ", ".join(sorted(confiaveis_que_sustentam))
+            plural = "veículos confiáveis publicaram" if qtd_confiaveis > 1 else "veículo confiável publicou"
+            justificativa_s11 = f"{qtd_confiaveis} {plural} o mesmo fato: {nomes}."
+            
+        resultado.registrar(medir("S-11", score_s11, justificativa_s11))
+        # ---------------------------------------------------------------
+        
         score = sustentam / decisivas
         resultado.registrar(
             medir(
@@ -226,10 +255,16 @@ REGRAS DO VEREDICTO, por evidência:
   {ROTULO_NEUTRO}, nunca {ROTULO_CONTRADIZ}: se a evidência fala de carros e a notícia
   de bicicletas, é {ROTULO_NEUTRO}.
 
-ATENÇÃO À NEGAÇÃO. Manchete de checagem cita a alegação inteira para desmenti-la, e
-conter as mesmas palavras NÃO é confirmar:
+ATENÇÃO AOS SUJEITOS E AÇÕES (CUIDADO COM ALUCINAÇÕES):
+Muitas vezes a evidência fala sobre o mesmo tema, mas o fato é diferente.
+- Se a alegação diz "Fulano morreu", mas a evidência diz "Fulano decretou luto pela morte de alguém" -> Os sujeitos e as ações são diferentes. Isso é {ROTULO_NEUTRO}. NUNCA {ROTULO_SUSTENTA}.
+
+ATENÇÃO A NOTÍCIAS SOBRE BOATOS (META-CHECAGEM):
+Se a alegação é um "Fato X" e a evidência é uma reportagem dizendo que "o boato/teoria sobre o Fato X é falso/mentira", você DEVE deduzir que a evidência {ROTULO_CONTRADIZ} a alegação.
+Jornalismo que expõe uma fake news serve como prova CONTRA a fake news. Portanto, "Teoria falsa de que Lula morreu..." -> {ROTULO_CONTRADIZ} a afirmação "Lula morreu".
+
+ATENÇÃO À NEGAÇÃO:
 - "É #FAKE que X" → a evidência diz que X é falso → {ROTULO_CONTRADIZ}
-- "É falso que X" → {ROTULO_CONTRADIZ}
 - "Fulano NÃO fez X" quando a notícia diz que fulano fez X → {ROTULO_CONTRADIZ}
 Leia o que a frase afirma, não quais palavras ela repete.
 """

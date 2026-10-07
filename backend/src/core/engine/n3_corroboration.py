@@ -19,9 +19,6 @@ from src.core.ports.news_search import BuscadorDeNoticias, BuscaIndisponivel
 
 _log = logging.getLogger(__name__)
 
-#: S-11 pela contagem de veículos confiáveis distintos, conforme a tabela de sinais:
-#: 0 → 0 · 1 → 0,5 · 2 → 0,8 · 3+ → 1.
-_SCORE_POR_CONTAGEM: dict[int, float] = {0: 0.0, 1: 0.5, 2: 0.8}
 
 #: Acima desta similaridade dois textos são praticamente o mesmo conteúdo. Se o veículo
 #: de origem não for confiável, isso indica cópia — entrada de S-13 (RF-31).
@@ -49,13 +46,7 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             # Falha nossa não é evidência contra a notícia (RN-06). O detalhe técnico
             # vai para o log: antes a camada morria em silêncio e ninguém percebia.
             _log.warning("N3 sem corroboração: %s", erro)
-            resultado.registrar(
-                nao_medido(
-                    "S-11",
-                    "Não consegui consultar a base de notícias agora: a busca não "
-                    "respondeu.",
-                )
-            )
+
             resultado.explicacao += (
                 " Não consegui procurar outras publicações sobre o assunto agora — "
                 "isso é limitação minha, não achado sobre a notícia."
@@ -69,13 +60,7 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             # coisa que "nenhum veículo confiável publicou": a cobertura do buscador é
             # enviesada para notícia recente, e dar 0,0 aqui penalizaria conteúdo
             # antigo e verdadeiro. Fica sem achado, sem punir a cobertura.
-            resultado.registrar(
-                sem_achado(
-                    "S-11",
-                    "A busca funcionou e não achou nenhuma publicação semelhante. "
-                    "Pode ser notícia muito nova, ou assunto que ninguém cobriu.",
-                )
-            )
+
             resultado.explicacao += (
                 " Procurei e não encontrei outras publicações sobre o assunto. Isso "
                 "pode ser notícia muito nova, ou assunto que ninguém cobriu."
@@ -94,16 +79,10 @@ class CamadaN3Corroboracao(CamadaVerificacao):
         coberturas = [d for d in relacionados if not d.e_checagem]
 
         if coberturas:
-            self._medir_corroboracao(coberturas, resultado)
+            # O S-11 foi transferido para a N4 para garantir que apenas links com Entailment contem como corroboração.
             self._medir_originalidade(coberturas, resultado)
         else:
-            resultado.registrar(
-                sem_achado(
-                    "S-11",
-                    "As publicações que achei sobre isso são checagens da própria "
-                    "alegação, não cobertura do fato.",
-                )
-            )
+
             resultado.registrar(
                 sem_achado(
                     "S-13",
@@ -145,30 +124,6 @@ class CamadaN3Corroboracao(CamadaVerificacao):
             checagem.titulo,
         )
 
-    def _medir_corroboracao(
-        self, relacionados: list[DocumentoRelacionado], resultado: AnaliseResultado
-    ) -> None:
-        """S-11 — quantos veículos confiáveis **distintos** publicaram o mesmo fato.
-
-        A contagem é por domínio, não por artigo: cinco matérias do mesmo portal são
-        uma corroboração, não cinco.
-        """
-        confiaveis = {d.fonte for d in relacionados if d.fonte_confiavel and d.fonte}
-        quantidade = len(confiaveis)
-        score = _SCORE_POR_CONTAGEM.get(quantidade, 1.0)
-
-        if quantidade == 0:
-            justificativa = (
-                "Encontrei publicações semelhantes, mas nenhuma em veículo da base "
-                "curada."
-            )
-        else:
-            nomes = ", ".join(sorted(confiaveis))
-            plural = "veículos confiáveis publicaram" if quantidade > 1 else "veículo confiável publicou"
-            justificativa = f"{quantidade} {plural} o mesmo fato: {nomes}."
-
-        resultado.registrar(medir("S-11", score, justificativa))
-        resultado.explicacao += f" {justificativa}"
 
     def _medir_originalidade(
         self, relacionados: list[DocumentoRelacionado], resultado: AnaliseResultado

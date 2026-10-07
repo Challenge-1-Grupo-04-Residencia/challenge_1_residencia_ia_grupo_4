@@ -224,3 +224,4 @@ desta máquina não tem permissão de escrita em `/opt/homebrew`.
 | `notebooks/`, `scripts/` e `datasets/` juntos em `ml/` | Os notebooks leem `../datasets/` e o script resolve o destino pela própria localização; mover os três juntos preserva os caminhos sem tocar em código |
 | Documentação fora da `development` | Havia duas cópias divergentes; a branch `docs` é a que o workflow publica |
 | `Relatórios/` e `Referencias_bibliograficas/` fora da `development` | Estavam triplicados; são anexos citados pelas páginas da branch `docs`, não artefatos de código |
+| Inferência Semântica (NLI) na N4 vs Rigor Sintático | A regra de 'Sujeito/Ação idênticos' evitava alucinações ("Lula morreu" vs "Lula lamenta morte"), mas tornava a Vera incapaz de deduzir que uma notícia sobre "boato de que Lula morreu" era uma evidência *Contra* a alegação, gerando um excesso de "Inconclusivos". O prompt foi ajustado para foco semântico (Meta-Checagem). |
