@@ -109,3 +109,17 @@ flowchart LR
 
 A **API de reputação de veículos** é um produto em si: responde "este domínio é
 confiável?" e serve à extensão (selo), ao chat e, no futuro, a terceiros.
+
+## Limitações e Oportunidades de Melhoria (Débitos Técnicos)
+
+Apesar da arquitetura em camadas ser escalável, o MVP atual possui algumas limitações técnicas conhecidas que representam oportunidades de evolução (Backlog Futuro):
+
+### 1. Bloqueios de Web Scraping em Fontes Oficiais
+A camada `LeitorLink` tenta extrair o texto de URLs fornecidas, mas encontra barreiras severas (Erro 403 / Cloudflare) ao tentar acessar sites governamentais (como `tse.jus.br`) ou veículos de imprensa com *paywall* agressivo.
+* **Impacto:** O texto fica inacessível para a camada de Estilo (N2), o que reduz as evidências processadas e joga a pontuação para a faixa de "Inconclusivo".
+* **Melhoria Futura:** Integrar serviços especializados em bypass de anti-bot ou implementar Puppeteer/Playwright *headless* para conseguir extrair conteúdos de fontes VIP com segurança e estabilidade, além de exibir mensagens na tela informando ativamente o usuário sobre o bloqueio.
+
+### 2. Gargalo de Meta-Checagem no RAG
+Atualmente, se uma fake news é muito difundida, a Busca Semântica (N3) retorna artigos desmentindo essa notícia (ex: *"Como a teoria falsa de que Lula morreu..."*). O desafio é que o classificador de desmentidos atual (`e_checagem_desta_alegacao`) usa heurísticas textuais e pode falhar em marcar essas matérias como uma *Checagem Oficial* para acionar a Regra de Negócio soberana (RN-01).
+* **Solução Tática Adotada no MVP:** Calibramos o *Prompt* da camada N4 (LLM Llama 3) com foco em *Natural Language Inference* (NLI) para induzi-la a deduzir que matérias sobre "boatos" são, por tabela, refutações da alegação principal. Isso evita falsos inconclusivos, mas atua como um "band-aid" de Engenharia de Prompt.
+* **Solução Estrutural Ideal (Futura):** Implementar um modelo classificador *Cross-Encoder* dedicado, super leve, que identifique rapidamente se "Texto A é um desmentido de Texto B". Caso positivo, a N3 assumirá o protagonismo e abortará o pipeline via RN-01, sem gastar tokens, latência ou correr o risco de alucinação na camada generativa (N4).
