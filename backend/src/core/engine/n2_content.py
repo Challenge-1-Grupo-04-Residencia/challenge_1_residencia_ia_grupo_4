@@ -1,33 +1,56 @@
 """Camada N2 · Conteúdo — avalia **como** a notícia está escrita.
 
-Mede os sinais da dimensão Conteúdo (25 pontos): o classificador estilístico treinado
-nos datasets brasileiros (S-06, RF-21), sensacionalismo (S-07, RF-22) e citação de
-fontes verificáveis (S-09, RF-24).
+Mede os sinais da dimensão Conteúdo: o classificador estilístico treinado nos datasets
+brasileiros (S-06, RF-21), sensacionalismo (S-07, RF-22), intensidade emocional
+manipulativa (S-08, RF-23) e citação de fontes verificáveis (S-09, RF-24).
 
-S-08 (intensidade emocional, RF-23) depende do NRC Emotion Lexicon, que ainda não foi
-integrado. A camada deixa o sinal indisponível em vez de chutar: por RN-06 ele sai do
-cálculo e apenas reduz a cobertura, o que é honesto — o contrário seria inventar uma
-medição e inflar a confiança.
+## Dois sinais que só podem descontar
+
+S-07 e S-08 entram no cálculo com score no intervalo ``[0; 0,5]``, e não ``[0; 1]``.
+Eles detectam **manipulação**: encontrar gritaria ou insulto é evidência contra a
+notícia, mas *não* encontrar não é evidência a favor — mentira escrita em tom sóbrio
+existe e é o caso difícil. Enquanto os dois podiam chegar a 1,0, somavam 10 dos 23
+pontos ativos quase sempre no máximo, e o efeito medido foi que apenas 11,9% a 25% das
+notícias falsas dos corpora caíam na faixa "provavelmente falsa": qualquer texto sem
+berro era empurrado para cima. ``0,5`` é o ponto neutro da média ponderada, então um
+sinal que vale 0,5 não mexe no score — é o que um detector silencioso deve fazer.
+
+Quando o detector não encontra nada para medir, o sinal fica **indisponível** em vez de
+valer o neutro: por RN-06 isso derruba a cobertura, que é a forma honesta de dizer "não
+tenho leitura disso aqui".
 """
 
 import os
+from pathlib import Path
 
 import joblib
 
-from src.core.engine import text_style, emotion
+from src.core.engine import emotion, text_style
 from src.core.engine.orchestrator import CamadaVerificacao
-from src.core.entities.claim import NoticiaRequest
-from src.core.entities.signal import medir
+from src.core.entities.claim import AnaliseResultado, NoticiaRequest
+from src.core.entities.signal import medir, nao_medido, sem_achado
 
-CAMINHO_MODELO_PADRAO = "backend/src/infrastructure/ml_models/classificador_n2.joblib"
+#: Resolvido a partir da localização deste arquivo, e não do diretório de trabalho: o
+#: caminho relativo antigo só funcionava quando o servidor subia da raiz do repositório.
+CAMINHO_MODELO_PADRAO = str(
+    Path(__file__).resolve().parents[2]
+    / "infrastructure"
+    / "ml_models"
+    / "classificador_n2.joblib"
+)
 
-#: Abaixo deste número de palavras o classificador estilístico não é confiável: não há
-#: texto suficiente para a assinatura de estilo aparecer.
+#: Abaixo deste número de palavras nenhum sinal de estilo é confiável: não há texto
+#: suficiente para a assinatura aparecer, nem para esperar que um trecho cite fonte.
 MINIMO_DE_PALAVRAS = 10
+
+#: Teto dos sinais que só detectam manipulação. Ver o cabeçalho do módulo.
+TETO_DOS_DETECTORES = 0.5
 
 
 class CamadaN2Conteudo(CamadaVerificacao):
-    """Analisa estilo, sensacionalismo e ancoragem em fontes."""
+    """Analisa estilo, sensacionalismo, carga emocional e ancoragem em fontes."""
+
+    nome = "N2"
 
     def __init__(self, caminho_modelo: str = CAMINHO_MODELO_PADRAO):
         super().__init__()
@@ -48,21 +71,23 @@ class CamadaN2Conteudo(CamadaVerificacao):
         resultado = noticia.resultado
         resultado.camada_atual = "N2"
         texto = noticia.texto.strip()
+        texto_curto = len(texto.split()) < MINIMO_DE_PALAVRAS
 
-        self._medir_estilo(texto, resultado)
+        self._medir_estilo(texto, resultado, texto_curto)
         self._medir_sensacionalismo(texto, resultado)
         self._medir_intensidade_emocional(texto, resultado)
-        self._medir_citacao_de_fontes(texto, resultado)
+        self._medir_citacao_de_fontes(texto, resultado, texto_curto)
 
         return self.repassar(noticia)
 
-    def _medir_estilo(self, texto: str, resultado) -> None:
+    def _medir_estilo(
+        self, texto: str, resultado: AnaliseResultado, texto_curto: bool
+    ) -> None:
         """S-06 — probabilidade de a notícia ser verdadeira, segundo o classificador."""
-        if len(texto.split()) < MINIMO_DE_PALAVRAS:
+        if texto_curto:
             resultado.registrar(
-                medir(
+                nao_medido(
                     "S-06",
-                    None,
                     "Texto curto demais para uma análise de estilo confiável.",
                 )
             )
@@ -73,7 +98,7 @@ class CamadaN2Conteudo(CamadaVerificacao):
 
         if self.modelo is None:
             resultado.registrar(
-                medir("S-06", None, "Classificador de estilo não carregado.")
+                nao_medido("S-06", "Classificador de estilo não carregado.")
             )
             return
 
@@ -115,20 +140,69 @@ class CamadaN2Conteudo(CamadaVerificacao):
         # classe positiva.
         return float(probabilidades[-1])
 
-    def _medir_sensacionalismo(self, texto: str, resultado) -> None:
-        """S-07 — o score é o inverso do índice: quanto mais grita, menor a nota."""
+    def _medir_sensacionalismo(self, texto: str, resultado: AnaliseResultado) -> None:
+        """S-07 — gritaria e pedido de difusão (RF-22)."""
         indice = text_style.indice_sensacionalismo(texto)
+        if indice is None:
+            # Olhei e não havia gritaria: medição feita, nada a relatar. Não é lacuna,
+            # então não derruba a cobertura.
+            resultado.registrar(
+                sem_achado(
+                    "S-07",
+                    "Procurei marcas de sensacionalismo e não encontrei nenhuma.",
+                )
+            )
+            return
+
         resultado.registrar(
             medir(
                 "S-07",
-                1.0 - indice,
-                f"Índice de sensacionalismo {indice:.2f} "
-                "(caixa alta, pontuação repetida e vocabulário de urgência).",
+                self._desconto(indice),
+                f"Índice de sensacionalismo {indice:.2f}: pontuação repetida e "
+                "vocabulário de urgência pedindo difusão.",
             )
         )
+        resultado.explicacao += " O texto usa linguagem de urgência e pede repasse."
 
-    def _medir_citacao_de_fontes(self, texto: str, resultado) -> None:
+    def _medir_intensidade_emocional(
+        self, texto: str, resultado: AnaliseResultado
+    ) -> None:
+        """S-08 — vocabulário de degradação moral usado para gerar indignação (RF-23)."""
+        indice, emocao = emotion.indice_intensidade_emocional(texto)
+        if indice is None:
+            resultado.registrar(
+                sem_achado(
+                    "S-08",
+                    "Procurei vocabulário emocional manipulativo e não encontrei.",
+                )
+            )
+            return
+
+        resultado.registrar(
+            medir(
+                "S-08",
+                self._desconto(indice),
+                f"Detectada carga emocional de {emocao} em {indice * 100:.0f}% "
+                "da escala: o texto desqualifica pessoas em vez de argumentar.",
+            )
+        )
+        resultado.explicacao += (
+            f" O texto carrega na emoção ({emocao}) para convencer."
+        )
+
+    def _medir_citacao_de_fontes(
+        self, texto: str, resultado: AnaliseResultado, texto_curto: bool
+    ) -> None:
         """S-09 — o texto ancora o que afirma em links ou órgãos nomeados?"""
+        if texto_curto:
+            resultado.registrar(
+                nao_medido(
+                    "S-09",
+                    "Texto curto demais para esperar citação de fontes.",
+                )
+            )
+            return
+
         indice = text_style.indice_citacao_de_fontes(texto)
         resultado.registrar(
             medir(
@@ -140,18 +214,12 @@ class CamadaN2Conteudo(CamadaVerificacao):
             )
         )
 
-    def _medir_intensidade_emocional(self, texto: str, resultado) -> None:
-        """S-08 — avalia a carga emocional negativa (raiva, medo, nojo) para detecção de manipulação (RF-23)."""
-        indice, emocao = emotion.indice_intensidade_emocional(texto)
-        
-        # O score do S-08 deve ser o inverso do índice de manipulação (quanto mais emoção forte, menor a nota).
-        score = 1.0 - indice
-        
-        if indice == 0.0:
-            justificativa = "Texto neutro, sem carga emocional manipulativa detectada."
-        else:
-            justificativa = f"Detectada carga emocional intensa ({indice * 100:.0f}%). Predominância de: {emocao}."
+    @staticmethod
+    def _desconto(indice: float) -> float:
+        """Converte índice de manipulação em score que só consegue puxar para baixo.
 
-        resultado.registrar(
-            medir("S-08", score, justificativa)
-        )
+        ``indice`` 0 viraria o neutro 0,5 e ``indice`` 1 vira 0: o sinal desconta no
+        máximo metade do seu peso e nunca credita veracidade a um texto só por ele não
+        ter gritado.
+        """
+        return TETO_DOS_DETECTORES * (1.0 - indice)

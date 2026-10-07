@@ -25,15 +25,14 @@ dependencies = [
     "sentence-transformers>=2.7.0",
 ]
 
-# A camada N4 carrega um modelo de NLI (mDeBERTa), que traz o torch: cerca de 2 GB.
-# Fica em extra opcional para nao pesar no `uv sync` de quem so trabalha nos notebooks
-# ou nas camadas N0 a N3.
-#     uv sync --extra nli
-[project.optional-dependencies]
-nli = [
-    "transformers>=4.44.0",
-    "torch>=2.4.0",
-]
+# A camada N4 nao carrega modelo nenhum no processo: ela chama um LLM servido pelo
+# Ollama por HTTP (ver `backend/src/core/engine/n4_nli.py`). Nao ha dependencia Python
+# para isso alem da biblioteca padrao -- quem for mexer na N4 precisa do servico de pe:
+#     docker compose up -d ollama && docker exec -it vera_ollama ollama pull llama3
+#
+# O extra opcional `nli`, com transformers e torch (~2 GB), foi removido: ele existia
+# para um desenho anterior baseado em mDeBERTa que nao esta no codigo. Nada importava
+# `transformers`, e o download pesava no `uv sync` de todo mundo sem servir a ninguem.
 
 [tool.pytest.ini_options]
 pythonpath = ["backend"]

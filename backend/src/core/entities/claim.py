@@ -28,6 +28,8 @@ class Dificuldade(str, Enum):
 
 #: Camada de parada → dificuldade da checagem.
 DIFICULDADE_POR_CAMADA: dict[str, Dificuldade] = {
+    # Entrada que a triagem barrou antes do pipeline: não houve checagem para medir.
+    "TRIAGEM": Dificuldade.FACIL,
     "N0": Dificuldade.FACIL,
     "N1": Dificuldade.FACIL,
     "N2": Dificuldade.MEDIANO,
@@ -42,10 +44,25 @@ class DocumentoRelacionado(BaseModel):
     titulo: str
     url: str | None = None
     fonte: str = ""
-    #: Similaridade semântica com o texto consultado, de 0 a 1.
+    #: Similaridade com o texto consultado, de 0 a 1.
     similaridade: float = Field(ge=0.0, le=1.0)
+    #: A ``similaridade`` é comparação real entre os textos, ou só a posição no ranking
+    #: do buscador?
+    #:
+    #: Faz diferença grande: o buscador que não expõe score de relevância tem a
+    #: similaridade derivada da posição, e aí o primeiro resultado vale sempre 1,0. Como
+    #: o limiar de cópia de S-13 é 0,9, isso acusava de plágio **toda** notícia cujo
+    #: primeiro resultado viesse de fora da base curada — inclusive uma matéria legítima
+    #: do IBGE. Posição é medida de relevância, não de texto, e por RN-06 S-13 fica
+    #: indisponível quando ninguém mediu texto de verdade.
+    similaridade_textual: bool = False
     #: O veículo está na base curada como confiável? Alimenta S-11 (RF-28).
     fonte_confiavel: bool = False
+    #: Esta publicação é uma **checagem desta alegação**, e não cobertura do fato?
+    #:
+    #: A diferença tem de chegar à tela: listar o desmentido do G1 sob o título "quem
+    #: mais publicou isso" diz ao usuário o oposto do que aconteceu.
+    e_checagem: bool = False
     data_publicacao: str | None = None
 
 
@@ -100,8 +117,13 @@ class AnaliseResultado(BaseModel):
 
     @property
     def cobertura(self) -> float:
-        """Fração do peso total dos sinais que foi observada."""
+        """Fração do que as camadas existentes sabem medir que foi observada."""
         return scoring.cobertura(self.sinais)
+
+    @property
+    def cobertura_do_catalogo(self) -> float:
+        """Fração dos 100 pontos do catálogo completo que foi observada."""
+        return scoring.cobertura_do_catalogo(self.sinais)
 
 
 class NoticiaRequest(BaseModel):

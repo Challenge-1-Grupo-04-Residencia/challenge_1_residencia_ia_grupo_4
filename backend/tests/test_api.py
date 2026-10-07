@@ -91,7 +91,15 @@ class TestFeedEAcompanhamento:
         yield
         obter_historico.cache_clear()
 
-    def _checar(self, client, texto="Nesta terça o Ministério da Saúde anunciou a campanha."):
+    # O texto tem de passar de MINIMO_DE_PALAVRAS: abaixo disso a N2 deixa todos os
+    # sinais de estilo indisponíveis, e não há o que a Vera responda sobre a escrita.
+    TEXTO_PADRAO = (
+        "Nesta terça-feira o Ministério da Saúde anunciou a nova campanha nacional de "
+        "vacinação contra a gripe, que deve atender os grupos prioritários a partir do "
+        "mês que vem em todas as unidades básicas do país."
+    )
+
+    def _checar(self, client, texto=TEXTO_PADRAO):
         n2 = CamadaN2Conteudo()
         n2.set_proxima(CamadaN3Corroboracao(BuscadorSemRede()))
         return client.post("/api/v1/checar", json={"texto": texto})

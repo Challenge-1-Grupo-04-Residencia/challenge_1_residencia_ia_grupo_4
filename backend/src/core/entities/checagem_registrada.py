@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
-from src.core.entities.claim import Dificuldade
+from src.core.entities.claim import Dificuldade, DocumentoRelacionado
 from src.core.entities.signal import Sinal
 
 #: Quanto do texto original entra no resumo do feed.
@@ -44,6 +44,11 @@ class ChecagemRegistrada(BaseModel):
     # responder "quais fontes você viu?" seria desperdício.
     evidencias: list[str] = Field(default_factory=list)
     sinais: list[Sinal] = Field(default_factory=list)
+    #: As publicações encontradas, com título e veículo. Guardadas porque uma URL
+    #: sozinha não serve: o buscador devolve link de redirecionador, e uma resposta com
+    #: 500 caracteres de `news.google.com/rss/articles/CBMijwJB...` não permite a
+    #: ninguém ver quem publicou — o contrário do que RN-05 pede.
+    documentos_relacionados: list[DocumentoRelacionado] = Field(default_factory=list)
 
     @staticmethod
     def resumir(texto: str) -> str:
