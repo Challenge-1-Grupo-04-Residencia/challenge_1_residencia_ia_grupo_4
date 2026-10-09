@@ -1,4 +1,4 @@
-.PHONY: help up down build logs db ollama-model install api front setup-db ingest-db ingest-n1 ingest-vetores test test-front check clean
+.PHONY: help up down build logs db ollama-model install api front setup-db ingest-db ingest-n1 ingest-vetores seed test test-front check avaliar clean
 
 help: ## Mostra os comandos disponíveis
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -40,6 +40,8 @@ front: ## Roda o frontend Next.js em desenvolvimento
 # ==========================================
 # BANCO DE DADOS & INGESTÃO
 # ==========================================
+seed: setup-db ingest-db ingest-n1 ingest-vetores ## Roda todo o pipeline de banco e dados em sequência (N0, N1, N3)
+
 setup-db: ## Prepara tabelas e dados iniciais no banco
 	uv run python backend/scripts/setup_db.py
 
@@ -63,6 +65,9 @@ test-front: ## Roda testes do frontend (Vitest)
 
 check: test test-front ## Roda a suíte completa de testes (backend + frontend) e typecheck
 	npm --prefix frontend run build
+
+avaliar: ## Roda a auditoria de benchmark em todos os datasets principais da documentação
+	uv run python scripts/avaliar_modelo.py --dataset todos --n 20
 
 clean: ## Limpa caches temporários de Python e Next.js
 	find . -type d -name "__pycache__" -exec rm -rf {} +
