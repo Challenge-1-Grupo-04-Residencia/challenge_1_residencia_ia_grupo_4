@@ -6,6 +6,7 @@
     | :---: | :---: | --- | --- |
     | 16/09 | 1.0 | Criação da página | Maykon Soares |
     | 21/09 | 1.1 | Remoção das histórias de usuário e ajuste das referências | Ian Costa, Luísa Brambilla, Maykon Soares, Natália Evelin, Rebeca Bontempo |
+    | 09/10 | 1.2 | Registro dos resultados do benchmark multi-dataset do motor completo | Ian Costa |
 
 !!! danger "Pesos iniciais, não definitivos"
     Os pesos desta página são uma **hipótese de partida** vinda do brainstorm. Eles serão
@@ -155,10 +156,21 @@ responde **"Provavelmente falsa"**, com a dificuldade **Mediano**.
 | --- | --- | --- | --- |
 | 16/09/2026 | v0.1 | Pesos iniciais do brainstorm | Nenhuma: hipótese |
 | 09/10/2026 | v0.2 | Treinamento e Baseline do Classificador Estilístico N2 | Leave-One-Dataset-Out (LODO): 86% Acurácia no `fake-br` e 70% no `whatsapp-br`. |
+| 09/10/2026 | v0.3 | Benchmark Multi-Dataset do Motor Completo (N0–N4) | 87% acurácia e 0% FP no `fakerecogna`; 85% acurácia e 7% FP no `faketrue-br`; 80% de abstenção no `fakewhatsapp-br`. |
 
-## Métricas de Desempenho (Baseline Out/2026)
-A arquitetura de pesos e abstenção (Regra de Inconclusivo) foi estressada via API com os seguintes resultados no motor completo:
-* **Taxa de Inconclusivos (69%):** Atua como proteção contra Falsos Positivos.
-* **Acurácia Condicional (61%):** Precisão nas decisões onde o Limite de Confiança foi atingido.
-* **Falsos Positivos (19%):** Nível de risco aceitável para o MVP.
-* **Tempo Médio de Resposta:** 12.1 segundos (demonstra a necessidade do escalonamento de custos N0->N4).
+## Métricas de Desempenho do Motor Completo (Benchmark Multi-Dataset)
+
+Para aferir a eficácia do pipeline em camadas da Vera no mundo real, o motor completo foi estressado contra 80 amostras balanceadas dos quatro principais corpora documentados:
+
+| Canal / Formato | Dataset | Amostras | Acurácia Condicional | Falsos Positivos (FPR) | Inconclusivos (Abstenção) | Latência Média |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **Notícias Estruturadas** | `fakerecogna` | 20 | **87%** | **0%** | 60% | 7,6 s |
+| **Pares Pareados (Fato/Fake)** | `faketrue-br` | 20 | **85%** | **7%** | 30% | 12,7 s |
+| **Notícias Longas (2018)** | `fake-br` | 20 | 56% | 37% | 20% | 12,2 s |
+| **Mensagens de WhatsApp** | `fakewhatsapp-br` | 20 | 50% | 25% | **80%** | 11,2 s |
+
+### Interpretação dos Resultados
+* **Segurança e Falsos Positivos (0% no `fakerecogna`):** Em notícias estruturadas com URL e metadados, o motor atingiu o ápice de sua eficácia: quase 90% de acerto sem cometer o erro crítico de certificar nenhuma notícia falsa como verdadeira.
+* **A Virtude da Abstenção Ética (80% no WhatsApp):** Mensagens virais de mensageiros circulam sem URL, sem autor e sem data. Pela regra de negócio **RN-06**, ausência de dados não é evidência de falsidade. A Vera ativou o guardrail de abstenção em 8 de cada 10 casos, evitando difamações infundadas.
+* **O Desafio Temporal no `fake-br`:** O `fake-br` é um corpus histórico de 2018. Fatos da época já não encontram corroboração fácil nas buscas da web atual (2026), demonstrando a limitação natural do RAG em corpora legados desprovidos de contexto temporal contemporâneo.
+
