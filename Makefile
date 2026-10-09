@@ -1,46 +1,69 @@
-.PHONY: help up down build logs api front db setup-db test
+.PHONY: help up down build logs db ollama-model install api front setup-db ingest-db ingest-n1 ingest-vetores test test-front check clean
 
 help: ## Mostra os comandos disponíveis
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 # ==========================================
-# COMANDOS DOCKER (Ambiente Completo)
+# AMBIENTE DOCKER
 # ==========================================
-up: ## Sobe todo o ambiente via Docker (API, Banco, Ollama) em segundo plano
-	docker-compose up -d
+up: ## Sobe todo o ambiente via Docker em segundo plano
+	docker compose up -d
 
 down: ## Derruba todos os containers do projeto
-	docker-compose down
+	docker compose down
 
-build: ## Reconstrói as imagens do Docker (útil quando adicionar bibliotecas novas)
-	docker-compose build
+build: ## Reconstrói as imagens do Docker
+	docker compose build
 
 logs: ## Exibe os logs de todos os containers em tempo real
-	docker-compose logs -f
+	docker compose logs -f
+
+db: ## Sobe apenas o Postgres com PGVector
+	docker compose up -d postgres
+
+ollama-model: ## Baixa o modelo llama3 no Ollama para a Camada N4
+	docker compose exec vera_ollama ollama pull llama3
 
 # ==========================================
-# COMANDOS LOCAIS DE DESENVOLVIMENTO
+# DESENVOLVIMENTO LOCAL
 # ==========================================
-db: ## Sobe apenas o Banco de Dados (Postgres) via Docker
-	docker-compose up -d postgres
+install: ## Sincroniza dependências do backend e instala pacotes do frontend
+	uv sync
+	npm --prefix frontend install
 
-api: ## Roda a API do Backend localmente usando o UV (Hot-Reload ativado)
-	uv run uvicorn src.main:app --app-dir backend --reload --port 8000
+api: ## Roda a API com hot-reload na porta padrão do time (8010)
+	uv run uvicorn src.main:app --app-dir backend --reload --port 8010
 
-front: ## Roda o Frontend localmente no modo de desenvolvimento
-	cd frontend && npm run dev
+front: ## Roda o frontend Next.js em desenvolvimento
+	npm --prefix frontend run dev
 
-setup-db: ## Prepara as tabelas do banco e injeta a notícia de teste (Migration/Seed)
+# ==========================================
+# BANCO DE DADOS & INGESTÃO
+# ==========================================
+setup-db: ## Prepara tabelas e dados iniciais no banco
 	uv run python backend/scripts/setup_db.py
 
-ingest-db: ## Roda a ingestão massiva dos Datasets reais para a Camada N0
+ingest-db: ## Ingestão massiva de datasets para a Camada N0
 	uv run python backend/scripts/ingestao.py
 
-ingest-n1: ## Calcula a nota de reputação dos sites e injeta na tabela da Camada N1
+ingest-n1: ## Calcula reputação de sites para a Camada N1
 	uv run python backend/scripts/ingestao_reputacao.py
 
-ingest-vetores: ## Converte as checagens da N0 em vetores matemáticos para a Busca Semântica da N3
+ingest-vetores: ## Vetoriza checagens para busca semântica na N3
 	uv run python backend/scripts/vetorizar_banco.py
 
-test: ## Roda todos os testes unitários do Backend usando Pytest
+# ==========================================
+# TESTES E QUALIDADE
+# ==========================================
+test: ## Roda testes unitários do backend (Pytest)
 	uv run pytest
+
+test-front: ## Roda testes do frontend (Vitest)
+	npm --prefix frontend test
+
+check: test test-front ## Roda a suíte completa de testes (backend + frontend) e typecheck
+	npm --prefix frontend run build
+
+clean: ## Limpa caches temporários de Python e Next.js
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	rm -rf .pytest_cache frontend/.next

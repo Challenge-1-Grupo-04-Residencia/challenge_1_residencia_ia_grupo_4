@@ -272,3 +272,25 @@ export async function checarComAndamento(
   }
   return veredito;
 }
+
+export interface Avaliacao {
+  id: number;
+  data_execucao: string;
+  dataset: string;
+  qtd_amostras: number;
+  acuracia: number;
+  taxa_falsos_positivos: number;
+  taxa_inconclusivos: number;
+  tempo_medio_ms: number;
+}
+
+/**
+ * Busca o histórico de avaliações em lote (Auditoria).
+ */
+export async function listarAvaliacoesLote(): Promise<Avaliacao[]> {
+  const resposta = await fetch(`${URL_BASE}/api/v1/avaliacoes/lote`);
+  if (!resposta.ok) {
+    throw new ErroDaVera("Erro ao buscar avaliações.", resposta.status);
+  }
+  return (await resposta.json()) as Avaliacao[];
+}

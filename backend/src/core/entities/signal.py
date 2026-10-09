@@ -72,6 +72,17 @@ class Sinal(BaseModel):
         return self.score is None and not self.aferido
 
 
+# --- Dimensão 0 · Cache · Pontuação máxima imediata --------------------------------
+# "Alguém já desmentiu isso? Se sim, a checagem para aqui."
+
+S00 = DefinicaoSinal(
+    id="S-00",
+    nome="Checagem oficial anterior (Cache)",
+    peso=0,
+    dimensao=Dimensao.CORROBORACAO,
+    camada="N0",
+)
+
 # --- Dimensão 1 · Fonte · 35 pontos ------------------------------------------------
 # "Quem publicou? Esse veículo teve outras notícias falsas recentemente?"
 
