@@ -1,8 +1,9 @@
 import urllib.parse
 from src.core.engine.orchestrator import CamadaVerificacao
 from src.core.entities.claim import NoticiaRequest
-from src.core.entities.signal import medir
 from src.infrastructure.database import SessionLocal, DominioReputacao
+from src.core.entities.signal import medir, nao_medido
+from src.infrastructure.whois_client import consultar_idade_meses
 
 class CamadaN1Fonte(CamadaVerificacao):
     """N1 (Fonte) - Analisa o histórico criminal e a reputação de quem publicou (RF-18)."""
@@ -48,6 +49,27 @@ class CamadaN1Fonte(CamadaVerificacao):
                     
         except Exception as e:
             print(f"[Aviso N1] Falha ao consultar reputação da fonte: {e}")
+                    # --- INÍCIO DO CÁLCULO S-03 (Idade do Domínio) ---
+        try:
+            idade_meses = consultar_idade_meses(dominio)
+            
+            if idade_meses is not None:
+                # Se tiver menos de 6 meses, penalizamos (score 0.0)
+                if idade_meses < 6:
+                    resultado.registrar(medir("S-03", 0.0, f"Domínio suspeito: registro muito recente ({idade_meses} meses)."))
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 0.0 (Recente)")
+                else:
+                    resultado.registrar(medir("S-03", 1.0, f"Domínio antigo e estabelecido ({idade_meses} meses)."))
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 1.0 (Antigo)")
+            else:
+                # Falha na API ou falta de chave não deve derrubar a nota injustamente
+                print("[DEBUG N1] Idade não encontrada ou WHOIS indisponível. Marcando S-03 como não medido.")
+                resultado.registrar(nao_medido("S-03", "Não foi possível consultar a idade do domínio (WHOIS falhou)."))
+        
+        except Exception as e:
+            print(f"[Aviso N1] Erro crítico ao processar o S-03: {e}")
+            resultado.registrar(nao_medido("S-03", "Erro interno ao validar WHOIS."))
+        # --- FIM DO CÁLCULO S-03 ---
 
         # Diferente da N0, a N1 não encerra a verificação! 
         # Ela apenas anota a reputação e repassa para a N2 olhar o estilo do texto.
