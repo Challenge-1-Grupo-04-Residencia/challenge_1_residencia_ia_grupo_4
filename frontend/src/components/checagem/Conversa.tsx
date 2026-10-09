@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 import { CaixaDePergunta } from "@/components/checagem/CaixaDePergunta";
 import { CaminhoDaInvestigacao } from "@/components/checagem/CaminhoDaInvestigacao";
 import { ResultadoChecagem } from "@/components/checagem/ResultadoChecagem";
+import { Icone } from "@/components/ui/Icone";
 import { VeraAvatar } from "@/components/vera/VeraAvatar";
 import type { EtapaDoAndamento } from "@/lib/api";
 import { ErroDaVera, checarComAndamento, perguntar, triar } from "@/lib/api";
@@ -27,7 +28,27 @@ type Mensagem =
   | { tipo: "fala"; texto: string; fontes: FonteCitada[] }
   | { tipo: "erro"; texto: string };
 
-export function Conversa() {
+interface Props {
+  /**
+   * Mostra o balão de saudação enquanto não há conversa.
+   *
+   * A página inicial manda `false`: a faixa de abertura, logo acima, já diz a
+   * mesma coisa com as mesmas palavras. Dois convites iguais, um embaixo do
+   * outro, não convidam o dobro — só empurram a caixa de pergunta para fora da
+   * primeira tela.
+   */
+  saudacao?: boolean;
+  /**
+   * Avisa que a conversa saiu do zero.
+   *
+   * Serve à página inicial, que recolhe a abertura e o feed quando a pessoa
+   * manda a primeira mensagem: a partir dali a tela é um chat, e a apresentação
+   * da Vera só ocuparia o lugar da resposta.
+   */
+  aoComecar?: () => void;
+}
+
+export function Conversa({ saudacao = true, aoComecar }: Props = {}) {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [carregando, setCarregando] = useState(false);
   const [etapas, setEtapas] = useState<EtapaDoAndamento[]>([]);
@@ -36,11 +57,25 @@ export function Conversa() {
   const fimDaConversa = useRef<HTMLDivElement | null>(null);
   const parametros = useSearchParams();
   const consultaInicial = parametros.get("q");
-  const jaDisparou = useRef(false);
+  // Guarda a última consulta disparada, e não um "já disparou": a busca do topo
+  // empurra `?q=` sem trocar de rota, então a tela não remonta. Com um booleano,
+  // a segunda pergunta feita pela busca não acontecia — a pessoa digitava, dava
+  // Enter e nada mudava.
+  const ultimaConsulta = useRef<string | null>(null);
 
   function acrescentar(m: Mensagem) {
     setMensagens((anteriores) => [...anteriores, m]);
   }
+
+  // Dispara uma vez só, na primeira mensagem. Chamar a cada mensagem faria a
+  // página inicial recalcular layout a cada linha da conversa.
+  const jaAvisou = useRef(false);
+  useEffect(() => {
+    if (mensagens.length > 0 && !jaAvisou.current) {
+      jaAvisou.current = true;
+      aoComecar?.();
+    }
+  }, [mensagens.length, aoComecar]);
 
   /**
    * Leva a conversa para o fim a cada mudança.
@@ -51,6 +86,10 @@ export function Conversa() {
    * desligado por `prefers-reduced-motion`.
    */
   useEffect(() => {
+    // Sem conversa nenhuma não há o que acompanhar — e rolar aqui empurraria para
+    // fora da tela a abertura da página inicial, onde esta conversa agora mora.
+    if (mensagens.length === 0 && !carregando) return;
+
     // `scrollIntoView` não obedece ao `scroll-behavior` do CSS, então a preferência de
     // movimento reduzido é checada aqui. Quem a marcou costuma ter enxaqueca
     // vestibular; rolagem suave é exatamente o que incomoda.
@@ -96,7 +135,7 @@ export function Conversa() {
         texto:
           erro instanceof ErroDaVera
             ? erro.message
-            : "Deu chabu aqui do meu lado. Tenta de novo?",
+            : "Deu chabu aqui do meu lado. Tenta de novo, visse?",
       });
     } finally {
       setCarregando(false);
@@ -126,7 +165,7 @@ export function Conversa() {
         texto:
           erro instanceof ErroDaVera
             ? erro.message
-            : "Deu chabu aqui do meu lado. Tenta de novo?",
+            : "Deu chabu aqui do meu lado. Tenta de novo, visse?",
       });
     } finally {
       setCarregando(false);
@@ -163,7 +202,7 @@ export function Conversa() {
         texto:
           erro instanceof ErroDaVera
             ? erro.message
-            : "Deu chabu aqui do meu lado. Tenta de novo?",
+            : "Deu chabu aqui do meu lado. Tenta de novo, visse?",
       });
       setCarregando(false);
       return;
@@ -186,8 +225,8 @@ export function Conversa() {
 
   // A busca do topo empurra `?q=`; dispara uma vez só.
   useEffect(() => {
-    if (consultaInicial && !jaDisparou.current) {
-      jaDisparou.current = true;
+    if (consultaInicial && ultimaConsulta.current !== consultaInicial) {
+      ultimaConsulta.current = consultaInicial;
       void novaChecagem(consultaInicial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -196,13 +235,28 @@ export function Conversa() {
   const vazio = mensagens.length === 0;
 
   return (
-    <div className="mt-6 flex flex-col gap-5">
-      {vazio && (
-        <div className="flex items-start gap-3">
-          <VeraAvatar humor="satisfeita" tamanho={44} className="shrink-0" />
-          <p className="rounded-lg rounded-tl-sm border border-borda bg-papel-2 p-4 text-base">
-            Senta aqui, meu bem. O que é que tu quer saber que é verdade?
-          </p>
+    <div className="mt-3 flex flex-col gap-4">
+      {/* Só o rosto, e uma linha. A Vera inteira já está na abertura logo acima:
+          repetir a arte aqui empurrava a caixa de texto para fora da primeira
+          tela, que é justamente onde ela precisa estar. */}
+      {vazio && saudacao && (
+        <div className="surge flex items-start gap-3">
+          <VeraAvatar humor="satisfeita" tamanho={48} />
+          <div className="relative min-w-0 flex-1 rounded-lg border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm">
+            <p className="text-base">
+              <strong className="font-display text-xl">Senta aqui, meu bem!</strong>{" "}
+              Cola a notícia aí embaixo que eu vou atrás.
+            </p>
+            {/* Rabicho apontando para a Vera. */}
+            <span
+              aria-hidden
+              className="absolute -left-[13px] top-4 h-0 w-0 border-y-[10px] border-r-[13px] border-y-transparent border-r-tinta"
+            />
+            <span
+              aria-hidden
+              className="absolute -left-[8px] top-4 h-0 w-0 border-y-[8px] border-r-[10px] border-y-transparent border-r-[var(--papel-2)]"
+            />
+          </div>
         </div>
       )}
 
@@ -212,7 +266,7 @@ export function Conversa() {
             return (
               <p
                 key={i}
-                className="surge max-w-[85%] self-end rounded-lg rounded-br-sm bg-vermelho px-4 py-2.5 text-base text-white"
+                className="surge max-w-[85%] self-end rounded-lg rounded-br-sm border-[3px] border-tinta bg-vermelho px-4 py-2.5 text-base font-semibold text-white shadow-bloco-sm"
               >
                 {m.texto}
               </p>
@@ -231,23 +285,26 @@ export function Conversa() {
           if (m.tipo === "fala") {
             return (
               <div key={i} className="surge flex items-start gap-3">
-                <VeraAvatar humor="pensativa" tamanho={44} className="mt-1 shrink-0" />
-                <div className="min-w-0 flex-1 rounded-lg rounded-tl-sm border border-borda bg-papel-2 p-4">
+                <VeraAvatar humor="pensativa" tamanho={48} className="mt-1" />
+                <div className="min-w-0 flex-1 rounded-lg rounded-tl-sm border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco-sm">
                   <p className="text-base">{m.texto}</p>
                   {m.fontes.length > 0 && (
                     <ul className="mt-2 space-y-1.5 text-sm">
                       {m.fontes.map((fonte) => (
                         <li key={fonte.url} className="flex items-baseline gap-2">
                           <span
-                            className="shrink-0 text-xs"
+                            className={`flex size-6 shrink-0 items-center justify-center rounded-total ${
+                              fonte.confiavel
+                                ? "bg-confirmada text-white"
+                                : "border border-borda text-tinta-3"
+                            }`}
                             title={
                               fonte.confiavel
                                 ? "Veículo da base curada"
                                 : "Fora da base curada"
                             }
-                            aria-hidden
                           >
-                            {fonte.confiavel ? "✓" : "·"}
+                            <Icone nome={fonte.confiavel ? "visto" : "duvida"} tamanho={14} />
                           </span>
                           <span className="min-w-0">
                             <a
@@ -260,7 +317,7 @@ export function Conversa() {
                             </a>
                             {fonte.veiculo && (
                               <span className="ml-1.5 opacity-60">
-                                — {fonte.veiculo}
+                                {fonte.veiculo}
                               </span>
                             )}
                           </span>
@@ -276,8 +333,9 @@ export function Conversa() {
           return (
             <p
               key={i}
-              className="surge rounded-lg border border-falsa/40 bg-falsa-fundo p-4 text-base text-tinta"
+              className="surge flex items-center gap-3 rounded-lg border-[3px] border-falsa bg-falsa-fundo p-4 text-base text-tinta"
             >
+              <Icone nome="alerta" tamanho={28} className="shrink-0 text-falsa" />
               {m.texto}
             </p>
           );
@@ -287,23 +345,34 @@ export function Conversa() {
             que responde "o que está acontecendo?" sem a pessoa ter de adivinhar. */}
         {carregando && etapas.length > 0 && (
           <div className="surge flex items-start gap-3">
-            <VeraAvatar humor="investigando" tamanho={44} className="mt-1 shrink-0" />
+            <VeraAvatar humor="investigando" tamanho={48} className="mt-1" />
             <div className="min-w-0 flex-1">
               <CaminhoDaInvestigacao etapas={etapas} />
             </div>
           </div>
         )}
         {carregando && etapas.length === 0 && (
-          <p className="surge text-sm text-tinta-2">Já vou ver isso, meu bem…</p>
+          <p className="surge flex items-center gap-2 text-base text-tinta-2">
+            <Icone nome="relogio" tamanho={22} className="etapa-ativa" />
+            Já vou ver isso, meu bem…
+          </p>
         )}
 
       </section>
 
       {/* `sticky` com `bottom`: a caixa ocupa o espaço dela no fim da conversa e só
           flutua quando a pessoa rola para cima. Deixá-la fora do fluxo, ou puxá-la com
-          margem negativa, fazia a última mensagem — a que se quer ler — ficar escondida
-          atrás dela. */}
-      <div className="sticky bottom-24 z-10 mt-2 md:bottom-4">
+          margem negativa, fazia a última mensagem, a que se quer ler, ficar escondida
+          atrás dela.
+
+          Com a conversa vazia ela **não** gruda: `bottom` puxa o elemento para cima
+          dentro do próprio bloco, e numa página curta isso jogava a caixa por cima da
+          Vera do estado vazio. Só há o que perseguir quando já existe conversa. */}
+      <div
+        className={`z-10 mt-2 ${
+          vazio && !carregando ? "" : "sticky bottom-24 md:bottom-4"
+        }`}
+      >
         <CaixaDePergunta
           onPerguntar={enviar}
           carregando={carregando}

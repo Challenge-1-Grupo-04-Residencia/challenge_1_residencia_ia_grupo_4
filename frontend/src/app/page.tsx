@@ -1,35 +1,21 @@
 /**
  * Página inicial.
  *
- * A ordem responde a duas pessoas diferentes: quem chega com uma dúvida
- * específica encontra a busca no topo; quem chega sem dúvida nenhuma encontra o
- * feed logo abaixo, e se informa de forma preventiva (RF-43).
+ * O chat fica **aqui**, e não atrás de um link. A tela de entrada sem a caixa de
+ * texto obrigava quem chegou com uma dúvida — que é a razão de a pessoa estar
+ * aqui — a reconhecer um botão e navegar para outra tela antes de poder
+ * perguntar.
+ *
+ * Quem decide o que aparece é `TelaInicial`, do lado do cliente: a abertura em
+ * quadrinhos na primeira visita, depois a apresentação com o chat, e o chat
+ * sozinho a partir da primeira pergunta.
+ *
+ * `/checar` continua existindo, com a mesma conversa sem a abertura, para quem
+ * chega por link direto ou com `?q=`.
  */
 
-import { DicaDeSeguranca } from "@/components/home/DicaDeSeguranca";
-import { Hero } from "@/components/home/Hero";
-import { UltimasChecagens } from "@/components/home/UltimasChecagens";
-import { Tour } from "@/components/onboarding/Tour";
+import { TelaInicial } from "@/components/home/TelaInicial";
 
 export default function Home() {
-  return (
-    <>
-      <Hero />
-
-      {/* O card sobe sobre a faixa vermelha, como no protótipo. */}
-      {/* `relative z-10`: sem isso a margem negativa esconde o topo do cartão
-          atrás da faixa vermelha, que é pintada depois. */}
-      <div className="relative z-10 mx-auto -mt-16 w-full max-w-6xl px-4 pb-10 md:-mt-20 md:px-8">
-        <div className="grid gap-5 lg:grid-cols-[1.6fr_1fr]">
-          <div data-tour="feed">
-            <UltimasChecagens />
-          </div>
-          <div data-tour="dica">
-            <DicaDeSeguranca />
-          </div>
-        </div>
-      </div>
-      <Tour />
-    </>
-  );
+  return <TelaInicial />;
 }

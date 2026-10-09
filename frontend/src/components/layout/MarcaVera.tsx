@@ -1,43 +1,38 @@
 /**
- * Marca da Vera: lupa com um visto dentro, e o nome.
+ * Marca da Vera: o rosto dela num emblema, e o nome em letreiro.
  *
- * A lupa diz "eu vou conferir" e o visto diz "eu confirmo" — juntos são a
- * promessa do produto numa forma só. Serve também como marca-d'água no rodapé da
- * navegação, por isso o desenho é separado do texto.
+ * Era uma lupa com um visto dentro — o desenho certo para um checador genérico,
+ * e errado para este: a Vera **tem** rosto, e é o rosto que as pessoas
+ * reconhecem no grupo da família. Uma lupa de traço fino também destoava do
+ * resto, que é todo contorno grosso.
+ *
+ * O emblema continua servindo de marca-d'água sem o nome, por isso o desenho é
+ * separado do texto.
  */
 
+import Image from "next/image";
+
 interface Props {
-  /** Só o símbolo, sem o nome. */
+  /** Só o emblema, sem o nome. */
   apenasSimbolo?: boolean;
   className?: string;
 }
 
-export function SimboloVera({ tamanho = 40 }: { tamanho?: number }) {
+export function SimboloVera({ tamanho = 48 }: { tamanho?: number }) {
   return (
-    <svg viewBox="0 0 48 48" width={tamanho} height={tamanho} aria-hidden>
-      <circle
-        cx="21"
-        cy="21"
-        r="15"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="4"
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm"
+      style={{ width: tamanho, height: tamanho }}
+    >
+      <Image
+        src="/vera-rosto.png"
+        alt=""
+        width={tamanho}
+        height={tamanho}
+        className="h-full w-full scale-105 object-contain object-bottom"
+        priority
       />
-      <path
-        d="M14 21.5l5 5 9-10"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M32 32l10 10"
-        stroke="currentColor"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-    </svg>
+    </span>
   );
 }
 
@@ -47,11 +42,9 @@ export function MarcaVera({ apenasSimbolo = false, className = "" }: Props) {
       <SimboloVera />
       {!apenasSimbolo && (
         <div className="leading-none">
-          <p className="font-display text-3xl font-extrabold">Vera</p>
-          <p className="mt-1 text-sm font-semibold opacity-90">
-            Verificadora
-            <br />
-            de Fatos
+          <p className="font-display text-3xl">Vera</p>
+          <p className="mt-0.5 text-xs font-bold uppercase tracking-wide opacity-90">
+            Verificadora de fatos
           </p>
         </div>
       )}

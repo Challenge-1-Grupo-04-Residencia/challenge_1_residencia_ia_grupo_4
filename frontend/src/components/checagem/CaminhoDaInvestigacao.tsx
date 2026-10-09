@@ -1,31 +1,57 @@
 "use client";
 
 /**
- * O caminho da investigação, etapa por etapa (RF-03).
+ * O caminho da investigação, como um placar de carimbos (RF-03).
  *
  * Substitui a barrinha de progresso por tempo estimado. Aquela avançava em 400 ms,
  * 1,8 s, 1,2 s, 6 s e 12 s, sem relação com o que estava acontecendo: a camada de
  * busca leva de 1 a 25 s e a de inferência depende de um modelo externo. Num produto
  * cujo valor é a explicação, inventar o andamento é inventar parte do produto.
  *
- * Fica na tela **depois** do veredito também, recolhido. É a pergunta que o usuário faz
- * primeiro — "como é que tu chegaste nisso?" — e a resposta é o caminho percorrido.
+ * ## Por que virou placar
+ *
+ * Era uma lista vertical com título, estado escrito, descrição e os nomes técnicos dos
+ * sinais aparecendo um a um — quatro linhas de texto para dizer "estou trabalhando".
+ * Agora são quatro quadros lado a lado, cada um com um pictograma, três palavras e um
+ * carimbo quando fica pronto, mais o placar "3 de 4". É o único lugar do produto onde
+ * cabe gamificar: a espera (ver skill `vera-gamificacao`).
  *
  * Três coisas carregam o estado de cada etapa, porque cor sozinha não serve a quem tem
- * daltonia: o símbolo, o texto do rótulo e, na etapa em curso, o movimento.
+ * daltonia: o pictograma, a palavra escrita e, na etapa em curso, o movimento.
  */
 
 import { useEffect, useRef, useState } from "react";
 
+import { Icone, type NomeDoIcone } from "@/components/ui/Icone";
 import type { EtapaDoAndamento } from "@/lib/api";
 import type { Camada, Sinal } from "@/types/checagem";
 
-/** As etapas, na ordem em que a Vera as percorre. */
-const ETAPAS: Array<{ camada: Camada; titulo: string; oQueFaz: string }> = [
-  { camada: "TRIAGEM", titulo: "Entendendo o pedido", oQueFaz: "é notícia ou é conversa?" },
-  { camada: "N2", titulo: "Lendo o texto", oQueFaz: "o jeito que foi escrito" },
-  { camada: "N3", titulo: "Procurando quem publicou", oQueFaz: "outros veículos e checagens" },
-  { camada: "N4", titulo: "Conferindo o conteúdo", oQueFaz: "o que as fontes dizem" },
+/** As etapas, na ordem em que a Vera as percorre. Nome com até três palavras. */
+const ETAPAS: Array<{ camada: Camada; titulo: string; icone: NomeDoIcone; oQueFaz: string }> = [
+  {
+    camada: "TRIAGEM",
+    titulo: "Vendo o pedido",
+    icone: "conversa",
+    oQueFaz: "é notícia ou é conversa?",
+  },
+  {
+    camada: "N2",
+    titulo: "Lendo o texto",
+    icone: "texto",
+    oQueFaz: "o jeito que foi escrito",
+  },
+  {
+    camada: "N3",
+    titulo: "Procurando nos jornais",
+    icone: "jornal",
+    oQueFaz: "outros veículos e checagens",
+  },
+  {
+    camada: "N4",
+    titulo: "Conferindo frase a frase",
+    icone: "lupa",
+    oQueFaz: "o que as fontes dizem",
+  },
 ];
 
 type Estado = "pendente" | "fazendo" | "feita" | "pulada";
@@ -50,17 +76,8 @@ function mensagemDe(camada: Camada, etapas: EtapaDoAndamento[]): string {
 }
 
 function sinaisDe(camada: Camada, etapas: EtapaDoAndamento[]): Sinal[] {
-  return etapas
-    .filter((e) => e.camada === camada)
-    .flatMap((e) => e.sinais ?? []);
+  return etapas.filter((e) => e.camada === camada).flatMap((e) => e.sinais ?? []);
 }
-
-const SIMBOLO: Record<Estado, string> = {
-  pendente: "",
-  fazendo: "",
-  feita: "✓",
-  pulada: "–",
-};
 
 const ROTULO_DE_ESTADO: Record<Estado, string> = {
   pendente: "ainda não",
@@ -86,86 +103,83 @@ export function CaminhoDaInvestigacao({ etapas, concluida = false }: Props) {
 
   return (
     <div
-      className="rounded-md border border-borda bg-papel-2 p-4"
+      className="rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm"
       role="status"
       aria-live="polite"
     >
       <button
         type="button"
         onClick={() => setAberto((a) => !a)}
-        className="flex w-full items-center justify-between gap-3 text-left"
+        className="flex min-h-11 w-full items-center justify-between gap-3 text-left"
         aria-expanded={aberto}
       >
-        <span className="font-display text-sm font-semibold">
-          {concluida ? "O caminho que eu fiz" : "Investigando…"}
+        <span className="flex items-center gap-2">
+          <Icone nome={concluida ? "visto" : "lupa"} tamanho={22} />
+          <span className="font-display text-xl">
+            {concluida ? "O caminho que eu fiz" : "Tô atrás disso…"}
+          </span>
         </span>
-        <span className="text-xs text-tinta-2">
-          {feitas} de {ETAPAS.length} etapas {aberto ? "▲" : "▼"}
+        <span className="flex shrink-0 items-center gap-2">
+          {/* O placar em caixinhas: dá para contar sem ler. */}
+          <span className="flex gap-1" aria-hidden>
+            {ETAPAS.map((e, i) => (
+              <span
+                key={e.camada}
+                className={`size-3 rounded-sm border-2 border-tinta ${
+                  i < feitas ? "bg-confirmada" : "bg-papel-3"
+                }`}
+              />
+            ))}
+          </span>
+          <span className="font-display text-lg tabular-nums">
+            {feitas}/{ETAPAS.length}
+          </span>
+          <Icone nome="seta" tamanho={18} className={aberto ? "-rotate-90" : "rotate-90"} />
         </span>
       </button>
 
       {aberto && (
-        <ol className="mt-3 space-y-0">
-          {ETAPAS.map((etapa, i) => {
+        <ol className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {ETAPAS.map((etapa) => {
             const estado = estadoDe(etapa.camada, etapas);
             const mensagem = mensagemDe(etapa.camada, etapas);
-            const sinais = sinaisDe(etapa.camada, etapas);
-            const medidos = sinais.filter((s) => s.score !== null);
-            const ultima = i === ETAPAS.length - 1;
+            const medidos = sinaisDe(etapa.camada, etapas).filter((s) => s.score !== null);
 
             return (
-              <li key={etapa.camada} className="flex gap-3">
-                {/* Marcador e trilha: a coluna da esquerda desenha o percurso. */}
-                <div className="flex w-5 shrink-0 flex-col items-center">
+              <li
+                key={etapa.camada}
+                className={[
+                  "relative flex flex-col items-center gap-1 rounded-md border-2 p-2 text-center",
+                  estado === "feita" && "border-confirmada bg-verdadeira-fundo",
+                  estado === "fazendo" && "border-vermelho bg-vermelho-suave",
+                  estado === "pendente" && "border-borda bg-papel-3 opacity-60",
+                  estado === "pulada" && "border-borda bg-papel-3 opacity-60",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={mensagem || etapa.oQueFaz}
+              >
+                <Icone
+                  nome={etapa.icone}
+                  tamanho={28}
+                  className={estado === "fazendo" ? "etapa-ativa" : undefined}
+                />
+                <span className="text-xs font-bold leading-tight">{etapa.titulo}</span>
+                <span className="text-[11px] text-tinta-2">
+                  {ROTULO_DE_ESTADO[estado]}
+                  {/* Quantos sinais saíram dali: é o que a etapa rendeu, em número,
+                      sem despejar o nome técnico de cada um na cara de quem espera. */}
+                  {estado === "feita" && medidos.length > 0 && ` · ${medidos.length}`}
+                </span>
+
+                {estado === "feita" && (
                   <span
-                    className={[
-                      "mt-0.5 flex size-5 items-center justify-center rounded-total text-[11px] font-bold",
-                      estado === "feita" && "bg-confirmada text-white",
-                      estado === "fazendo" && "etapa-ativa bg-vermelho text-white",
-                      estado === "pendente" && "border border-borda bg-papel-3 text-tinta-3",
-                      estado === "pulada" && "bg-papel-3 text-tinta-3",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
+                    className="bate-carimbo absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-total border-2 border-tinta bg-confirmada text-white"
                     aria-hidden
                   >
-                    {SIMBOLO[estado]}
+                    <Icone nome="visto" tamanho={14} />
                   </span>
-                  {!ultima && (
-                    <span
-                      className={[
-                        "w-0.5 flex-1",
-                        estado === "feita" ? "trilha-feita bg-confirmada" : "bg-borda",
-                      ].join(" ")}
-                      aria-hidden
-                    />
-                  )}
-                </div>
-
-                <div className={`min-w-0 flex-1 ${ultima ? "pb-0" : "pb-4"}`}>
-                  <p className="text-sm font-semibold">
-                    {etapa.titulo}
-                    <span className="ml-2 text-xs font-normal text-tinta-3">
-                      {ROTULO_DE_ESTADO[estado]}
-                    </span>
-                  </p>
-                  <p className="text-xs text-tinta-2">
-                    {mensagem || etapa.oQueFaz}
-                  </p>
-                  {medidos.length > 0 && (
-                    <ul className="mt-1 flex flex-wrap gap-1">
-                      {medidos.map((s) => (
-                        <li
-                          key={s.id}
-                          className="rounded-sm bg-papel-3 px-1.5 py-0.5 text-[11px] text-tinta-2"
-                          title={s.justificativa}
-                        >
-                          {s.nome.length > 28 ? `${s.nome.slice(0, 28)}…` : s.nome}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
+                )}
               </li>
             );
           })}

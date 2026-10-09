@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
-import { Baloo_2, Caveat, Nunito } from "next/font/google";
+import { Bangers, Nunito, Patrick_Hand } from "next/font/google";
 
 import { BarraLateral } from "@/components/layout/BarraLateral";
-import { BarraTopo } from "@/components/layout/BarraTopo";
 import "./globals.css";
 
 /**
  * Tipografia da Vera — ver .claude/skills/vera-estilo/SKILL.md.
  *
  * As três famílias carregam `latin-ext` porque português tem ã, õ, ç e acento
- * agudo: fonte que quebra acento está descartada de saída.
+ * agudo: fonte que quebra acento está descartada de saída. Foi o que descartou a
+ * Comic Neue, candidata óbvia de quadrinho, que só tem `latin`.
  */
 
-/** Display: títulos, veredito, números. */
-const display = Baloo_2({
+/**
+ * Display: letreiro de quadrinho para título, veredito e número.
+ *
+ * A Bangers tem um peso só. Pedir `font-bold` dela faz o navegador fabricar um
+ * negrito sintético, que engrossa o traço de forma irregular e suja o desenho da
+ * letra — por isso o peso aparece aqui e em lugar nenhum mais.
+ */
+const display = Bangers({
   variable: "--fonte-display",
   subsets: ["latin", "latin-ext"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -28,11 +34,12 @@ const texto = Nunito({
   display: "swap",
 });
 
-/** Mão: frases curtas da Vera. Nunca carrega informação sozinha. */
-const mao = Caveat({
+/** Mão: frases curtas da Vera, com traço de letreirista. Nunca carrega
+ * informação sozinha — ver `vera-estilo`. */
+const mao = Patrick_Hand({
   variable: "--fonte-mao",
   subsets: ["latin", "latin-ext"],
-  weight: ["600", "700"],
+  weight: ["400"],
   display: "swap",
 });
 
@@ -50,11 +57,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full">
+        {/* Não há barra de topo. Ela tinha uma busca que fazia o mesmo que a
+            caixa do chat, mais um sino e um avatar que não levavam a lugar
+            nenhum — e comia a altura de que a abertura e o chat precisam para
+            caber juntos na primeira tela. */}
         <div className="flex min-h-dvh">
           <BarraLateral />
           {/* pb-20 no celular abre espaço para a barra de navegação fixa. */}
           <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
-            <BarraTopo />
             <main className="flex-1">{children}</main>
           </div>
         </div>

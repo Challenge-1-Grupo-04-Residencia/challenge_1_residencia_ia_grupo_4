@@ -15,6 +15,7 @@
  * de detalhamento.
  */
 
+import type { NomeDoIcone } from "@/components/ui/Icone";
 import type { Sinal } from "@/types/checagem";
 
 /** Como cada sinal é dito na conversa, conforme apontou a favor ou contra. */
@@ -131,4 +132,62 @@ export function explicarEmLinguagemSimples(sinais: Sinal[], limite = 3): string 
     partes.push(`O que jogou a favor: ${juntarFrases(aFavor.slice(0, limite))}.`);
   }
   return partes.join(" ");
+}
+
+/* ===========================================================================
+   O resumo de quatro palavras
+   ---------------------------------------------------------------------------
+   As frases acima são conversa: boas de ler, longas de bater o olho. Quem lê com
+   dificuldade — e é quem mais recebe mentira no mensageiro — não termina uma
+   lista de três frases dessas.
+
+   Então cada sinal tem também um resumo curtíssimo e um pictograma, que é o que
+   aparece no painel do veredito. A frase longa continua existindo, no chat e no
+   detalhamento: ver skill `vera-gamificacao` para o orçamento de palavras.
+   =========================================================================== */
+
+interface ResumoDoSinal {
+  icone: NomeDoIcone;
+  favor: string;
+  contra: string;
+}
+
+const RESUMOS: Record<string, ResumoDoSinal> = {
+  "S-01": { icone: "site", favor: "Site conhecido", contra: "Site suspeito" },
+  "S-02": { icone: "alerta", favor: "Não espalha mentira", contra: "Já espalhou mentira" },
+  "S-03": { icone: "calendario", favor: "Site antigo", contra: "Site novinho" },
+  "S-04": { icone: "etiqueta", favor: "Diz quem e quando", contra: "Sem autor nem data" },
+  "S-05": { icone: "assinatura", favor: "Tem quem assine", contra: "Ninguém assina" },
+  "S-06": { icone: "texto", favor: "Jeito de notícia", contra: "Jeito de corrente" },
+  "S-07": { icone: "megafone", favor: "Texto calmo", contra: "Texto aos gritos" },
+  "S-08": { icone: "coracao", favor: "Sem apelo", contra: "Mexe com medo e raiva" },
+  "S-09": { icone: "link", favor: "Mostra de onde tirou", contra: "Não mostra de onde" },
+  "S-10": { icone: "robo", favor: "Escrita de gente", contra: "Cheiro de máquina" },
+  "S-11": { icone: "jornal", favor: "Outros jornais publicaram", contra: "Nenhum jornal publicou" },
+  "S-12": { icone: "lupa", favor: "As fontes confirmam", contra: "As fontes desmentem" },
+  "S-13": { icone: "copia", favor: "Texto original", contra: "Cópia remexida" },
+};
+
+export interface EvidenciaCurta {
+  icone: NomeDoIcone;
+  texto: string;
+  direcao: "favor" | "contra";
+}
+
+/**
+ * O resumo de um sinal para o painel do veredito.
+ *
+ * Devolve `null` para sinal sem dado: o que não foi medido não vira evidência
+ * (RN-06). Ele continua aparecendo, dito com todas as letras, dentro do
+ * detalhamento — esconder a lacuna faria a checagem parecer mais completa do que
+ * foi.
+ */
+export function resumoDoSinal(sinal: Sinal): EvidenciaCurta | null {
+  const direcao = sinalAponta(sinal);
+  if (direcao === "indisponivel") return null;
+
+  const resumo = RESUMOS[sinal.id];
+  if (!resumo) return null;
+
+  return { icone: resumo.icone, texto: resumo[direcao], direcao };
 }

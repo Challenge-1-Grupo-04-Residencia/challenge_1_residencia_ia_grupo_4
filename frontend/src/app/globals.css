@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 /* ===========================================================================
-   Tokens da Senhora Vera — estilo cordel
+   Tokens da Senhora Vera — quadrinho de banca
    ---------------------------------------------------------------------------
-   A referência é literatura de cordel, não HQ americana: xilogravura em tinta
-   preta sobre papel barato e quente, com os balões de fala do quadrinho.
+   Traço preto grosso, cor chapada, painel com moldura, balão com rabicho e
+   retícula de pontos, sobre o papel quente que veio do cordel. A arte da
+   personagem é desenhada assim; a interface acompanha a personagem.
 
    Documentação completa em .claude/skills/vera-estilo/SKILL.md.
    Use os tokens; valor solto quebra o sistema sem ninguém perceber.
@@ -183,6 +184,10 @@
   --radius-sm: var(--raio-sm);
   --radius-md: var(--raio-md);
   --radius-lg: var(--raio-lg);
+  /* Faltava, e o Tailwind descarta a classe que não encontra: todo
+     `rounded-total` do produto vinha saindo com canto vivo. Era por isso que o
+     avatar da Vera e os botões-pílula apareciam quadrados. */
+  --radius-total: var(--raio-total);
 
   --shadow-bloco: var(--sombra-bloco);
   --shadow-bloco-sm: var(--sombra-bloco-sm);
@@ -201,18 +206,44 @@ body {
   line-height: 1.5;
 }
 
-/* Display comprimida é o que dá a compressão de manchete de cordel. */
+/* Letreiro de quadrinho: a Bangers é alta, estreita e desenhada em caixa alta.
+   Ela pede respiro entre as letras e linha curta — apertada demais, o traço
+   grosso de uma letra encosta no da seguinte. */
 h1,
 h2,
 h3,
-.fonte-display {
+.fonte-display,
+.font-display {
   font-family: var(--fonte-display), system-ui, sans-serif;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
 }
 
 .fonte-mao {
   font-family: var(--fonte-mao), cursive;
+}
+
+/* ===========================================================================
+   Elementos de quadrinho
+   ---------------------------------------------------------------------------
+   O traço grosso é para o que fala: painel do veredito, balão, botão principal,
+   selo. Card de lista e campo de formulário continuam discretos — se tudo tem
+   contorno de 3px, nada tem.
+   =========================================================================== */
+
+/* Moldura de quadro de HQ, com a sombra dura do bloco impresso. */
+.painel {
+  border: var(--traco-grosso) solid var(--tinta);
+  border-radius: var(--raio-md);
+  background: var(--papel-2);
+  box-shadow: var(--sombra-bloco);
+}
+
+/* Carimbo: o selo que a Vera bate na etapa concluída e no veredito. Entra
+   torto, como carimbo batido na mão. */
+.carimbo {
+  transform: rotate(-3deg);
 }
 
 /* Foco sempre visível: outline none deixa quem navega por teclado perdido. */
@@ -222,7 +253,22 @@ h3,
   border-radius: 2px;
 }
 
-/* Retícula de pontos do quadrinho, para faixas de destaque. */
+/* Campo composto: o balão é a moldura, o textarea é só o miolo.
+   Sem isto apareciam dois anéis vermelhos ao focar — o do balão e o do campo
+   de dentro —, e a caixa ficava com cara de erro em vez de cara de foco. O
+   indicador continua existindo: ele passa a ser o anel do balão inteiro. */
+.campo-composto:focus-within {
+  outline: 3px solid var(--vermelho);
+  outline-offset: 2px;
+}
+
+.campo-composto :focus-visible {
+  outline: none;
+}
+
+/* Retícula de pontos da impressão barata, para faixas de destaque.
+   Nunca atrás de texto corrido: ela derruba o contraste, e quem lê com
+   dificuldade é justamente quem paga essa conta. */
 .reticula {
   background-image: radial-gradient(currentColor 1px, transparent 1px);
   background-size: 8px 8px;
@@ -372,4 +418,138 @@ h3,
 .trilha-feita {
   transform-origin: top center;
   animation: vera-trilha 0.4s ease-out both;
+}
+
+/* O carimbo do veredito bate na tela, como carimbo de verdade: entra grande e
+   torto, e assenta. É o momento orquestrado da Vera — o resto da tela fica
+   quieto para que este seja visto. */
+@keyframes vera-carimba {
+  from {
+    opacity: 0;
+    transform: rotate(-14deg) scale(1.6);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(-1deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+.bate-carimbo {
+  animation: vera-carimba 0.45s cubic-bezier(0.3, 1.3, 0.6, 1) both;
+  animation-delay: var(--atraso, 0ms);
+}
+
+/* ===========================================================================
+   Abertura em quadrinhos
+   ---------------------------------------------------------------------------
+   Linhas de velocidade: o fundo de ação que o quadrinho usa para dizer que algo
+   está acontecendo rápido. Giram devagar, porque a cena já se move — duas coisas
+   correndo ao mesmo tempo embaralham a leitura.
+
+   Como todo movimento deste arquivo, desligam em `prefers-reduced-motion`.
+   =========================================================================== */
+
+/* O elemento é um quadrado de lado `200vmax` centrado na tela, e não um
+   retângulo do tamanho dela. Girando um retângulo, os cantos saem do campo de
+   visão e aparecem faixas vazias no fundo a cada quarto de volta; um quadrado
+   dessa medida cobre a tela em qualquer ângulo. */
+.raios {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  margin-left: -100vmax;
+  margin-top: -100vmax;
+  background:
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      color-mix(in srgb, var(--vermelho) 14%, transparent) 0deg 2deg,
+      transparent 2deg 9deg
+    );
+  animation: vera-gira 90s linear infinite;
+}
+
+@keyframes vera-gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================================================================
+   Vida de quadrinho
+   ---------------------------------------------------------------------------
+   A abertura precisa parecer desenhada à mão e em movimento, não um slide
+   passando. O que dá isso não é uma animação grande, são várias pequenas,
+   desencontradas: o quadro entra de um lado, o balão estufa depois, a
+   onomatopeia estala, e a câmera nunca fica completamente parada.
+
+   Tudo aqui é desligado por `prefers-reduced-motion`, declarado mais acima.
+   =========================================================================== */
+
+/* Entradas de quadro, uma por direção. A direção alternada é o que impede a
+   prancha de parecer uma lista aparecendo de cima para baixo. */
+@keyframes vera-entra-esquerda {
+  from { opacity: 0; transform: translateX(-90px) rotate(-4deg) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes vera-entra-direita {
+  from { opacity: 0; transform: translateX(90px) rotate(4deg) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes vera-entra-baixo {
+  from { opacity: 0; transform: translateY(80px) rotate(2deg) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+.entra-esquerda { animation: vera-entra-esquerda 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+.entra-direita  { animation: vera-entra-direita  0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+.entra-baixo    { animation: vera-entra-baixo    0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both; }
+
+/* A onomatopeia estala: entra girada e grande, e assenta torta. */
+@keyframes vera-estala {
+  0%   { opacity: 0; transform: rotate(-20deg) scale(0.2); }
+  60%  { opacity: 1; transform: rotate(-4deg) scale(1.18); }
+  100% { opacity: 1; transform: rotate(-8deg) scale(1); }
+}
+
+.estala {
+  animation: vera-estala 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation-delay: var(--atraso, 0ms);
+}
+
+/* A câmera nunca para de todo: uma deriva lenta por cima do enquadramento, que
+   é o que separa "cena viva" de "imagem parada". */
+@keyframes vera-deriva {
+  0%   { transform: scale(1) translate(0, 0); }
+  50%  { transform: scale(1.035) translate(-8px, 6px); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+.deriva {
+  animation: vera-deriva 9s ease-in-out infinite;
+}
+
+/* Tremor curto, para a chegada da notícia falsa. */
+@keyframes vera-treme {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25%      { transform: translate(-3px, 2px) rotate(-1.5deg); }
+  50%      { transform: translate(3px, -2px) rotate(1.5deg); }
+  75%      { transform: translate(-2px, -1px) rotate(-1deg); }
+}
+
+.treme {
+  animation: vera-treme 0.45s ease-in-out 3;
+  animation-delay: var(--atraso, 0ms);
+}
+
+/* Contorno de letreiro: a onomatopeia precisa de borda preta para ler sobre
+   qualquer fundo. `paint-order` desenha o traço por trás do preenchimento. */
+.letreiro {
+  -webkit-text-stroke: 3px var(--tinta);
+  paint-order: stroke fill;
 }

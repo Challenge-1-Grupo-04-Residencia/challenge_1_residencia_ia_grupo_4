@@ -3,21 +3,30 @@
 /**
  * Detalhamento do veredito: sinal por sinal, com peso (RF-32, RF-33).
  *
- * Separado em **a favor**, **contra** e **não medido**, como pede o critério de aceite —
- * agrupar por dimensão técnica obrigaria o leitor a calcular de cabeça de que lado cada
- * coisa pesou.
- *
  * Esta é a única parte da interface onde o vocabulário técnico aparece (ID do sinal,
  * peso, nome do método): o objetivo aqui é **auditar** a decisão, e para isso o leitor
  * precisa dos nomes reais. A conversa, essa fala em linguagem simples.
  *
+ * ## O que mudou, e por quê
+ *
+ * A tela era uma lista de nomes técnicos com barras: "S-07 · Análise de sensacionalismo
+ * · peso 8 · conteúdo". Quem construiu o sistema lê isso; quem recebeu uma corrente no
+ * mensageiro, não — e é essa pessoa que clica em "ver as contas" para entender por que a
+ * Vera disse o que disse.
+ *
+ * Agora cada linha começa pela **frase em português e o pictograma**, com o nome técnico
+ * logo abaixo, menor. Nada foi escondido: o ID, o peso e a justificativa continuam
+ * todos ali, na mesma linha, porque auditar sem eles é impossível. O que mudou é a
+ * ordem de leitura — primeiro o que significa, depois como se chama.
+ *
  * Os sinais **não medidos** aparecem de propósito. Esconder o que a Vera não conseguiu
  * apurar faria a checagem parecer mais completa do que foi, e é justamente a lacuna que
- * explica uma confiança baixa.
+ * explica uma confiança baixa (RN-06).
  */
 
+import { Icone, type NomeDoIcone } from "@/components/ui/Icone";
 import { ROTULO_DIMENSAO, contribuicao } from "@/lib/veracidade";
-import { sinalAponta } from "@/lib/linguagem";
+import { falaDoSinal, resumoDoSinal, sinalAponta } from "@/lib/linguagem";
 import type { Sinal } from "@/types/checagem";
 
 interface Props {
@@ -37,16 +46,20 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
   return (
     <div className="space-y-5">
-      <p className="text-xs text-tinta-3">
-        A nota é a média dos sinais que eu consegui medir, cada um com o seu peso.{" "}
-        <strong className="font-medium text-tinta-2">
-          {pesoMedido} de 100 pontos
-        </strong>{" "}
-        foram medidos nesta checagem.
+      {/* A regra da casa, dita em uma frase antes de qualquer número. */}
+      <p className="flex items-start gap-2 rounded-md border-2 border-borda bg-papel-3 p-3 text-sm">
+        <Icone nome="contas" tamanho={20} className="mt-0.5 shrink-0 text-vermelho" />
+        <span>
+          Eu olho <strong>{sinais.length} coisas</strong> em cada notícia, e cada uma
+          vale um tanto. Nesta aqui eu consegui medir{" "}
+          <strong>{pesoMedido} de 100 pontos</strong>. O que eu não consegui medir fica
+          de fora da conta, e nunca conta como ponto contra.
+        </span>
       </p>
 
       <Grupo
         titulo="Pesou contra"
+        icone="contra"
         sinais={contra}
         cor="text-falsa"
         barra="bg-falsa"
@@ -54,6 +67,7 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
       />
       <Grupo
         titulo="Pesou a favor"
+        icone="aFavor"
         sinais={aFavor}
         cor="text-confirmada"
         barra="bg-verdadeira"
@@ -62,26 +76,22 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
       {semDado.length > 0 && (
         <section>
-          <h4 className="mb-2 text-sm font-semibold text-tinta-3">
-            O que eu não consegui apurar
-          </h4>
-          <ul className="space-y-1.5">
+          <Cabecalho icone="semDado" titulo="Não consegui apurar" cor="text-tinta-3" />
+          <ul className="mt-2 space-y-1.5">
             {semDado.map((sinal) => (
               <li
                 key={sinal.id}
-                className="rounded-lg border border-borda bg-papel-3 p-3 text-sm"
+                className="rounded-md border-2 border-dashed border-borda bg-papel-3 p-3 text-sm"
               >
                 <div className="flex items-baseline justify-between gap-3">
-                  <span className="text-tinta-2">
-                    <span className="font-mono text-xs text-tinta-3">{sinal.id}</span>{" "}
-                    {sinal.nome}
-                  </span>
+                  <span className="font-semibold text-tinta-2">{sinal.nome}</span>
                   <span className="shrink-0 text-xs text-tinta-3">
                     valeria {sinal.peso}
                   </span>
                 </div>
-                <p className="mt-1 text-xs italic text-tinta-3">
-                  Ficou de fora da conta — não conta como ponto contra a notícia.
+                <p className="mt-1 text-xs text-tinta-3">
+                  <span className="font-mono">{sinal.id}</span> · ficou de fora da
+                  conta.
                   {sinal.justificativa && ` ${sinal.justificativa}`}
                 </p>
               </li>
@@ -92,19 +102,23 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
 
       {fontes.length > 0 && (
         <section>
-          <h4 className="mb-2 text-sm font-semibold text-tinta-3">
-            Onde eu fui conferir
-          </h4>
-          <ul className="space-y-1 text-sm">
+          <Cabecalho icone="lupa" titulo="Onde eu fui olhar" cor="text-tinta-2" />
+          <p className="mt-1 text-xs text-tinta-3">
+            Pode conferir você mesma: é só tocar em cada uma.
+          </p>
+          <ul className="mt-2 space-y-1.5">
             {fontes.map((url) => (
               <li key={url}>
                 <a
                   href={url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="break-all text-vermelho underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                  className="flex items-start gap-2 rounded-md border-2 border-borda bg-papel-2 p-2.5 text-sm hover:border-vermelho"
                 >
-                  {url}
+                  <Icone nome="link" tamanho={18} className="mt-0.5 shrink-0 text-vermelho" />
+                  <span className="min-w-0 flex-1 break-all underline decoration-dotted underline-offset-2">
+                    {url}
+                  </span>
                 </a>
               </li>
             ))}
@@ -115,30 +129,53 @@ export function DetalheSinais({ sinais, fontes = [] }: Props) {
   );
 }
 
+function Cabecalho({
+  icone,
+  titulo,
+  cor,
+  direita,
+}: {
+  icone: NomeDoIcone;
+  titulo: string;
+  cor: string;
+  direita?: string;
+}) {
+  return (
+    <header className="flex items-baseline justify-between gap-3">
+      <h4 className={`flex items-center gap-2 font-display text-xl ${cor}`}>
+        <Icone nome={icone} tamanho={20} />
+        {titulo}
+      </h4>
+      {direita && <span className="shrink-0 text-xs text-tinta-3">{direita}</span>}
+    </header>
+  );
+}
+
 interface GrupoProps {
   titulo: string;
+  icone: NomeDoIcone;
   sinais: Sinal[];
   cor: string;
   barra: string;
   vazio: string;
 }
 
-function Grupo({ titulo, sinais, cor, barra, vazio }: GrupoProps) {
+function Grupo({ titulo, icone, sinais, cor, barra, vazio }: GrupoProps) {
   const peso = sinais.reduce((total, s) => total + s.peso, 0);
 
   return (
     <section>
-      <header className="mb-2 flex items-baseline justify-between">
-        <h4 className={`text-sm font-semibold ${cor}`}>{titulo}</h4>
-        {sinais.length > 0 && (
-          <span className="text-xs text-tinta-3">{peso} pontos em jogo</span>
-        )}
-      </header>
+      <Cabecalho
+        icone={icone}
+        titulo={titulo}
+        cor={cor}
+        direita={sinais.length > 0 ? `${peso} pontos em jogo` : undefined}
+      />
 
       {sinais.length === 0 ? (
-        <p className="text-xs italic text-tinta-3">{vazio}</p>
+        <p className="mt-1 text-sm italic text-tinta-3">{vazio}</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="mt-2 space-y-2">
           {sinais.map((sinal) => (
             <LinhaDeSinal key={sinal.id} sinal={sinal} barra={barra} />
           ))}
@@ -148,26 +185,38 @@ function Grupo({ titulo, sinais, cor, barra, vazio }: GrupoProps) {
   );
 }
 
+/**
+ * Uma linha da auditoria: primeiro o que significa, depois como se chama.
+ *
+ * A barra cresce com o quanto o sinal puxou o resultado para um dos lados — um sinal
+ * pesado mas morno contribuiu pouco para a conclusão, e mostrá-lo cheio enganaria.
+ */
 function LinhaDeSinal({ sinal, barra }: { sinal: Sinal; barra: string }) {
-  // A barra cresce com o quanto o sinal puxou o resultado para um dos lados: um sinal
-  // pesado mas morno contribuiu pouco para a conclusão, e mostrá-lo cheio enganaria.
+  const resumo = resumoDoSinal(sinal);
   const largura = (contribuicao(sinal.peso, sinal.score) / 20) * 100;
 
   return (
-    <li className="rounded-lg border border-borda bg-papel-3 p-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm text-tinta">
-          <span className="font-mono text-xs text-tinta-3">{sinal.id}</span>{" "}
-          {sinal.nome}
-        </span>
-        <span className="shrink-0 text-xs text-tinta-3">
-          peso {sinal.peso} · {ROTULO_DIMENSAO[sinal.dimensao]}
-        </span>
+    <li className="rounded-md border-2 border-borda bg-papel-3 p-3">
+      <div className="flex items-start gap-2.5">
+        {resumo && (
+          <span className="mt-0.5 shrink-0 text-tinta-2">
+            <Icone nome={resumo.icone} tamanho={22} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-base font-bold leading-snug">
+            {falaDoSinal(sinal) ?? sinal.nome}
+          </p>
+          <p className="mt-0.5 text-xs text-tinta-3">
+            <span className="font-mono">{sinal.id}</span> · {sinal.nome} · peso{" "}
+            {sinal.peso} · {ROTULO_DIMENSAO[sinal.dimensao]}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-papel-3">
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-total border border-borda bg-papel-2">
         <div
-          className={`h-full rounded-full ${barra}`}
+          className={`h-full rounded-total ${barra}`}
           style={{ width: `${Math.min(100, largura)}%` }}
         />
       </div>
