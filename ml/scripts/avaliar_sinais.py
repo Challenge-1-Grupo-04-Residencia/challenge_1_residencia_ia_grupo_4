@@ -39,8 +39,8 @@ sys.path.insert(0, str(RAIZ / "backend"))
 from src.core.engine import emotion, text_style  # noqa: E402
 from src.core.engine.n2_content import CamadaN2Conteudo, TETO_DOS_DETECTORES  # noqa: E402
 
-DIRETORIO_DATASETS = RAIZ / "ml" / "datasets"
-CORPORA = ("fake-br", "FakeRecogna", "faketrue-br", "fakewhatsapp-br", "faketweet-br")
+DIRETORIO_DATASETS = RAIZ / "datasets"
+CORPORA = ("fake-br", "fakerecogna", "faketrue-br", "fakewhatsapp-br", "faketweet-br")
 MAXIMO_POR_CORPUS = 4_000
 MINIMO_DE_PALAVRAS = 10
 SEMENTE = 7

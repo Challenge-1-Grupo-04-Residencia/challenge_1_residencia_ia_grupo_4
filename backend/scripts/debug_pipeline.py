@@ -20,12 +20,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.core.engine.n2_content import CamadaN2Conteudo  # noqa: E402
-from src.core.engine.n3_corroboration import CamadaN3Corroboracao  # noqa: E402
-from src.core.engine.n4_nli import CamadaN4Inferencia  # noqa: E402
-from src.core.engine.orchestrator import Orquestrador  # noqa: E402
+from src.main import obter_orquestrador  # noqa: E402
 from src.core.entities.claim import NoticiaRequest  # noqa: E402
-from src.infrastructure.search.gdelt import BuscadorGdelt  # noqa: E402
 
 TEXTO_PADRAO = (
     "Chá de limão com alho mata completamente o vírus da COVID-19 em 24 horas, "
@@ -34,16 +30,12 @@ TEXTO_PADRAO = (
 
 
 def run(texto: str = TEXTO_PADRAO) -> None:
-    # Os avisos das camadas (GDELT fora do ar, Ollama sem resposta) vão para o log; sem
-    # isto o diagnóstico fica cego justamente quando algo falha.
+    # Os avisos das camadas vão para o log
     logging.basicConfig(level=logging.INFO, format="  [%(name)s] %(message)s")
 
-    print("Montando o pipeline N2 -> N3 -> N4...")
-    n2 = CamadaN2Conteudo()
-    n3 = CamadaN3Corroboracao(BuscadorGdelt())
-    n4 = CamadaN4Inferencia()
-    n2.set_proxima(n3).set_proxima(n4)
-    orquestrador = Orquestrador(n2)
+    print("Montando o pipeline completo da Senhora Vera (N0 -> N1 -> N2 -> N3 -> N4)...")
+    orquestrador = obter_orquestrador()
+
 
     noticia = NoticiaRequest(texto=texto)
     print(f"\nAlegação: {texto!r}")
