@@ -21,6 +21,7 @@ services:
     environment:
       - ENVIRONMENT=development
       - OLLAMA_URL=http://ollama:11434  # Ensina o Python onde achar o Llama dentro do Docker
+      - WHOIS_API_KEY=${WHOIS_API_KEY}
     depends_on:
       - ollama  # A API só sobe depois que o Ollama ligar
       - postgres

@@ -75,6 +75,13 @@ class Sinal(BaseModel):
 # --- Dimensão 1 · Fonte · 35 pontos ------------------------------------------------
 # "Quem publicou? Esse veículo teve outras notícias falsas recentemente?"
 
+S00 = DefinicaoSinal(
+    id="S-00",
+    nome="Checagem em cache",
+    peso=0,
+    dimensao=Dimensao.FONTE,
+    camada="N0",
+)
 S01 = DefinicaoSinal(
     id="S-01",
     nome="Reputação do veículo na base curada",
@@ -179,7 +186,7 @@ S13 = DefinicaoSinal(
 
 CATALOGO: dict[str, DefinicaoSinal] = {
     d.id: d
-    for d in (S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13)
+    for d in (S00, S01, S02, S03, S04, S05, S06, S07, S08, S09, S10, S11, S12, S13)
 }
 
 #: Soma dos pesos de todos os sinais possíveis, inclusive os que nenhuma camada mede
