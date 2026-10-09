@@ -78,7 +78,7 @@ C_INCONCLUSIVO = 0.5
 #: para S-06 e S-09, e a busca por "ministro demissão" acha notícia real sobre algum
 #: ministro — então S-11 sozinho, com 15 pontos e nenhuma outra dimensão para
 #: contradizê-lo, cravava o veredito.
-PENALIDADE_DE_DIMENSAO_UNICA = 0.55
+PENALIDADE_DE_DIMENSAO_UNICA = 0.75
 
 
 def disponiveis(sinais: list[Sinal]) -> list[Sinal]:
