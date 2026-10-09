@@ -3,25 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface Avaliacao {
-  id: number;
-  data_execucao: string;
-  dataset: string;
-  qtd_amostras: number;
-  acuracia: number;
-  taxa_falsos_positivos: number;
-  taxa_inconclusivos: number;
-  tempo_medio_ms: number;
-}
+import { Avaliacao, listarAvaliacoesLote } from "@/lib/api";
 
 export default function HistoricoAvaliacoesPage() {
   const [avaliacoes, setAvaliacoes] = useState<Avaliacao[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    fetch(`${apiBase}/api/v1/avaliacoes/lote`)
-      .then((res) => res.json())
+    listarAvaliacoesLote()
       .then((data) => {
         setAvaliacoes(data);
         setLoading(false);

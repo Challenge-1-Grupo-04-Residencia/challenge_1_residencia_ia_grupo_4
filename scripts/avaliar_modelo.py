@@ -8,14 +8,10 @@ import json
 import time
 import argparse
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 # Configs
 API_URL = "http://localhost:8000/api/v1/checar"
-DATABASE_URL = "postgresql+psycopg2://vera_user:vera_pass@localhost:5432/vera_db"
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from src.infrastructure.database import SessionLocal
+
 
 def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
     print(f"\n🚀 Iniciando avaliação do dataset: {nome_dataset}")
