@@ -32,7 +32,8 @@ def consultar_idade_meses(dominio: str) -> int | None:
         data_criacao = datetime.fromtimestamp(data_criacao_timestamp)
         hoje = datetime.now()
         
-        diferenca_meses = (hoje.year - data_criacao.year) * 12 + (hoje.month - data_criacao.month)
+        diferenca_dias = (hoje - data_criacao).days
+        diferenca_meses = diferenca_dias // 30
         return max(0, diferenca_meses)
 
     except (httpx.RequestError, httpx.HTTPStatusError, ValueError, TypeError) as e:

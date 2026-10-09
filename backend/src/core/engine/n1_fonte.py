@@ -22,11 +22,11 @@ class CamadaN1Fonte(CamadaVerificacao):
             print("[DEBUG N1] Nenhuma URL para avaliar reputação. Repassando para N2.")
             return self.repassar(noticia)
 
-        try:
-            # Extrai o domínio principal (ex: https://g1.globo.com/noticia -> g1.globo.com)
-            dominio = urllib.parse.urlparse(url_alvo).netloc.lower()
-            print(f"[DEBUG N1] Domínio extraído: {dominio}")
+        # Extrai o domínio principal (ex: https://g1.globo.com/noticia -> g1.globo.com)
+        dominio = urllib.parse.urlparse(url_alvo).netloc.lower()
+        print(f"[DEBUG N1] Domínio extraído: {dominio}")
 
+        try:
             with SessionLocal() as db:
                 ficha = db.query(DominioReputacao).filter(DominioReputacao.dominio == dominio).first()
                 
@@ -49,18 +49,24 @@ class CamadaN1Fonte(CamadaVerificacao):
                     
         except Exception as e:
             print(f"[Aviso N1] Falha ao consultar reputação da fonte: {e}")
-                    # --- INÍCIO DO CÁLCULO S-03 (Idade do Domínio) ---
+            
+        # --- INÍCIO DO CÁLCULO S-03 (Idade do Domínio) ---
         try:
             idade_meses = consultar_idade_meses(dominio)
             
             if idade_meses is not None:
-                # Se tiver menos de 6 meses, penalizamos (score 0.0)
-                if idade_meses < 6:
+                if idade_meses < 1:
                     resultado.registrar(medir("S-03", 0.0, f"Domínio suspeito: registro muito recente ({idade_meses} meses)."))
-                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 0.0 (Recente)")
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 0.0 (< 1 mês)")
+                elif idade_meses < 6:
+                    resultado.registrar(medir("S-03", 0.3, f"Domínio relativamente novo ({idade_meses} meses)."))
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 0.3 (1 a 6 meses)")
+                elif idade_meses <= 24:
+                    resultado.registrar(medir("S-03", 0.6, f"Domínio estabelecido ({idade_meses} meses)."))
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 0.6 (6 meses a 2 anos)")
                 else:
-                    resultado.registrar(medir("S-03", 1.0, f"Domínio antigo e estabelecido ({idade_meses} meses)."))
-                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 1.0 (Antigo)")
+                    resultado.registrar(medir("S-03", 1.0, f"Domínio antigo e bem estabelecido ({idade_meses} meses)."))
+                    print(f"[DEBUG N1] Sinal S-03 aplicado com nota 1.0 (> 2 anos)")
             else:
                 # Falha na API ou falta de chave não deve derrubar a nota injustamente
                 print("[DEBUG N1] Idade não encontrada ou WHOIS indisponível. Marcando S-03 como não medido.")
