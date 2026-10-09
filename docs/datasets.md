@@ -141,3 +141,12 @@ tempo e de corroboração ([RF-16](requisitos/funcionais.md),
   desempenho cai.
 - **Licença e citação.** Cada base tem sua exigência de citação; registrar antes de publicar
   qualquer resultado.
+
+## Qualidade dos Dados e Viés de Acentuação (Data Quality)
+
+Durante a Análise Exploratória de Dados (EDA), descobrimos uma falha sistêmica crítica na maioria dos corpora em PT-BR: os textos classificados como **"Falsos"** frequentemente não possuem acentuação ou apresentam erros grosseiros de formatação, enquanto os textos **"Verdadeiros"** (geralmente extraídos de portais de notícias como G1, Folha, etc.) possuem gramática e acentuação perfeitas.
+
+Se os textos fossem entregues ao modelo de Machine Learning (Camada N2) sem pré-processamento, a Regressão Logística ou SVM acabaria aprendendo a ser um **"detector de acentos"** em vez de um detector de estilo. Uma notícia falsa muito bem escrita seria classificada como verdadeira apenas por ter crase e acentuação gráfica.
+
+**Mitigação Adotada:** 
+Foi implementada a **Normalização Unicode** (`strip_accents="unicode"`) no vetorizador TF-IDF do classificador de estilo. Ao remover os diacríticos de todo o dataset de treino, obrigamos o modelo a focar nas *estruturas de frase*, jargões, caixa alta agressiva e apelos emocionais, que são os verdadeiros preditores de viralidade da desinformação.

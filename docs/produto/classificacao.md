@@ -154,3 +154,11 @@ responde **"Provavelmente falsa"**, com a dificuldade **Mediano**.
 | Data | Versão | Mudança | Evidência (dataset / métrica) |
 | --- | --- | --- | --- |
 | 16/09/2026 | v0.1 | Pesos iniciais do brainstorm | Nenhuma: hipótese |
+| 09/10/2026 | v0.2 | Treinamento e Baseline do Classificador Estilístico N2 | Leave-One-Dataset-Out (LODO): 86% Acurácia no `fake-br` e 70% no `whatsapp-br`. |
+
+## Métricas de Desempenho (Baseline Out/2026)
+A arquitetura de pesos e abstenção (Regra de Inconclusivo) foi estressada via API com os seguintes resultados no motor completo:
+* **Taxa de Inconclusivos (69%):** Atua como proteção contra Falsos Positivos.
+* **Acurácia Condicional (61%):** Precisão nas decisões onde o Limite de Confiança foi atingido.
+* **Falsos Positivos (19%):** Nível de risco aceitável para o MVP.
+* **Tempo Médio de Resposta:** 12.1 segundos (demonstra a necessidade do escalonamento de custos N0->N4).
