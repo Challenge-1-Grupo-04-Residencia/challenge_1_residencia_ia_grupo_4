@@ -146,6 +146,10 @@ class ChecagemResponse(BaseModel):
     #: ``explicacao`` traz as duas juntas, e a tela ficava com um parágrafo em que o
     #: motivo do veredito se perdia no meio do relato técnico de cada camada.
     motivo_regra: str = ""
+    #: Parágrafo em linguagem natural escrito pela LLM (N4), citando as fontes. Vem
+    #: vazio quando a N4 não rodou ou o modelo não respondeu — a tela só o mostra se
+    #: houver conteúdo.
+    analise_ia: str = ""
     cobertura: float
     #: Fração dos 100 pontos do catálogo completo que foi observada. Menor que
     #: ``cobertura`` enquanto houver camada não implementada, e serve para a Vera poder
@@ -255,6 +259,7 @@ def _montar_resposta(
         exibe_porcentagem=veredito.exibe_porcentagem,
         regra_aplicada=veredito.regra_aplicada,
         motivo_regra=veredito.motivo_regra,
+        analise_ia=resultado.analise_ia,
         cobertura=round(resultado.cobertura, 4),
         cobertura_do_catalogo=round(resultado.cobertura_do_catalogo, 4),
         principais_sinais=[

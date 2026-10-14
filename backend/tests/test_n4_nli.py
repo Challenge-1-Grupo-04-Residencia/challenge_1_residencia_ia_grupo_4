@@ -135,7 +135,12 @@ class TestMatematicaDoS12:
 
 class TestUmaChamadaSo:
     def test_uma_unica_chamada_para_todas_as_evidencias(self):
-        """A latência da camada mais cara não pode crescer com o número de evidências."""
+        """A latência da camada mais cara não pode crescer com o número de evidências.
+
+        A análise em prosa é montada dos próprios vereditos, sem uma segunda chamada ao
+        modelo — então continua sendo uma chamada só, para qualquer número de
+        evidências.
+        """
         provedor = ProvedorFalso([ROTULO_SUSTENTA] * 5)
         camada = CamadaN4Inferencia(provedor)
         camada.processar(noticia_com(["a", "b", "c", "d", "e"]))

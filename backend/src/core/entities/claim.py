@@ -73,6 +73,12 @@ class AnaliseResultado(BaseModel):
     confianca: float = Field(default=0.0, description="Confiança na decisão de 0 a 1")
     camada_atual: str = Field(default="N0", description="A última camada executada")
     explicacao: str = Field(default="", description="Motivos da classificação")
+    #: Parágrafo em linguagem natural escrito pela LLM (N4), citando as fontes e dizendo
+    #: o que elas indicam. Complementa o veredito e o placar de sinais — não os
+    #: substitui —, e some quando a N4 não roda ou o provedor está fora.
+    analise_ia: str = Field(
+        default="", description="Análise em um parágrafo escrita pela LLM (N4)"
+    )
     fontes_citadas: list[str] = Field(
         default_factory=list, description="Lista de URLs de corroboração"
     )
