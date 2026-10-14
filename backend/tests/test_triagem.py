@@ -48,6 +48,12 @@ class TestClassificacao:
             "teste",
             "kkkk",
             "?",
+            # Perguntas sobre a própria Vera e interjeições soltas continuam conversa.
+            "você está bem?",
+            "tá bem?",
+            "aham",
+            "ok",
+            "hmm",
         ],
     )
     def test_conversa_nao_e_alegacao(self, texto):
@@ -68,6 +74,14 @@ class TestClassificacao:
             "Chá de limão com alho mata o vírus da COVID-19 em 24 horas",
             "https://g1.globo.com/noticia",
             "O presidente aprovou a nova lei nesta semana",
+            # Alegações de fato curtas: sujeito + verbo bastam. Antes, ter duas ou três
+            # palavras jogava "titanic afundou" para conversa e a Vera respondia
+            # "eu tô bem, meu bem" a um pedido de checagem.
+            "titanic afundou",
+            "o titanic afundou?",
+            "lula caiu",
+            "o prédio desabou",
+            "o avião caiu",
         ],
     )
     def test_alegacao_vai_para_o_pipeline(self, texto):

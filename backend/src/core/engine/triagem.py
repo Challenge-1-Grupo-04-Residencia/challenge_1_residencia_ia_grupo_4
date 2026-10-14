@@ -51,7 +51,20 @@ _CONVERSA = (
     "pode ajudar", "qual seu nome", "qual é o seu nome", "você existe",
     "voce existe", "beleza", "de boa", "tá aí", "ta ai", "você está aí",
     "voce esta ai", "bora", "teste", "testando",
+    # Perguntas sobre o estado da própria Vera: são conversa, não alegação a checar.
+    "você está bem", "voce esta bem", "vc está bem", "vc esta bem",
+    "tá bem", "ta bem", "você está bom", "voce esta bom",
 )
+
+#: Interjeições e respostas soltas: curtas, sem afirmação sobre o mundo. É o único jeito
+#: de uma entrada de uma ou duas palavras ser conversa — "titanic afundou" também tem
+#: duas palavras e é alegação.
+_INTERJEICOES = frozenset({
+    "aham", "ah", "ahn", "hm", "hmm", "hmmm", "rs", "rsrs", "kk", "kkk", "kkkk",
+    "kkkkk", "haha", "hehe", "ok", "okay", "blz", "sei", "uhum", "aff", "eita",
+    "ue", "ué", "certo", "entendi", "sim", "nao", "não", "nossa", "caramba",
+    "uau", "poxa", "opa", "humm", "ata",
+})
 
 _AGRADECIMENTOS = (
     "obrigado", "obrigada", "obrigadão", "valeu", "vlw", "brigado", "brigada",
@@ -73,6 +86,11 @@ _VERBOS_DE_ALEGACAO = (
     "proíbe", "proibiu", "morreu", "venceu", "segundo", "de acordo com", "estudo",
     "pesquisa", "governo", "ministério", "ministerio", "presidente", "prefeito",
     "vacina", "lei", "imposto",
+    # Verbos de acontecimento, comuns em alegação curta ("titanic afundou").
+    "afundou", "afunda", "caiu", "cai", "desabou", "desaba", "explodiu", "explode",
+    "renunciou", "renuncia", "faleceu", "matou", "prendeu", "preso", "presa",
+    "vazou", "roubou", "assaltou", "pegou fogo", "ganhou", "perdeu", "nasceu",
+    "voltou", "chegou", "fechou", "abriu", "subiu", "desceu",
 )
 
 _URL = re.compile(r"https?://\S+|www\.\S+")
@@ -163,10 +181,16 @@ def classificar(texto: str, tem_checagem_anterior: bool = False) -> Natureza:
     if _comeca_com_saudacao(limpo):
         return Natureza.SAUDACAO
 
-    # Texto curtíssimo sem nada que pareça afirmação: "aham", "kkkk", "?".
-    if len(palavras) <= 2:
+    # Interjeição ou resposta solta ("aham", "kkkk", "ok") é conversa. O que separa
+    # isso de uma alegação curta é o conteúdo, não o tamanho: "titanic afundou" tem
+    # duas palavras e é fato a checar. Antes, a regra de "<= 2 palavras" mandava toda
+    # alegação curta para conversa, e a Vera respondia "eu tô bem, meu bem" a um
+    # pedido de checagem.
+    if all(p in _INTERJEICOES for p in palavras):
         return Natureza.CONVERSA
 
+    # Na dúvida, checa (é o viés documentado): custa menos uma resposta estranha do que
+    # deixar sem resposta quem veio conferir uma notícia.
     return Natureza.ALEGACAO
 
 
