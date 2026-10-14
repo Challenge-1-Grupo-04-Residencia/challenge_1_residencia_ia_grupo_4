@@ -46,7 +46,7 @@ sys.path.insert(0, str(RAIZ / "backend"))
 
 from src.infrastructure.search.tfidf_search import STOPWORDS_PT  # noqa: E402
 
-DIRETORIO_DATASETS = RAIZ / "ml" / "datasets"
+DIRETORIO_DATASETS = RAIZ / "datasets"
 CAMINHO_SAIDA = (
     RAIZ / "backend" / "src" / "infrastructure" / "ml_models" / "classificador_n2.joblib"
 )

@@ -132,7 +132,8 @@ def aplicar(
             faixa=Faixa.INCONCLUSIVA,
             regra_aplicada="RN-04",
             motivo_regra=(
-                "Não encontrei evidências suficientes para cravar um resultado."
+                "Não encontrei informações confiáveis suficientes na internet para confirmar ou desmentir "
+                "isso com segurança. Na dúvida, o melhor é não compartilhar."
             ),
             exibe_porcentagem=False,
         )
@@ -143,7 +144,10 @@ def aplicar(
             confianca=confianca,
             faixa=Faixa.INCONCLUSIVA,
             regra_aplicada="RN-04",
-            motivo_regra="Nenhum sinal pôde ser medido para esta notícia.",
+            motivo_regra=(
+                "Vasculhei a internet, mas não encontrei nenhum jornal ou veículo oficial noticiando isso "
+                "ainda. Como não tenho dados sólidos, prefiro não tirar conclusões precipitadas."
+            ),
             exibe_porcentagem=False,
         )
 

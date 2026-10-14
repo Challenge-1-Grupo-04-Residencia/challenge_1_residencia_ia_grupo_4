@@ -455,6 +455,27 @@ def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
     ]
 
 
+from src.infrastructure.database import SessionLocal, HistoricoAvaliacaoLote
+
+@app.get("/api/v1/avaliacoes/lote")
+def listar_avaliacoes_lote():
+    """Retorna o histórico de avaliações em lote rodadas via script."""
+    with SessionLocal() as db:
+        avaliacoes = db.query(HistoricoAvaliacaoLote).order_by(HistoricoAvaliacaoLote.id.desc()).limit(50).all()
+        return [
+            {
+                "id": a.id,
+                "data_execucao": a.data_execucao,
+                "dataset": a.dataset,
+                "qtd_amostras": a.qtd_amostras,
+                "acuracia": a.acuracia,
+                "taxa_falsos_positivos": a.taxa_falsos_positivos,
+                "taxa_inconclusivos": a.taxa_inconclusivos,
+                "tempo_medio_ms": a.tempo_medio_ms,
+            }
+            for a in avaliacoes
+        ]
+
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok", "sistema": "Vera API"}

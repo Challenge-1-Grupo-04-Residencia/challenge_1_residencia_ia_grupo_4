@@ -40,6 +40,19 @@ class DominioReputacao(Base):
     # Score de 0 a 100. (ex: 100 = Só posta verdade, 0 = Só posta mentira)
     score_confiabilidade = Column(Integer, default=50)
 
+class HistoricoAvaliacaoLote(Base):
+    """Guarda os resultados das avaliações em lote feitas nos datasets."""
+    __tablename__ = "historico_avaliacoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    data_execucao = Column(String(50), nullable=False) # Armazena ISO string
+    dataset = Column(String(100), nullable=False)
+    qtd_amostras = Column(Integer, nullable=False)
+    acuracia = Column(Integer, nullable=False) # %
+    taxa_falsos_positivos = Column(Integer, nullable=False) # %
+    taxa_inconclusivos = Column(Integer, nullable=False) # %
+    tempo_medio_ms = Column(Integer, nullable=False)
+
 def iniciar_banco():
     """Ativa a extensão de IA no Postgres e cria as tabelas"""
     with engine.connect() as conn:
