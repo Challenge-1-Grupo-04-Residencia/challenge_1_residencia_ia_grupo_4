@@ -13,6 +13,7 @@
 
 import { useState } from "react";
 
+import { Icone } from "@/components/ui/Icone";
 import { DICA_POR_TIPO, classificarEntrada } from "@/lib/entrada";
 
 interface Props {
@@ -37,7 +38,7 @@ export function CaixaDePergunta({
   }
 
   const dica = modoAcompanhamento
-    ? "Me pergunte por que, quais fontes eu vi, como o texto foi escrito ou o que me faltou."
+    ? "Pergunta por que, ou quais fontes eu vi."
     : vazio
       ? "É só apertar Enter, visse?"
       : DICA_POR_TIPO[classificarEntrada(texto).tipo];
@@ -49,7 +50,7 @@ export function CaixaDePergunta({
           ? "Pergunte algo sobre o resultado"
           : "Cole aqui o link, o texto ou a afirmação que quer checar"}
       </label>
-      <div className="rounded-lg border border-borda bg-papel-2 p-2 shadow-card focus-within:border-vermelho">
+      <div className="campo-composto rounded-lg border-[3px] border-tinta bg-papel-2 p-2 shadow-bloco-sm">
         <textarea
           id="pergunta"
           value={texto}
@@ -61,7 +62,10 @@ export function CaixaDePergunta({
               enviar();
             }
           }}
-          rows={modoAcompanhamento ? 2 : 3}
+          /* Duas linhas, não três: a caixa precisa caber na primeira tela junto
+             com a faixa de abertura, e ela cresce sozinha quando o texto passa
+             disso. */
+          rows={2}
           disabled={carregando}
           placeholder={
             modoAcompanhamento
@@ -76,13 +80,10 @@ export function CaixaDePergunta({
             type="button"
             onClick={enviar}
             disabled={vazio || carregando}
-            className="shrink-0 rounded-full bg-vermelho px-5 py-2 text-sm font-semibold text-white transition hover:bg-vermelho-forte disabled:cursor-not-allowed disabled:opacity-40"
+            className="pressiona flex min-h-11 shrink-0 items-center gap-2 rounded-total border-[3px] border-tinta bg-vermelho px-5 py-2 font-display text-lg text-white shadow-bloco-sm hover:bg-vermelho-forte disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {carregando
-              ? "Apurando…"
-              : modoAcompanhamento
-                ? "Perguntar"
-                : "Perguntar à Vera"}
+            <Icone nome={carregando ? "relogio" : "lupa"} tamanho={20} />
+            {carregando ? "Apurando…" : modoAcompanhamento ? "Perguntar" : "Pergunta"}
           </button>
         </div>
       </div>

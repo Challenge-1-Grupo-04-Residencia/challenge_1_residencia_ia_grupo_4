@@ -109,3 +109,42 @@ class TestRN04Inconclusivo:
 
         assert veredito.veracidade is None
         assert veredito.faixa is Faixa.INCONCLUSIVA
+
+
+class TestConfirmarExigeMaisDeUmaFonte:
+    """Confirmar uma notícia exige corroboração de mais de uma fonte independente.
+
+    Uma redação só não é corroboração: o motor cravava "provavelmente verdadeira" com
+    base num único veículo, e um modelo pequeno confirmando notícia solta virava fake
+    aprovada (caso real: "Neymar namora a Virginia" com uma fonte).
+    """
+
+    def test_fonte_unica_nao_confirma(self):
+        veredito = business_rules.aplicar(
+            79.0, 0.6, Contexto(pipeline_encerrado=True, apoios_independentes=1)
+        )
+        assert veredito.faixa is Faixa.INCONCLUSIVA
+        assert veredito.regra_aplicada == "RN-04"
+        assert veredito.exibe_porcentagem is False
+
+    def test_duas_fontes_independentes_confirmam(self):
+        veredito = business_rules.aplicar(
+            79.0, 0.6, Contexto(pipeline_encerrado=True, apoios_independentes=2)
+        )
+        assert veredito.faixa is Faixa.VERDADEIRA
+        assert veredito.regra_aplicada is None
+
+    def test_veredito_de_falsa_nao_e_afetado(self):
+        # Fake se sustenta por contradição, não por corroboração: a guarda não a toca.
+        veredito = business_rules.aplicar(
+            12.0, 0.6, Contexto(pipeline_encerrado=True, apoios_independentes=0)
+        )
+        assert veredito.faixa is Faixa.FALSA
+        assert veredito.regra_aplicada is None
+
+    def test_so_vale_no_fim_do_pipeline(self):
+        # Durante o pipeline (pipeline_encerrado=False) a guarda não corta.
+        veredito = business_rules.aplicar(
+            79.0, 0.6, Contexto(pipeline_encerrado=False, apoios_independentes=1)
+        )
+        assert veredito.faixa is Faixa.VERDADEIRA

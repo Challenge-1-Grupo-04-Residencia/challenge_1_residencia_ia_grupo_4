@@ -8,6 +8,8 @@
  * Por RN-11 o humor da persona acompanha o resultado técnico e nunca o substitui.
  */
 
+import type { NomeDoIcone } from "@/components/ui/Icone";
+import type { PoseDaVera } from "@/components/vera/VeraIlustracao";
 import type { Camada, Dificuldade, Dimensao, Faixa } from "@/types/checagem";
 
 /** Estados de animação da Vera. */
@@ -21,13 +23,36 @@ export type HumorDaVera =
 
 export interface EstiloDaFaixa {
   humor: HumorDaVera;
+  /** Pose do retrato que acompanha o resultado. */
+  pose: PoseDaVera;
+  /** Pictograma do veredito: é o que se lê primeiro (ver `vera-gamificacao`). */
+  icone: NomeDoIcone;
+  /**
+   * A palavra curta do carimbo, de no máximo três palavras.
+   *
+   * Ela **não** substitui o rótulo oficial da faixa, que aparece escrito logo
+   * abaixo: "MENTIRA" é bom de ler, mas o que o produto afirma é "provavelmente
+   * falsa" (RN-12).
+   */
+  palavra: string;
   /** Classes do bloco de resultado. */
   cor: string;
   /** Classe da barra de porcentagem. */
   barra: string;
+  /** Classe da cor sólida do carimbo. */
+  carimbo: string;
   /** Frase temática da Vera, no jeito pernambucano (ver skill `vera-voz`). */
   frase: string;
 }
+
+/** As cinco faixas na ordem do termômetro, de pior para melhor. */
+export const ORDEM_DAS_FAIXAS: Faixa[] = [
+  "Provavelmente falsa",
+  "Duvidosa",
+  "Inconclusiva",
+  "Provavelmente verdadeira",
+  "Confirmada por fontes",
+];
 
 const ESTILOS: Record<Faixa, EstiloDaFaixa> = {
   // Não é resultado de checagem: a pessoa mandou um "oi" e a triagem do backend
@@ -35,40 +60,63 @@ const ESTILOS: Record<Faixa, EstiloDaFaixa> = {
   // `explicacao` da resposta, então aqui a frase fica vazia para não duplicar.
   Conversa: {
     humor: "satisfeita",
-    cor: "border-inconclusiva bg-inconclusiva-fundo text-tinta",
+    pose: "apontando",
+    icone: "conversa",
+    palavra: "PROSA",
+    cor: "border-tinta bg-papel-2 text-tinta",
     barra: "bg-inconclusiva",
+    carimbo: "bg-ocre text-tinta",
     frase: "",
   },
   "Provavelmente falsa": {
     humor: "brava",
+    pose: "queixo",
+    icone: "mentira",
+    palavra: "CONVERSA FIADA",
     cor: "border-falsa bg-falsa-fundo text-tinta",
     barra: "bg-falsa",
-    frase: "Ih, isso aí é conversa de portão. Ninguém sério publicou, não.",
+    carimbo: "bg-falsa text-white",
+    frase: "Vixe, isso aí é conversa de portão.",
   },
   Duvidosa: {
     humor: "desconfiada",
+    pose: "queixo",
+    icone: "duvida",
+    palavra: "DESCONFIE",
     cor: "border-duvidosa bg-duvidosa-fundo text-tinta",
     barra: "bg-duvidosa",
-    frase: "Olha, eu que não acredito nesse povo. Fica de olho, visse?",
+    carimbo: "bg-duvidosa text-white",
+    frase: "Olha, eu fico de pé atrás com essa.",
   },
   Inconclusiva: {
     humor: "pensativa",
+    pose: "queixo",
+    icone: "espera",
+    palavra: "AINDA NÃO SEI",
     cor: "border-inconclusiva bg-inconclusiva-fundo text-tinta",
     barra: "bg-inconclusiva",
-    frase:
-      "Nem eu sei dessa ainda, e olha que eu sei de tudo. Espera sair mais coisa.",
+    carimbo: "bg-inconclusiva text-tinta",
+    frase: "Nem eu sei dessa ainda, meu bem. Espera.",
   },
   "Provavelmente verdadeira": {
     humor: "satisfeita",
+    pose: "apontando",
+    icone: "quase",
+    palavra: "PARECE VERDADE",
     cor: "border-verdadeira bg-verdadeira-fundo text-tinta",
     barra: "bg-verdadeira",
-    frase: "Essa parece ser verdade, viu? Mas confere as fontes aí embaixo.",
+    carimbo: "bg-verdadeira text-tinta",
+    frase: "Parece ser verdade. Confere as fontes, visse?",
   },
   "Confirmada por fontes": {
     humor: "orgulhosa",
+    pose: "apontando",
+    icone: "verdade",
+    palavra: "É VERDADE",
     cor: "border-confirmada bg-confirmada-fundo text-tinta",
     barra: "bg-confirmada",
-    frase: "Essa é quente e é verdade! Saiu em tudo que é jornal sério.",
+    carimbo: "bg-confirmada text-white",
+    frase: "Essa é quente e saiu em jornal sério!",
   },
 };
 
@@ -87,6 +135,16 @@ export const ETAPAS: Record<Camada, string> = {
   N3: "Tô ligando pras minhas comadres pra ver quem mais publicou…",
   N4: "Agora eu confiro alegação por alegação. Tenha paciência.",
 };
+
+/**
+ * Cada posição do termômetro de cinco casas, com a cor da faixa correspondente.
+ *
+ * O número sozinho é abstrato: "62%" não diz nada para quem lê com dificuldade.
+ * Cinco casas desenhadas, com a sua acesa, formam uma régua — e régua se lê de
+ * relance. As duas coisas aparecem juntas (ver `vera-gamificacao`).
+ */
+export const CASAS_DO_TERMOMETRO: Array<{ faixa: Faixa; cor: string }> =
+  ORDEM_DAS_FAIXAS.map((faixa) => ({ faixa, cor: ESTILOS[faixa].barra }));
 
 export const ROTULO_DIFICULDADE: Record<Dificuldade, string> = {
   facil: "Fácil",

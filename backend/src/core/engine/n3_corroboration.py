@@ -13,6 +13,7 @@ import logging
 
 from src.core.engine import checagens_publicadas
 from src.core.engine.orchestrator import CamadaVerificacao
+from src.core.engine.relevancia import relevancia
 from src.core.entities.claim import AnaliseResultado, DocumentoRelacionado, NoticiaRequest
 from src.core.entities.signal import medir, nao_medido, sem_achado
 from src.core.ports.news_search import BuscadorDeNoticias, BuscaIndisponivel
@@ -23,6 +24,13 @@ _log = logging.getLogger(__name__)
 #: Acima desta similaridade dois textos são praticamente o mesmo conteúdo. Se o veículo
 #: de origem não for confiável, isso indica cópia — entrada de S-13 (RF-31).
 LIMIAR_DE_COPIA = 0.9
+
+#: Abaixo desta relevância textual o documento não trata da alegação — só divide o
+#: assunto geral (ex.: "taxa das blusinhas" para "lula vai taxar o pix"). Descartá-lo
+#: aqui evita que ele chegue à N4 como se fosse evidência. Valor medido contra o
+#: conjunto de notícias do momento (issue #73): segura "selic 14,25 do Copom" e corta
+#: "taxa das blusinhas" e "lula lamenta morte de fundadora".
+LIMIAR_DE_RELEVANCIA = 0.3
 
 
 class CamadaN3Corroboracao(CamadaVerificacao):
@@ -52,6 +60,31 @@ class CamadaN3Corroboracao(CamadaVerificacao):
                 "isso é limitação minha, não achado sobre a notícia."
             )
             return self.repassar(noticia)
+
+        # Porta de relevância: fica só com o que de fato trata da alegação. Vale apenas
+        # para quem NÃO trouxe similaridade textual de verdade — o buscador por palavra
+        # -chave (Google Notícias) pontua pela posição no ranking e entrega documento
+        # que divide o assunto mas não o fato ("taxa das blusinhas" para "taxar o pix").
+        # Deixar isso chegar à N4 fazia a inferência confirmar alegação falsa só porque
+        # a pessoa e uma palavra coincidiam (issue #73). Documento com similaridade
+        # textual medida já é confiável e passa direto.
+        relevantes = [
+            doc for doc in relacionados
+            if doc.similaridade_textual
+            or relevancia(noticia.texto, doc.titulo) >= LIMIAR_DE_RELEVANCIA
+        ]
+        # A porta serve para preferir o que é do assunto quando há de onde escolher —
+        # não para esfomear a N4. Se NADA passou, é melhor deixar a N4 julgar os
+        # candidatos (o prompt dela marca o que é fora do assunto como neutro) do que
+        # pular a inferência e ir direto para "não sei". Assim a camada cara ainda roda,
+        # que é o que o usuário espera de "tentar de verdade" (RN-07).
+        if relevantes:
+            relacionados = relevantes
+        elif relacionados:
+            _log.info(
+                "N3: nenhum dos %d documentos passou na relevância; deixo a N4 julgar",
+                len(relacionados),
+            )
 
         resultado.documentos_relacionados = relacionados
 

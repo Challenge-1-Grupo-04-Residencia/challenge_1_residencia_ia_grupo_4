@@ -6,6 +6,7 @@ import {
   explicarEmLinguagemSimples,
   falaDoSinal,
   juntarFrases,
+  resumoDoSinal,
   sinalAponta,
 } from "./linguagem";
 import type { Sinal } from "@/types/checagem";
@@ -128,5 +129,45 @@ describe("explicarEmLinguagemSimples", () => {
 
     // Duas frases unidas por "e" têm exatamente uma vírgula a menos.
     expect(texto.split(",").length).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("resumoDoSinal", () => {
+  it("resume o sinal em pictograma, direção e texto curto", () => {
+    expect(resumoDoSinal(sinal("S-03", 0.1))).toEqual({
+      icone: "calendario",
+      texto: "Site novinho",
+      direcao: "contra",
+    });
+    expect(resumoDoSinal(sinal("S-03", 0.9))).toEqual({
+      icone: "calendario",
+      texto: "Site antigo",
+      direcao: "favor",
+    });
+  });
+
+  it("não resume sinal sem dado", () => {
+    // RN-06: o que não foi medido não vira evidência na tela. Ele continua
+    // aparecendo, dito com todas as letras, dentro do detalhamento.
+    expect(resumoDoSinal(sinal("S-03", null))).toBeNull();
+  });
+
+  it("devolve null para sinal fora do catálogo", () => {
+    expect(resumoDoSinal(sinal("S-99", 0.9))).toBeNull();
+  });
+
+  it("cabe no orçamento de cinco palavras", () => {
+    // O limite é da skill `vera-gamificacao`, e existe por um motivo concreto:
+    // parte de quem usa a Vera lê devagar, e uma linha longa não é lida.
+    for (const id of Array.from({ length: 13 }, (_, i) => `S-${String(i + 1).padStart(2, "0")}`)) {
+      for (const score of [0.1, 0.9]) {
+        const resumo = resumoDoSinal(sinal(id, score));
+        expect(resumo, `${id} precisa de resumo`).not.toBeNull();
+        expect(
+          resumo!.texto.split(" ").length,
+          `${id} passou do orçamento: "${resumo!.texto}"`,
+        ).toBeLessThanOrEqual(5);
+      }
+    }
   });
 });

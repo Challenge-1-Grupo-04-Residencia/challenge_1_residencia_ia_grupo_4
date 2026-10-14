@@ -180,17 +180,21 @@ class TestCamadaN3:
         viesse de fora da base curada, inclusive uma matéria legítima sobre dados do
         IBGE. Por RN-06, sem medição de texto não há medição.
         """
-        camada = CamadaN3Corroboracao(
-            BuscadorFalso([
-                documento(
-                    "aciara.com.br",
-                    False,
-                    similaridade=1.0,
-                    similaridade_textual=False,
-                )
-            ])
+        # Documento no assunto da alegação (passa pela porta de relevância da N3), mas
+        # com similaridade derivada do ranking — é o que não pode virar acusação de
+        # cópia.
+        doc = DocumentoRelacionado(
+            titulo="IBGE divulga dados de desemprego no trimestre",
+            url="https://aciara.com.br/materia",
+            fonte="aciara.com.br",
+            similaridade=1.0,
+            similaridade_textual=False,
+            fonte_confiavel=False,
         )
-        noticia = camada.processar(NoticiaRequest(texto="Texto."))
+        camada = CamadaN3Corroboracao(BuscadorFalso([doc]))
+        noticia = camada.processar(
+            NoticiaRequest(texto="IBGE divulga dados de desemprego no trimestre")
+        )
 
         assert sinal(noticia.resultado, "S-13").score is None
         assert "originalidade" in sinal(noticia.resultado, "S-13").justificativa

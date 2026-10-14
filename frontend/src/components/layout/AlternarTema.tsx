@@ -18,7 +18,7 @@ type Tema = "claro" | "escuro" | "sistema";
 
 const CHAVE = "vera:tema";
 
-export function AlternarTema() {
+export function AlternarTema({ className = "" }: { className?: string }) {
   // Lido no inicializador, e não num efeito: assim a primeira pintura já sai com
   // o tema certo, sem o piscar de claro-para-escuro. O `typeof window` protege a
   // renderização no servidor, e o `<html>` carrega `suppressHydrationWarning`
@@ -46,17 +46,28 @@ export function AlternarTema() {
     }
   }, [tema]);
 
+  /**
+   * O ícone só é decidido depois de montar.
+   *
+   * O servidor não tem `matchMedia`: ele renderizava sempre a lua, e no cliente
+   * virava sol quando o sistema estava no escuro. O React reclamava de
+   * hidratação e jogava a árvore fora para redesenhar. Até montar, o botão
+   * mostra o estado neutro.
+   */
+  const [montado, setMontado] = useState(false);
+  useEffect(() => setMontado(true), []);
+
   const escuro =
-    tema === "escuro" ||
-    (tema === "sistema" &&
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-color-scheme: dark)").matches);
+    montado &&
+    (tema === "escuro" ||
+      (tema === "sistema" &&
+        window.matchMedia?.("(prefers-color-scheme: dark)").matches));
 
   return (
     <button
       type="button"
       onClick={() => setTema(escuro ? "claro" : "escuro")}
-      className="rounded-md p-2 text-tinta-2 hover:bg-papel-3"
+      className={`rounded-md p-2 text-current opacity-80 hover:opacity-100 ${className}`}
       aria-label={escuro ? "Usar tema claro" : "Usar tema escuro"}
     >
       {escuro ? (

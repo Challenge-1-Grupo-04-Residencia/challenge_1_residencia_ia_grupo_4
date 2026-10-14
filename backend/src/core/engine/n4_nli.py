@@ -71,7 +71,18 @@ def chamada_ollama_real(prompt: str) -> dict:
     requisicao = urllib.request.Request(f"{url_base}/api/generate", method="POST")
     requisicao.add_header("Content-Type", "application/json")
     corpo = json.dumps(
-        {"model": modelo, "prompt": prompt, "stream": False, "format": "json"}
+        {
+            "model": modelo,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+            # NLI é classificação, não criação: queremos a mesma resposta para a mesma
+            # evidência. Sem isto o modelo era não-determinístico — a mesma alegação
+            # saía ora Verdadeira, ora Duvidosa, e chegava a marcar como contrária uma
+            # evidência que sustentava o fato. Temperatura 0 e seed fixa prendem a
+            # decisão; top_p 1 porque a temperatura já corta a aleatoriedade.
+            "options": {"temperature": 0, "top_p": 1, "seed": 42},
+        }
     ).encode("utf-8")
 
     try:
@@ -130,6 +141,13 @@ class CamadaN4Inferencia(CamadaVerificacao):
             return self.repassar(noticia)
 
         self._registrar_sinais(vereditos, resultado)
+        # A análise em prosa é montada dos próprios vereditos e das fontes — sem uma
+        # segunda chamada ao modelo. Tentei pedir o parágrafo à LLM (no mesmo JSON dos
+        # vereditos, e depois numa segunda chamada): o primeiro jeito derrubava os
+        # vereditos e jogava tudo para "inconclusiva"; o segundo dobrava a latência da
+        # camada mais cara e, em CPU, saturava o Ollama a ponto de travar o servidor.
+        # Um parágrafo em prosa 100% da LLM fica para quando houver modelo rápido (#73).
+        resultado.analise_ia = self._resumir(vereditos, resultado.documentos_relacionados)
         return self.repassar(noticia)
 
     def _registrar_sinais(
@@ -259,6 +277,16 @@ ATENÇÃO AOS SUJEITOS E AÇÕES (CUIDADO COM ALUCINAÇÕES):
 Muitas vezes a evidência fala sobre o mesmo tema, mas o fato é diferente.
 - Se a alegação diz "Fulano morreu", mas a evidência diz "Fulano decretou luto pela morte de alguém" -> Os sujeitos e as ações são diferentes. Isso é {ROTULO_NEUTRO}. NUNCA {ROTULO_SUSTENTA}.
 
+A AÇÃO E O OBJETO TÊM DE SER OS MESMOS, NÃO SÓ O TEMA:
+Compartilhar a mesma pessoa ou a mesma palavra NÃO é {ROTULO_SUSTENTA}. O fato precisa ser o mesmo.
+- Alegação "Lula vai taxar o Pix" fala de imposto SOBRE O PIX. Uma evidência sobre
+  "taxa das blusinhas" (imposto de importação), sobre juros, ou sobre qualquer outro
+  tributo é {ROTULO_NEUTRO} — é tema parecido, fato diferente. Só "Lula" e "taxa" em
+  comum NÃO basta para {ROTULO_SUSTENTA}.
+- Na dúvida entre {ROTULO_SUSTENTA} e {ROTULO_NEUTRO}, escolha {ROTULO_NEUTRO}: só
+  confirme quando a evidência afirmar exatamente o mesmo fato (mesmo sujeito, mesma
+  ação, mesmo objeto).
+
 ATENÇÃO A NOTÍCIAS SOBRE BOATOS (META-CHECAGEM):
 Se a alegação é um "Fato X" e a evidência é uma reportagem dizendo que "o boato/teoria sobre o Fato X é falso/mentira", você DEVE deduzir que a evidência {ROTULO_CONTRADIZ} a alegação.
 Jornalismo que expõe uma fake news serve como prova CONTRA a fake news. Portanto, "Teoria falsa de que Lula morreu..." -> {ROTULO_CONTRADIZ} a afirmação "Lula morreu".
@@ -270,6 +298,51 @@ Leia o que a frase afirma, não quais palavras ela repete.
 """
         resposta = self._api_client(prompt)
         return self._ler_vereditos(resposta)
+
+    @staticmethod
+    def _resumir(vereditos: list[tuple[str, str]], documentos: list) -> str:
+        """Monta um parágrafo em prosa a partir dos vereditos e das fontes.
+
+        Sem chamar o modelo: conta quantas publicações sustentaram ou contradisseram a
+        alegação e cita os veículos pelo nome. Prudente por desenho (RN-12): nunca
+        afirma certeza, só relata o que as fontes disseram.
+        """
+        if not vereditos:
+            return ""
+
+        sustentam = sum(1 for r, _ in vereditos if r == ROTULO_SUSTENTA)
+        contradizem = sum(1 for r, _ in vereditos if r == ROTULO_CONTRADIZ)
+
+        fontes = []
+        for doc in documentos:
+            fonte = getattr(doc, "fonte", "")
+            if fonte and fonte not in fontes:
+                fontes.append(fonte)
+        lista = ", ".join(fontes[:4]) if fontes else "as publicações que achei"
+
+        if sustentam and not contradizem:
+            corpo = (
+                f"pelas fontes que achei ({lista}), {sustentam} "
+                f"{'fala' if sustentam == 1 else 'falam'} a favor disso e nenhuma "
+                "contradiz. Ao que tudo indica, procede — mas confira você também."
+            )
+        elif contradizem and not sustentam:
+            corpo = (
+                f"pelas fontes que achei ({lista}), {contradizem} "
+                f"{'contradiz' if contradizem == 1 else 'contradizem'} isso e nenhuma "
+                "sustenta. Parece não proceder."
+            )
+        elif sustentam and contradizem:
+            corpo = (
+                f"as fontes se dividem ({lista}): {sustentam} a favor e "
+                f"{contradizem} contra. Fica a dúvida — não dá para cravar."
+            )
+        else:
+            corpo = (
+                f"olhei algumas publicações ({lista}), mas nenhuma fala diretamente "
+                "disso. Não dá para confirmar nem desmentir com o que achei."
+            )
+        return "Olhei e " + corpo
 
     @staticmethod
     def _ler_vereditos(resposta) -> list[tuple[str, str]]:
