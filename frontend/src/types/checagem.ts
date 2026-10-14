@@ -98,6 +98,11 @@ export interface ChecagemResponse {
    * técnico.
    */
   motivo_regra: string;
+  /**
+   * Parágrafo em linguagem natural escrito pela LLM (N4), citando as fontes. Vazio
+   * quando a N4 não rodou ou o modelo não respondeu — a tela só mostra se houver texto.
+   */
+  analise_ia?: string;
   /** Fração do que as camadas existentes sabem medir que foi observada. */
   cobertura: number;
   /**

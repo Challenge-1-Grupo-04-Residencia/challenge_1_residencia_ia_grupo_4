@@ -15,7 +15,7 @@ export const metadata = {
  */
 export default function Checar() {
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 md:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 md:px-8">
       <h1 className="font-display text-3xl">Me manda a notícia</h1>
       <p className="mt-1 text-base text-tinta-2">
         Cola o link ou o texto. Eu vou atrás e te mostro de onde tirei cada coisa.

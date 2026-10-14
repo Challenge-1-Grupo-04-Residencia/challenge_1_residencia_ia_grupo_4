@@ -171,7 +171,7 @@ export function BarraLateral() {
               key={item.href}
               href={item.href}
               aria-current={ativo ? "page" : undefined}
-              className={`flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-1 py-1 text-[10px] ${
+              className={`flex min-h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-1 py-1 text-xs ${
                 ativo ? "bg-white/25 font-bold" : "text-white/85"
               }`}
             >
@@ -198,10 +198,10 @@ function ItemDeMenu({ item, ativo }: { item: Item; ativo: boolean }) {
       /* O item ativo ganha traço preto e sombra de bloco, como todo elemento
          que "fala" no produto; os outros ficam discretos de propósito, senão
          nenhum se destaca. */
-      className={`flex items-center gap-3 rounded-md px-4 py-3 text-base transition-colors ${
+      className={`flex items-center gap-3 rounded-md border-[3px] px-4 py-3 text-base font-semibold transition-colors ${
         ativo
-          ? "border-[3px] border-tinta bg-papel-2 font-display text-xl text-tinta shadow-bloco-sm"
-          : "border-[3px] border-transparent font-semibold text-white/90 hover:bg-white/10"
+          ? "border-tinta bg-papel-2 text-tinta shadow-bloco-sm"
+          : "border-transparent text-white/90 hover:bg-white/10"
       }`}
     >
       {item.icone}

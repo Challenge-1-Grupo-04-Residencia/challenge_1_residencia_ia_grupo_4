@@ -22,11 +22,11 @@ export default function HistoricoAvaliacoesPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-papel p-8">
-      <div className="mx-auto max-w-5xl">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-8">
+      <div>
         <header className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-serif text-tinta">
+            <h1 className="font-display text-3xl text-tinta">
               Histórico de Avaliações em Lote (Auditoria)
             </h1>
             <p className="mt-2 text-tinta-2">
@@ -91,6 +91,6 @@ export default function HistoricoAvaliacoesPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

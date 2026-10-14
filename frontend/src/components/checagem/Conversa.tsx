@@ -28,6 +28,25 @@ type Mensagem =
   | { tipo: "fala"; texto: string; fontes: FonteCitada[] }
   | { tipo: "erro"; texto: string };
 
+/**
+ * O placar precisa aparecer no instante do envio, não só quando a primeira etapa
+ * real chega pelo stream.
+ *
+ * Entre mandar a mensagem e o backend anunciar a primeira camada há a triagem e a ida
+ * à rede — segundos em que antes só se via uma linha de texto cinza, fácil de não
+ * perceber. Então, enquanto o stream não fala, o caminho já mostra os quatro quadros
+ * com o primeiro em curso: a tela muda de "enviei" para "a Vera está procurando". Mal
+ * a etapa verdadeira chega, ela toma o lugar desta.
+ */
+const ETAPA_INICIAL: EtapaDoAndamento[] = [
+  {
+    tipo: "iniciou",
+    camada: "TRIAGEM",
+    mensagem: "Vendo o que é que tu me mandaste…",
+    sinais: [],
+  },
+];
+
 interface Props {
   /**
    * Mostra o balão de saudação enquanto não há conversa.
@@ -66,6 +85,15 @@ export function Conversa({ saudacao = true, aoComecar }: Props = {}) {
   function acrescentar(m: Mensagem) {
     setMensagens((anteriores) => [...anteriores, m]);
   }
+
+  // A fala do momento: o que a Vera está fazendo agora, nas palavras dela. Vem da
+  // última etapa anunciada que trouxe mensagem; enquanto o stream não fala, é a fala da
+  // etapa inicial. É o que torna a espera amigável — a pessoa lê "ligando pras minhas
+  // comadres" em vez de olhar uma ampulheta.
+  const emCurso = etapas.length > 0 ? etapas : ETAPA_INICIAL;
+  const falaDoMomento =
+    [...emCurso].reverse().find((e) => e.mensagem)?.mensagem ??
+    "Já tô atrás disso, meu bem";
 
   // Dispara uma vez só, na primeira mensagem. Chamar a cada mensagem faria a
   // página inicial recalcular layout a cada linha da conversa.
@@ -342,20 +370,38 @@ export function Conversa({ saudacao = true, aoComecar }: Props = {}) {
         })}
 
         {/* Enquanto a Vera trabalha, o caminho é o conteúdo principal da tela: é o
-            que responde "o que está acontecendo?" sem a pessoa ter de adivinhar. */}
-        {carregando && etapas.length > 0 && (
+            que responde "o que está acontecendo?" sem a pessoa ter de adivinhar. O
+            placar entra já na primeira etapa (real ou a inicial), para a tela mudar
+            no instante do envio e não depender de a rede responder primeiro. */}
+        {carregando && (
           <div className="surge flex items-start gap-3">
-            <VeraAvatar humor="investigando" tamanho={48} className="mt-1" />
-            <div className="min-w-0 flex-1">
-              <CaminhoDaInvestigacao etapas={etapas} />
+            <VeraAvatar humor="investigando" tamanho={48} className="mt-1 vera-balanca" />
+            <div className="min-w-0 flex-1 space-y-2">
+              {/* A fala viva: a Vera conta o que está fazendo agora, com as reticências
+                  acendendo em sequência. É a parte "amigável" da espera — explica o
+                  passo antes de o placar mostrá-lo como quadro. */}
+              <div className="relative rounded-lg rounded-tl-sm border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm">
+                <p className="flex items-center gap-1 text-base" aria-live="polite">
+                  <span className="min-w-0">{falaDoMomento}</span>
+                  <span className="reticencias shrink-0 font-bold" aria-hidden>
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </span>
+                </p>
+                {/* Rabicho apontando para a Vera. */}
+                <span
+                  aria-hidden
+                  className="absolute -left-[13px] top-4 h-0 w-0 border-y-[10px] border-r-[13px] border-y-transparent border-r-tinta"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -left-[8px] top-4 h-0 w-0 border-y-[8px] border-r-[10px] border-y-transparent border-r-[var(--papel-2)]"
+                />
+              </div>
+              <CaminhoDaInvestigacao etapas={emCurso} />
             </div>
           </div>
-        )}
-        {carregando && etapas.length === 0 && (
-          <p className="surge flex items-center gap-2 text-base text-tinta-2">
-            <Icone nome="relogio" tamanho={22} className="etapa-ativa" />
-            Já vou ver isso, meu bem…
-          </p>
         )}
 
       </section>

@@ -48,11 +48,16 @@ const ETAPAS: Array<{ camada: Camada; titulo: string; icone: NomeDoIcone; oQueFa
   },
   {
     camada: "N4",
-    titulo: "Conferindo frase a frase",
-    icone: "lupa",
-    oQueFaz: "o que as fontes dizem",
+    titulo: "Perguntando à IA",
+    icone: "robo",
+    oQueFaz: "a inteligência lê as fontes e confere frase a frase",
   },
 ];
+
+//: A N4 é a única etapa que aciona um modelo de IA — a mais cara e a que a pessoa
+//: merece ver acontecer. Ganha o selo "IA" para o caminho deixar explícito quando a
+//: Vera chama a inteligência artificial (RF-03, skill vera-gamificacao).
+const CAMADA_DA_IA = "N4";
 
 type Estado = "pendente" | "fazendo" | "feita" | "pulada";
 
@@ -159,13 +164,28 @@ export function CaminhoDaInvestigacao({ etapas, concluida = false }: Props) {
                   .join(" ")}
                 title={mensagem || etapa.oQueFaz}
               >
+                {/* Selo "IA": marca a única etapa que aciona um modelo de IA, para a
+                    tela deixar explícito quando a Vera chama a inteligência artificial.
+                    Fica mais forte quando essa etapa está em curso. */}
+                {etapa.camada === CAMADA_DA_IA && (
+                  <span
+                    className={[
+                      "absolute -left-1.5 -top-1.5 rounded-total border-2 border-tinta px-1.5 text-xs font-bold leading-tight",
+                      estado === "fazendo"
+                        ? "etapa-ativa bg-vermelho text-white"
+                        : "bg-papel text-tinta-2",
+                    ].join(" ")}
+                  >
+                    IA
+                  </span>
+                )}
                 <Icone
                   nome={etapa.icone}
                   tamanho={28}
                   className={estado === "fazendo" ? "etapa-ativa" : undefined}
                 />
                 <span className="text-xs font-bold leading-tight">{etapa.titulo}</span>
-                <span className="text-[11px] text-tinta-2">
+                <span className="text-xs text-tinta-2">
                   {ROTULO_DE_ESTADO[estado]}
                   {/* Quantos sinais saíram dali: é o que a etapa rendeu, em número,
                       sem despejar o nome técnico de cada um na cara de quem espera. */}

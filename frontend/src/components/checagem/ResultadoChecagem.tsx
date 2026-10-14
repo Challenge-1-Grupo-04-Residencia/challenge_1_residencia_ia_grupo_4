@@ -141,6 +141,19 @@ export function ResultadoChecagem({ resultado }: Props) {
             </p>
           )}
 
+          {/* A leitura em prosa da IA (N4): um parágrafo que diz o que as fontes
+              indicam, citando-as. Complementa o placar de sinais, não o substitui, e
+              só aparece quando a N4 rodou e devolveu texto. */}
+          {resultado.analise_ia && (
+            <section className="mb-4 rounded-md border-[3px] border-tinta bg-papel-3 p-3">
+              <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-tinta-2">
+                <Icone nome="robo" tamanho={16} className="text-vermelho" />
+                A leitura da IA
+              </p>
+              <p className="mt-1.5 text-base leading-snug">{resultado.analise_ia}</p>
+            </section>
+          )}
+
           {evidencias.length > 0 && (
             <section>
               <Titulo icone="contas" texto="O que pesou" />
@@ -308,7 +321,7 @@ function Evidencia({ sinal, maior }: { sinal: Sinal; maior: number }) {
         }`}
       >
         <Icone nome={aFavor ? "aFavor" : "contra"} tamanho={24} />
-        <span className="text-[11px] font-bold uppercase">
+        <span className="text-xs font-bold uppercase">
           {aFavor ? "a favor" : "contra"}
         </span>
       </span>

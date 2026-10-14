@@ -81,6 +81,10 @@ interface Props {
   forcar?: boolean;
 }
 
+//: Marca no navegador de que a abertura já foi vista. Uma vez posta, a abertura só
+//: reaparece pelo botão "rever" da faixa.
+const CHAVE_ABERTURA_VISTA = "vera:abertura-vista";
+
 export function AberturaEmQuadrinhos({ aoTerminar, forcar = false }: Props) {
   const [aberta, setAberta] = useState(false);
   const [passo, setPasso] = useState(0);
@@ -91,15 +95,36 @@ export function AberturaEmQuadrinhos({ aoTerminar, forcar = false }: Props) {
   // Decide na montagem, e não na renderização do servidor: `matchMedia` não
   // existe lá, e tentar adivinhar daria um salto de tela.
   //
-  // A abertura roda **toda vez** que a página inicial é aberta. Já rodou só na
-  // primeira visita, guardada no `localStorage`, e isso criou um problema de uso
-  // difícil de adivinhar: quem já tinha visto nunca mais via, e a única volta
-  // era um botão dentro do balão — se a pessoa não o acertasse, não havia jeito.
-  // Para uma apresentação, ainda por cima, a abertura é o ponto. Quem não quer
-  // vê-la fecha em um toque, e o toque fecha em qualquer lugar da tela.
+  // A abertura roda **só na primeira visita**, guardada no `localStorage`, e some
+  // nas vezes seguintes — reaparecer a cada volta à home cansa quem já a viu.
+  // Quem quiser revê-la tem o botão "rever" na faixa (`forcar`), que a abre de
+  // novo sem depender da memória. `localStorage` pode falhar (aba anônima, dados
+  // bloqueados): no erro, trata como "ainda não viu" e mostra — errar para o lado
+  // de apresentar é melhor do que nunca apresentar.
   useEffect(() => {
     setSemMovimento(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+    if (forcar) {
+      setAberta(true);
+      return;
+    }
+
+    let jaViu = false;
+    try {
+      jaViu = window.localStorage.getItem(CHAVE_ABERTURA_VISTA) === "1";
+    } catch {
+      jaViu = false;
+    }
+    if (jaViu) return;
+
     setAberta(true);
+    // Marca como vista assim que aparece: mesmo que a pessoa saia sem fechar, a
+    // abertura não volta sozinha na próxima visita.
+    try {
+      window.localStorage.setItem(CHAVE_ABERTURA_VISTA, "1");
+    } catch {
+      // Sem persistência: a abertura aparecerá de novo. É o pior caso tolerável.
+    }
   }, [forcar]);
 
   useEffect(() => {
@@ -451,7 +476,7 @@ function QuadroDaProsa({ quadro, visivel }: { quadro: Quadro; visivel: boolean }
           <h2 className="font-display text-5xl leading-none text-vermelho">
             Chegou mais uma!
           </h2>
-          <p className="mt-3 text-[26px] leading-snug text-tinta-2">
+          <p className="mt-3 text-xl leading-snug text-tinta-2">
             Caiu no grupo da família. E agora, é verdade ou é conversa fiada?
           </p>
         </div>
@@ -536,7 +561,7 @@ function QuadroDaApuracao({ quadro, visivel }: { quadro: Quadro; visivel: boolea
         ].map((item) => (
           <li
             key={item.texto}
-            className="flex w-fit items-center gap-2 rounded-md border-[4px] border-tinta bg-papel-3 px-3 py-1.5 text-[22px] font-bold"
+            className="flex w-fit items-center gap-2 rounded-md border-[4px] border-tinta bg-papel-3 px-3 py-1.5 text-lg font-bold"
           >
             <Icone nome={item.icone as NomeDoIcone} tamanho={26} />
             {item.texto}
@@ -634,7 +659,7 @@ function QuadroDoCaminho({ quadro, visivel }: { quadro: Quadro; visivel: boolean
 
         </div>
 
-        <p className="flex-1 text-[28px] leading-snug text-tinta-2">
+        <p className="flex-1 text-xl leading-snug text-tinta-2">
           Nenhum jornal sério publicou isso, meu bem. E eu te mostro onde eu fui
           olhar.
         </p>

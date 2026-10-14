@@ -20,6 +20,7 @@
  * procurando o que pediu.
  */
 
+import Link from "next/link";
 import { Suspense, useCallback, useState } from "react";
 
 import { Conversa } from "@/components/checagem/Conversa";
@@ -34,6 +35,15 @@ const PROMESSAS: Array<{ icone: NomeDoIcone; texto: string }> = [
   { icone: "site", texto: "Quem publicou" },
   { icone: "jornal", texto: "Quem mais falou" },
   { icone: "contas", texto: "Quanto pesou" },
+];
+
+/** Exemplos para quem chega sem saber o que colar: um toque e a checagem roda.
+ *  Navegam para `/?q=`, que a `Conversa` lê e dispara sozinha. Misturam boato
+ *  conhecido e fato, para a pessoa ver a Vera acertar nos dois sentidos. */
+const EXEMPLOS = [
+  "O Pix vai ser taxado?",
+  "A vacina da Covid tem chip?",
+  "O Brasil tem segundo turno em 2026?",
 ];
 
 /** A abertura não precisa avisar ninguém quando termina: ela só sai de cena. */
@@ -136,6 +146,32 @@ export function TelaInicial() {
                   {promessa.texto}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Exemplos clicáveis: enchem o espaço abaixo da caixa com o que a
+              pessoa veio fazer, e ensinam o que dá para colar. Um toque leva a
+              `/?q=`, e a Conversa dispara a checagem. */}
+          {!conversando && (
+            <div
+              className="surge mt-6"
+              style={{ "--atraso": "720ms" } as React.CSSProperties}
+            >
+              <p className="text-center text-sm font-semibold text-tinta-2">
+                Ou experimenta um destes, meu bem:
+              </p>
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                {EXEMPLOS.map((exemplo) => (
+                  <Link
+                    key={exemplo}
+                    href={`/?q=${encodeURIComponent(exemplo)}`}
+                    className="flex min-h-11 items-center gap-1.5 rounded-total border-[3px] border-tinta bg-papel-2 px-4 text-sm font-semibold text-tinta shadow-bloco-sm transition-colors hover:bg-vermelho-suave"
+                  >
+                    <Icone nome="lupa" tamanho={16} className="text-vermelho" />
+                    {exemplo}
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
 
