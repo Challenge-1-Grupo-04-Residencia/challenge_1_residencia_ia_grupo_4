@@ -44,6 +44,11 @@ class Contexto:
     natureza: str | None = None
     #: A checagem já passou por todas as camadas? RN-04 só vale no fim do pipeline.
     pipeline_encerrado: bool = False
+    #: Quantos veículos confiáveis **independentes** corroboraram o fato (cobertura, não
+    #: checagem). Confirmar uma notícia exige mais de um: o valor do produto está em
+    #: várias redações independentes baterem, e um modelo pequeno dizendo "procede" com
+    #: base num único veículo vira fake aprovada.
+    apoios_independentes: int = 0
 
 
 def aplicar(
@@ -147,6 +152,32 @@ def aplicar(
             motivo_regra=(
                 "Vasculhei a internet, mas não encontrei nenhum jornal ou veículo oficial noticiando isso "
                 "ainda. Como não tenho dados sólidos, prefiro não tirar conclusões precipitadas."
+            ),
+            exibe_porcentagem=False,
+        )
+
+    # Confirmar exige corroboração de MAIS DE UMA fonte independente. Uma redação só
+    # dizendo algo não é "corroboração" no sentido do produto — o valor está em várias
+    # redações independentes baterem no mesmo fato. Sem esta guarda, o motor cravava
+    # "provavelmente verdadeira" com base num único veículo (ex.: "Neymar namora a
+    # Virginia" com uma fonte), e um modelo pequeno confirmando uma notícia solta vira
+    # fake aprovada. Abaixo de dois apoios independentes, o teto é Inconclusiva — não
+    # desmente, só se recusa a cravar. Não mexe em veredito de falsa: fake se sustenta
+    # por contradição, não por corroboração.
+    if (
+        contexto.pipeline_encerrado
+        and classificar(veracidade) in (Faixa.VERDADEIRA, Faixa.CONFIRMADA)
+        and contexto.apoios_independentes < 2
+    ):
+        return Veredito(
+            veracidade=veracidade,
+            confianca=confianca,
+            faixa=Faixa.INCONCLUSIVA,
+            regra_aplicada="RN-04",
+            motivo_regra=(
+                "Achei só uma fonte dizendo isso. Uma redação sozinha não me basta "
+                "para confirmar — eu preciso ver o mesmo fato em mais de um veículo "
+                "independente. Por ora, fica em aberto: não dá para cravar."
             ),
             exibe_porcentagem=False,
         )

@@ -222,6 +222,15 @@ class Orquestrador:
         """
         processada = self.checar(noticia, observador)
         r = processada.resultado
+        # Veículos confiáveis e independentes que cobriram o fato (não checagens): é a
+        # força da corroboração, e confirmar exige mais de um (ver RN-04 em
+        # business_rules). Conta por domínio distinto, para dois links do mesmo veículo
+        # não passarem por duas fontes.
+        apoios = len({
+            doc.fonte
+            for doc in r.documentos_relacionados
+            if doc.fonte_confiavel and not doc.e_checagem and doc.fonte
+        })
         contexto = business_rules.Contexto(
             veredito_agencia=r.veredito_agencia,
             agencia=r.agencia,
@@ -229,6 +238,7 @@ class Orquestrador:
             veiculo_imitado=r.veiculo_imitado,
             natureza=r.natureza,
             pipeline_encerrado=True,
+            apoios_independentes=apoios,
         )
         veracidade = scoring.calcular_veracidade(r.sinais)
         if veracidade is None and r.sinais == []:
