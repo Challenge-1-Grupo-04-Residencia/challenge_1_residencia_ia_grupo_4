@@ -4,8 +4,7 @@
  * PRIVACIDADE E SEGURANÇA (LGPD / Menor Privilégio):
  * 1. Ação Explícita: A checagem só é disparada mediante o clique do usuário em "Verificar esta página".
  * 2. Minimização de Dados: Coleta exclusivamente o texto jornalístico da matéria e a URL higienizada.
- * 3. Permissões Restritas: Utiliza somente 'activeTab' e 'scripting'. A permissão ampla 'tabs'
- *    foi removida para evitar acesso indiscriminado a outras abas e ao histórico de navegação.
+ * 3. A permissão 'activeTab' limita o acesso à aba atual após a ação do usuário.
  * 4. Proteção contra XSS: Todo o texto renderizado na tela utiliza 'textContent', impedindo injeção de HTML.
  * 5. Logs Seguros: Não imprime texto de matérias ou dados pessoais no console.
  */
@@ -84,12 +83,6 @@ async function analyzePage() {
   const timeoutId = setTimeout(() => controller.abort(), VERA_CONFIG.REQUEST_TIMEOUT_MS);
 
   try {
-    // Injeta o content script na aba ativa sob demanda
-    await chrome.scripting.executeScript({
-      target: { tabId: activeTab.id },
-      files: ["content.js"]
-    });
-
     // Solicita o texto extraído e higienizado da matéria
     const page = await chrome.tabs.sendMessage(activeTab.id, { type: "VERA_GET_PAGE_TEXT" });
     if (!page?.text || page.text.trim().length < 50) {

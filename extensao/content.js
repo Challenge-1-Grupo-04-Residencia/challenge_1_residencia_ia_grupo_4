@@ -41,7 +41,7 @@ if (!window.__veraContentScriptInstalled) {
       }
       return parsed.toString();
     } catch {
-      return urlStr;
+      return null;
     }
   }
 
@@ -54,8 +54,6 @@ if (!window.__veraContentScriptInstalled) {
     const seletoresConteudo = [
       "article",
       '[itemprop="articleBody"]',
-      "main",
-      '[role="main"]',
       ".materia-conteudo",
       ".noticia-corpo",
       ".post-content",
@@ -75,17 +73,22 @@ if (!window.__veraContentScriptInstalled) {
       }
     }
 
-    // Se nenhum container específico de notícia for detectado, usa o body como fallback
-    if (!container) {
-      container = document.body;
-    }
-
     if (!container) {
       return "";
     }
 
     // 2. Clona o nó para higienização sem alterar a visualização original da página
+    if (estaOculto(container)) {
+      return "";
+    }
     const clone = container.cloneNode(true);
+    const originais = container.querySelectorAll("*");
+    const copias = clone.querySelectorAll("*");
+    originais.forEach((elemento, indice) => {
+      if (estaOculto(elemento) && copias[indice]?.parentNode) {
+        copias[indice].remove();
+      }
+    });
 
     // 3. Remove rigorosamente elementos irrelevantes, de navegação e de dados sensíveis
     const seletoresRemover = [
@@ -96,6 +99,7 @@ if (!window.__veraContentScriptInstalled) {
       // Formulários e dados do usuário (LGPD: proteção contra captura de senhas e inputs)
       "form", "input", "textarea", "select", "button",
       '[type="password"]', '[type="hidden"]', "[contenteditable]", '[role="textbox"]',
+      "[hidden]", '[aria-hidden="true"]', "template",
       // Publicidade, cookies, comentários e compartilhamento
       '[role="banner"]', '[role="navigation"]', '[role="complementary"]', '[role="contentinfo"]',
       '[class*="ad-"]', '[class*="advertisement"]', '[id*="advertisement"]',
@@ -138,6 +142,11 @@ if (!window.__veraContentScriptInstalled) {
       .replace(/\n\s*\n\s*\n+/g, "\n\n")
       .trim();
 
+    const titulo = document.title.trim();
+    if (titulo && !textoExtraido.includes(titulo)) {
+      textoExtraido = `${titulo}\n\n${textoExtraido}`.trim();
+    }
+
     // 5. Minimização de volume: limita o tamanho para preservar desempenho e evitar vazamentos
     if (textoExtraido.length > VERA_CONFIG.MAX_TEXT_LENGTH) {
       const corte = textoExtraido.substring(0, VERA_CONFIG.MAX_TEXT_LENGTH);
@@ -150,6 +159,28 @@ if (!window.__veraContentScriptInstalled) {
     }
 
     return textoExtraido;
+  }
+
+  function estaOculto(elemento) {
+    for (let atual = elemento; atual; atual = atual.parentElement) {
+      if (
+        atual.hasAttribute("hidden") ||
+        atual.getAttribute("aria-hidden") === "true"
+      ) {
+        return true;
+      }
+
+      const estilo = window.getComputedStyle(atual);
+      if (
+        estilo.display === "none" ||
+        estilo.visibility === "hidden" ||
+        estilo.visibility === "collapse" ||
+        estilo.opacity === "0"
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // 1. Listener de comunicação com o popup tradicional da extensão
@@ -166,7 +197,7 @@ if (!window.__veraContentScriptInstalled) {
     });
   });
 
-  // 2. Injeta o Widget Flutuante sob demanda com proteção Shadow DOM (RF-36, RF-37)
+  // A injeção automática cria somente a interface; nenhum dado da página é lido aqui.
   function injectVeraWidget() {
     if (document.getElementById("vera-floating-root")) return;
 
@@ -174,7 +205,7 @@ if (!window.__veraContentScriptInstalled) {
     root.id = "vera-floating-root";
     document.body.appendChild(root);
 
-    const shadow = root.attachShadow({ mode: "open" });
+    const shadow = root.attachShadow({ mode: "closed" });
 
     shadow.innerHTML = `
       <style>

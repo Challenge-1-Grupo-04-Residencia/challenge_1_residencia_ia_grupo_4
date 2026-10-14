@@ -4,8 +4,7 @@
   "version": "0.2.0",
   "description": "Analisa o conteúdo jornalístico de páginas sob demanda com foco em privacidade e minimização de dados (LGPD).",
   "permissions": [
-    "activeTab",
-    "scripting"
+    "activeTab"
   ],
   "host_permissions": [
     "http://127.0.0.1:8010/*"
@@ -16,5 +15,17 @@
   "action": {
     "default_title": "Verificar esta página com a Senhora Vera",
     "default_popup": "popup.html"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
 }
