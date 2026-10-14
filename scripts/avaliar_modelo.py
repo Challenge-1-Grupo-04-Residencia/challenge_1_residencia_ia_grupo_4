@@ -8,8 +8,21 @@ import json
 import time
 import argparse
 from datetime import datetime
-# Configs
-API_URL = "http://localhost:8000/api/v1/checar"
+import os
+
+def descobrir_url_api():
+    if "API_URL" in os.environ:
+        return os.environ["API_URL"]
+    for porta in [8010, 8000]:
+        try:
+            resp = requests.get(f"http://localhost:{porta}/health", timeout=1)
+            if resp.status_code == 200:
+                return f"http://localhost:{porta}/api/v1/checar"
+        except Exception:
+            pass
+    return "http://localhost:8010/api/v1/checar"
+
+API_URL = descobrir_url_api()
 from src.infrastructure.database import SessionLocal
 
 
@@ -31,11 +44,13 @@ def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
             col_label = c
             break
 
+    col_url = 'url' if 'url' in df.columns else None
+
     if not col_label:
         print("⚠️ Não achei coluna de classe (Falso/Verdadeiro). Pegando apenas as amostras.")
         amostras = df.head(limite)
     else:
-        print(f"✅ Coluna de texto: '{col_texto}' | Coluna de label: '{col_label}'")
+        print(f"✅ Coluna de texto: '{col_texto}' | Coluna de label: '{col_label}'" + (f" | Coluna URL: '{col_url}'" if col_url else ""))
         # Estratificando: Metade de cada classe
         classes = df[col_label].unique()
         amostras = pd.DataFrame()
@@ -48,7 +63,7 @@ def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
             faltam = limite - len(amostras)
             amostras = pd.concat([amostras, df[~df.index.isin(amostras.index)].head(faltam)])
 
-    amostras = amostras.sample(frac=1).reset_index(drop=True) # Shuffle
+    amostras = amostras.sample(frac=1, random_state=42).reset_index(drop=True) # Shuffle reproduzível
     
     total = len(amostras)
     acertos = 0
@@ -56,10 +71,16 @@ def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
     inconclusivos = 0
     inicio = time.time()
 
-    print(f"⏳ Disparando {total} requisições contra a API ({API_URL})...")
+    print(f"⏳ Disparando {total} requisições contra a API ({API_URL})...\n")
     
     for i, row in amostras.iterrows():
         texto = str(row[col_texto])
+        payload = {"texto": texto}
+        if col_url and pd.notna(row[col_url]):
+            url_cand = str(row[col_url]).strip()
+            if url_cand.startswith("http"):
+                payload["url"] = url_cand
+
         if col_label:
             label_real = str(row[col_label]).lower()
             # Mapeia para booleano: True = Falso, False = Verdadeiro (ou vice versa dependendo do dataset)
@@ -69,32 +90,42 @@ def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
             e_realmente_verdade = None
 
         try:
-            resp = requests.post(API_URL, json={"texto": texto}, timeout=30)
+            resp = requests.post(API_URL, json=payload, timeout=35)
             if resp.status_code == 200:
                 resultado = resp.json()
-                faixa = resultado.get("faixa", "").lower()
-                
-                # Inconclusivo
+                faixa_raw = resultado.get("faixa", "").strip()
+                faixa = faixa_raw.lower()
+                veracidade = resultado.get("veracidade")
+                confianca = resultado.get("confianca", 0.0)
+                camada_parou = resultado.get("camada_atual", "N?")
+
+                # No catálogo oficial da Vera:
+                # - "Confirmada por fontes" e "Provavelmente verdadeira" -> Verdadeiro
+                # - "Provavelmente falsa" e "Duvidosa" -> Falso
+                # - "Inconclusiva" -> Abstenção / Proteção
                 if "inconclusiv" in faixa:
                     inconclusivos += 1
+                    diagnostico = "⚪ INCONCLUSIVO"
                 elif e_realmente_verdade is not None:
-                    e_vera_verdade = "verdadeir" in faixa
+                    e_vera_verdade = ("verdadeir" in faixa or "confirmada" in faixa)
                     
                     if e_vera_verdade == e_realmente_verdade:
                         acertos += 1
+                        diagnostico = "✅ ACERTO"
                     else:
-                        # Vera errou
+                        diagnostico = "❌ ERRO"
                         if e_vera_verdade and not e_realmente_verdade:
                             falsos_positivos += 1
+                else:
+                    diagnostico = "❓ SEM RÓTULO"
+
+                v_str = f"{veracidade:.1f}%" if veracidade is not None else "s/p"
+                print(f"   [{i+1:>2}/{total}] {diagnostico} | Real: {'Verdadeiro' if e_realmente_verdade else 'Falso':<10} | Vera: {faixa_raw:<25} (V={v_str:<6} C={confianca:.2f} Parou:{camada_parou})")
             else:
-                print(f"Falha API: {resp.status_code}")
+                print(f"   [{i+1:>2}/{total}] ⚠️ Falha API HTTP {resp.status_code}")
         except requests.exceptions.RequestException as e:
-             print(f"Erro de conexão com API: {e}")
+             print(f"   [{i+1:>2}/{total}] ⚠️ Erro de conexão com API: {e}")
              continue
-             
-        # Mostrar progresso
-        if (i+1) % 10 == 0:
-            print(f"   Progresso: {i+1}/{total} processados...")
 
     tempo_medio = int(((time.time() - inicio) / total) * 1000)
     
@@ -134,16 +165,25 @@ def classificar_dataset(caminho_parquet, nome_dataset, limite=100):
     except Exception as e:
         print(f"⚠️ Não foi possível salvar no banco (o banco subiu?): {e}")
 
+DATASETS_BENCHMARK = ["fake-br", "fakerecogna", "faketrue-br", "fakewhatsapp-br"]
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Auditoria de Datasets da Vera")
-    parser.add_argument("--dataset", required=True, help="Ex: fakewhatsapp-br")
-    parser.add_argument("--n", type=int, default=100, help="Quantidade de amostras para testar")
+    parser.add_argument("--dataset", default="todos", help="Ex: fake-br, fakerecogna, faketrue-br, fakewhatsapp-br ou 'todos'")
+    parser.add_argument("--n", type=int, default=20, help="Quantidade de amostras por dataset para testar")
     args = parser.parse_args()
 
-    caminho = f"../datasets/{args.dataset}/padronizado.parquet" if not args.dataset.endswith(".parquet") else args.dataset
     import os
-    if not os.path.exists(caminho):
-        # Tenta no formato relativo padrão
-        caminho = f"datasets/{args.dataset}/padronizado.parquet"
-        
-    classificar_dataset(caminho, args.dataset, args.n)
+
+    alvos = DATASETS_BENCHMARK if args.dataset.lower() in ["todos", "all"] else [args.dataset]
+
+    for ds in alvos:
+        caminho = f"../datasets/{ds}/padronizado.parquet" if not ds.endswith(".parquet") else ds
+        if not os.path.exists(caminho):
+            caminho = f"datasets/{ds}/padronizado.parquet"
+            
+        if os.path.exists(caminho):
+            classificar_dataset(caminho, ds, args.n)
+        else:
+            print(f"⚠️ Dataset '{ds}' não encontrado no caminho {caminho}")
+
