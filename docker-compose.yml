@@ -1,0 +1,54 @@
+services:
+  # 1. Nossa API Backend (FastAPI + Motor da Senhora Vera)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vera_api
+    ports:
+      # 8010 e nao 8000: a 8000 costuma estar ocupada pelo `mkdocs serve` da
+      # documentacao, e a convencao do time e a 8010 em todo lugar.
+      - "8010:8000"
+    volumes:
+      - ./backend:/app/backend  # Monta o codigo do host dentro do container
+    # O volume sozinho nao recarrega nada: o `--reload` e o que faz o uvicorn reagir ao
+    # arquivo alterado. Sem ele, o container servia indefinidamente o codigo da imagem,
+    # que foi como um servidor de 5 dias atras ficou respondendo com sinais que o codigo
+    # novo ja media de outro jeito.
+    command: >
+      uv run uvicorn src.main:app --app-dir backend
+      --host 0.0.0.0 --port 8000 --reload --reload-dir backend
+    environment:
+      - ENVIRONMENT=development
+      - OLLAMA_URL=http://ollama:11434  # Ensina o Python onde achar o Llama dentro do Docker
+      - WHOIS_API_KEY=${WHOIS_API_KEY}
+    depends_on:
+      - ollama  # A API só sobe depois que o Ollama ligar
+      - postgres
+
+  # 2. O Cérebro Generativo (Ollama) rodando isolado
+  ollama:
+    image: ollama/ollama:latest
+    container_name: vera_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama  # Salva o cérebro da IA no disco para não baixar de novo
+
+  # 3. Banco de Dados com suporte Vetorial (PGVector)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: vera_db
+    environment:
+      POSTGRES_USER: vera_user
+      POSTGRES_PASSWORD: vera_pass
+      POSTGRES_DB: vera_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Define um volume persistente (Disco virtual do Docker)
+volumes:
+  ollama_data:
+  postgres_data:
