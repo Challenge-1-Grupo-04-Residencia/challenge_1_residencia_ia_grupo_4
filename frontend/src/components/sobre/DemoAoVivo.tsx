@@ -79,9 +79,9 @@ export function DemoAoVivo() {
             type="button"
             onClick={() => rodar(exemplo)}
             disabled={carregando}
-            className="pressiona flex min-h-11 items-center gap-1.5 rounded-total border-[3px] border-tinta bg-papel-2 px-4 text-sm font-semibold text-tinta shadow-bloco-sm transition-colors hover:bg-vermelho-suave disabled:cursor-not-allowed disabled:opacity-50"
+            className="pressiona flex min-h-11 items-center gap-1.5 rounded-total border-[3px] border-tinta bg-papel-2 px-4 text-base font-semibold text-tinta shadow-bloco-sm transition-colors hover:bg-vermelho-suave disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Icone nome="lupa" tamanho={16} className="text-vermelho" />
+            <Icone nome="lupa" tamanho={20} className="text-vermelho" />
             {exemplo}
           </button>
         ))}
@@ -89,7 +89,7 @@ export function DemoAoVivo() {
 
       {/* A pergunta "digitada", como um balão do usuário. */}
       {atual && (
-        <p className="surge max-w-[85%] self-end rounded-lg rounded-br-sm border-[3px] border-tinta bg-vermelho px-4 py-2.5 text-base font-semibold text-white shadow-bloco-sm">
+        <p className="surge max-w-[85%] self-end rounded-lg rounded-br-sm border-[3px] border-tinta bg-vermelho px-4 py-2.5 text-lg font-semibold text-white shadow-bloco-sm">
           {atual}
         </p>
       )}
@@ -97,7 +97,7 @@ export function DemoAoVivo() {
       {/* Enquanto trabalha: avatar investigando + o placar das camadas, ao vivo. */}
       {carregando && (
         <div className="surge flex items-start gap-3">
-          <VeraAvatar humor="investigando" tamanho={48} className="mt-1" />
+          <VeraAvatar humor="investigando" tamanho={60} className="mt-1" />
           <div className="min-w-0 flex-1">
             <CaminhoDaInvestigacao
               etapas={
@@ -126,14 +126,14 @@ export function DemoAoVivo() {
       )}
 
       {erro && (
-        <p className="surge flex items-center gap-3 rounded-lg border-[3px] border-falsa bg-falsa-fundo p-4 text-base text-tinta">
-          <Icone nome="alerta" tamanho={28} className="shrink-0 text-falsa" />
+        <p className="surge flex items-center gap-3 rounded-lg border-[3px] border-falsa bg-falsa-fundo p-4 text-lg text-tinta">
+          <Icone nome="alerta" tamanho={35} className="shrink-0 text-falsa" />
           {erro}
         </p>
       )}
 
       {!atual && (
-        <p className="text-center text-sm text-tinta-3">
+        <p className="text-center text-base text-tinta-3">
           Toca num exemplo e me vê trabalhar de verdade, meu bem.
         </p>
       )}
