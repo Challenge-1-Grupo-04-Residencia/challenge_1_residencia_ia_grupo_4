@@ -3,25 +3,26 @@
 /**
  * Apresentação do projeto em formato de slides, dentro do próprio app.
  *
- * Mostra o produto inteiro para quem chega de fora — persona, pipeline em camadas
- * N0 a N4, os 13 sinais (com a parte de ML e a de LLM), as frentes de tecnologia, os
- * princípios, a metodologia e a equipe. Um dos slides é uma **demonstração ao vivo**:
- * roda o pipeline de verdade para simular um prompt.
+ * É uma prancha de quadrinho: painéis com moldura grossa, balões de fala, retícula de
+ * impressão barata, carimbos e a arte da Vera. Mostra o produto inteiro — persona,
+ * pipeline em camadas N0–N4, dificuldade, os 13 sinais (com a parte de ML e a de LLM),
+ * as faixas de veracidade, as frentes, os princípios, a metodologia (CBL + Scrum), a
+ * equipe e os números. Um slide é uma demonstração ao vivo: roda o pipeline de verdade.
  *
- * É um deck navegável (setas na tela, teclado ← →, e as bolinhas). Cada troca de slide
- * re-dispara a animação de entrada; `prefers-reduced-motion` desliga o movimento pelo
- * CSS global. O conteúdo vem da branch `docs` e do ARQUITETURA.md; feito com o sistema
- * visual (vera-estilo) e a voz da Vera (vera-voz).
+ * Deck navegável por setas, teclado ← → e bolinhas, com modo tela cheia (que aplica um
+ * zoom para o texto crescer junto com a tela). Cada troca re-dispara a animação;
+ * prefers-reduced-motion desliga o movimento pelo CSS. Conteúdo do planejamento (branch
+ * docs) e do que foi executado (código).
  */
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { DemoAoVivo } from "@/components/sobre/DemoAoVivo";
+import { Balao } from "@/components/ui/Balao";
 import { Icone, type NomeDoIcone } from "@/components/ui/Icone";
-import { VeraAvatar } from "@/components/vera/VeraAvatar";
 
-// --- Dados da apresentação -----------------------------------------------------------
+// --- Dados ---------------------------------------------------------------------------
 
 const CAMADAS: Array<{
   id: string;
@@ -29,24 +30,33 @@ const CAMADAS: Array<{
   icone: NomeDoIcone;
   pergunta: string;
   comoFaz: string;
+  custo: string;
 }> = [
-  { id: "N0", nome: "Cache", icone: "relogio", pergunta: "Já conferi isso?", comoFaz: "Reaproveita uma checagem já feita." },
-  { id: "N1", nome: "Fonte", icone: "site", pergunta: "Quem publicou?", comoFaz: "Reputação, idade do domínio, checagens de agência." },
-  { id: "N2", nome: "Conteúdo", icone: "texto", pergunta: "Como foi escrito?", comoFaz: "Classificador de estilo, sensacionalismo, emoção." },
-  { id: "N3", nome: "Corroboração", icone: "jornal", pergunta: "Quem mais publicou?", comoFaz: "Busca notícias semelhantes e mede similaridade." },
-  { id: "N4", nome: "IA generativa", icone: "robo", pergunta: "As fontes sustentam?", comoFaz: "Uma LLM confere alegação por alegação (NLI)." },
+  { id: "N0", nome: "Cache", icone: "relogio", pergunta: "Já conferi isso?", comoFaz: "Reaproveita uma checagem já feita da mesma coisa.", custo: "instantâneo" },
+  { id: "N1", nome: "Fonte", icone: "site", pergunta: "Quem publicou?", comoFaz: "Reputação, idade do domínio e checagens de agência.", custo: "muito baixo" },
+  { id: "N2", nome: "Conteúdo", icone: "texto", pergunta: "Como foi escrito?", comoFaz: "Classificador de estilo, sensacionalismo e emoção.", custo: "baixo" },
+  { id: "N3", nome: "Corroboração", icone: "jornal", pergunta: "Quem mais publicou?", comoFaz: "Busca notícias parecidas e mede a semelhança.", custo: "médio" },
+  { id: "N4", nome: "IA generativa", icone: "robo", pergunta: "As fontes sustentam?", comoFaz: "Uma LLM confere alegação por alegação (NLI).", custo: "alto" },
+];
+
+const DIFICULDADE: Array<{ nivel: string; onde: string; cor: string; exemplo: string }> = [
+  { nivel: "Fácil", onde: "N0–N1", cor: "#2E7D32", exemplo: "Já desmentida por agência, ou site que nasceu semana passada." },
+  { nivel: "Mediano", onde: "N2–N3", cor: "#F9A825", exemplo: "Texto sensacionalista que nenhum veículo sério replicou." },
+  { nivel: "Difícil", onde: "N4", cor: "#C62828", exemplo: "Notícia plausível, bem escrita, com meia-verdade." },
 ];
 
 const DIMENSOES: Array<{
   nome: string;
   pontos: number;
   icone: NomeDoIcone;
+  marca: string;
   sinais: Array<{ id: string; nome: string; peso: number }>;
 }> = [
   {
     nome: "Fonte",
     pontos: 35,
     icone: "site",
+    marca: "quem falou",
     sinais: [
       { id: "S-01", nome: "Reputação do veículo", peso: 12 },
       { id: "S-02", nome: "Histórico de fakes do domínio", peso: 8 },
@@ -59,8 +69,9 @@ const DIMENSOES: Array<{
     nome: "Conteúdo",
     pontos: 25,
     icone: "texto",
+    marca: "aprendizado de máquina",
     sinais: [
-      { id: "S-06", nome: "Classificador estilístico (TF-IDF + SVM/RL)", peso: 10 },
+      { id: "S-06", nome: "Classificador de estilo (TF-IDF + SVM/RL)", peso: 10 },
       { id: "S-07", nome: "Sensacionalismo", peso: 5 },
       { id: "S-08", nome: "Intensidade emocional (NRC)", peso: 5 },
       { id: "S-09", nome: "Cita fontes verificáveis", peso: 3 },
@@ -71,6 +82,7 @@ const DIMENSOES: Array<{
     nome: "Corroboração",
     pontos: 40,
     icone: "jornal",
+    marca: "onde entra a LLM",
     sinais: [
       { id: "S-11", nome: "Veículos confiáveis que publicaram", peso: 15 },
       { id: "S-12", nome: "NLI: evidências sustentam ou contradizem", peso: 20 },
@@ -79,43 +91,19 @@ const DIMENSOES: Array<{
   },
 ];
 
+const FAIXAS: Array<{ nome: string; cor: string }> = [
+  { nome: "Provavelmente falsa", cor: "#C62828" },
+  { nome: "Duvidosa", cor: "#EF6C00" },
+  { nome: "Inconclusiva", cor: "#F9A825" },
+  { nome: "Provavelmente verdadeira", cor: "#7CB342" },
+  { nome: "Confirmada por fontes", cor: "#2E7D32" },
+];
+
 const FRENTES: Array<{ titulo: string; icone: NomeDoIcone; itens: string[] }> = [
-  {
-    titulo: "Motor de veracidade",
-    icone: "contas",
-    itens: [
-      "Python + FastAPI, arquitetura hexagonal",
-      "Camadas N0 a N4 em cadeia de responsabilidade",
-      "PostgreSQL + pgvector (cache e similaridade)",
-    ],
-  },
-  {
-    titulo: "Aprendizado de máquina",
-    icone: "etiqueta",
-    itens: [
-      "Classificador de estilo S-06: TF-IDF + SVM/Regressão",
-      "Intensidade emocional com o NRC Emotion Lexicon",
-      "Notebooks de EDA e datasets em Parquet",
-    ],
-  },
-  {
-    titulo: "IA generativa (LLM)",
-    icone: "robo",
-    itens: [
-      "Camada N4: LLM via Ollama (llama3)",
-      "NLI: sustenta, contradiz ou é neutro",
-      "Chamada só quando N0 a N3 não bastam",
-    ],
-  },
-  {
-    titulo: "Frontend",
-    icone: "conversa",
-    itens: [
-      "Next.js + TypeScript + Tailwind, em chat",
-      "Mostra andamento, sinais e fontes",
-      "PWA instalável e extensão de navegador",
-    ],
-  },
+  { titulo: "Motor de veracidade", icone: "contas", itens: ["Python + FastAPI, arquitetura hexagonal", "Camadas N0–N4 em cadeia de responsabilidade", "PostgreSQL + pgvector (cache e similaridade)"] },
+  { titulo: "Aprendizado de máquina", icone: "etiqueta", itens: ["Classificador de estilo: TF-IDF + SVM/Regressão", "Emoção com o NRC Emotion Lexicon", "Notebooks de EDA e datasets em Parquet"] },
+  { titulo: "IA generativa (LLM)", icone: "robo", itens: ["Camada N4: LLM via Ollama (llama3)", "NLI: sustenta, contradiz ou é neutro", "Chamada só quando N0–N3 não bastam"] },
+  { titulo: "Frontend", icone: "conversa", itens: ["Next.js + TypeScript + Tailwind, em chat", "Mostra o andamento, os sinais e as fontes", "PWA instalável e extensão de navegador"] },
 ];
 
 const PRINCIPIOS: Array<{ icone: NomeDoIcone; titulo: string; texto: string }> = [
@@ -123,6 +111,13 @@ const PRINCIPIOS: Array<{ icone: NomeDoIcone; titulo: string; texto: string }> =
   { icone: "quase", titulo: "Nunca crava certeza", texto: "“Provavelmente falsa”, “confirmada por fontes”. Desconfiada por ofício." },
   { icone: "espera", titulo: "Não sei é não sei", texto: "Sinal sem dado fica de fora e nunca vale zero. Sem prova, ela fica em aberto." },
   { icone: "contas", titulo: "Gasta a IA só quando precisa", texto: "A LLM é a camada mais cara e só entra quando as outras não resolvem." },
+];
+
+const NUMEROS: Array<{ valor: string; rotulo: string }> = [
+  { valor: "5", rotulo: "camadas" },
+  { valor: "13", rotulo: "sinais" },
+  { valor: "3", rotulo: "dimensões" },
+  { valor: "100", rotulo: "pontos" },
 ];
 
 const EQUIPE: Array<{ nome: string; papel: string; github: string; foto: string }> = [
@@ -133,25 +128,29 @@ const EQUIPE: Array<{ nome: string; papel: string; github: string; foto: string 
   { nome: "Rebeca Bontempo", papel: "Developer", github: "rebecaboncaputo", foto: "https://avatars.githubusercontent.com/u/211146495?v=4" },
 ];
 
-// --- Cabeçalho de slide --------------------------------------------------------------
+// --- Peças de quadrinho --------------------------------------------------------------
 
-function CabecalhoSlide({
-  icone,
-  sobre,
-  titulo,
-}: {
-  icone: NomeDoIcone;
-  sobre: string;
-  titulo: string;
-}) {
+/** Faixa de retícula atrás de um conteúdo de destaque (nunca atrás de texto corrido). */
+function Reticula({ className = "" }: { className?: string }) {
+  return <span aria-hidden className={`reticula pointer-events-none absolute inset-0 ${className}`} />;
+}
+
+/** Carimbo torto, como batido à mão. */
+function Carimbo({ children, cor = "bg-vermelho" }: { children: React.ReactNode; cor?: string }) {
   return (
-    <div className="mb-5">
-      <p className="flex items-center gap-2 font-display text-base uppercase tracking-wide text-vermelho">
-        <Icone nome={icone} tamanho={23} />
-        {sobre}
-      </p>
-      <h2 className="font-display text-4xl leading-none">{titulo}</h2>
-    </div>
+    <span className={`carimbo inline-flex items-center gap-1.5 rounded-md border-[3px] border-tinta ${cor} px-3 py-1 font-display text-xl text-white shadow-bloco-sm`}>
+      {children}
+    </span>
+  );
+}
+
+/** Supertítulo: a linha vermelha em caixa alta acima do título de cada slide. */
+function Super({ icone, texto }: { icone: NomeDoIcone; texto: string }) {
+  return (
+    <p className="flex items-center gap-2 font-display text-xl uppercase tracking-wide text-vermelho">
+      <Icone nome={icone} tamanho={24} />
+      {texto}
+    </p>
   );
 }
 
@@ -161,37 +160,66 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "capa",
     no: (
-      <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-        <VeraAvatar humor="satisfeita" tamanho={165} />
-        <p className="font-display text-base uppercase tracking-wide text-vermelho">
-          Residência em IA · Challenge 1 · Grupo 4
+      <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden text-center">
+        <Reticula className="text-vermelho" />
+        <Image src="/vera-corpo-apontando.png" alt="Senhora Vera apontando" width={260} height={320} priority className="relative h-56 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-72" />
+        <div className="relative">
+          <Carimbo cor="bg-ocre">Residência em IA · Challenge 1 · Grupo 4</Carimbo>
+        </div>
+        <h1 className="relative font-display text-6xl leading-none md:text-7xl">A Senhora Vera</h1>
+        <div className="relative w-full max-w-xl">
+          <Balao>
+            <p className="fonte-mao text-3xl">“O que é que tu quer saber que é verdade?”</p>
+          </Balao>
+        </div>
+        <p className="relative max-w-2xl text-2xl">
+          Uma senhora do Recife que sabe de tudo, mas <strong>não repassa nada sem conferir a fonte antes</strong>.
         </p>
-        <h1 className="font-display text-6xl leading-none">A Senhora Vera</h1>
-        <p className="max-w-xl text-xl">
-          Uma senhora do Recife que sabe de tudo, mas <strong>não repassa nada sem
-          conferir a fonte antes</strong>.
-        </p>
-        <p className="fonte-mao text-3xl text-tinta-2">
-          “O que é que tu quer saber que é verdade?”
-        </p>
+      </div>
+    ),
+  },
+  {
+    chave: "equipe",
+    no: (
+      <div className="flex h-full flex-col justify-center">
+        <Super icone="assinatura" texto="Quem fez" />
+        <h2 className="mb-6 font-display text-5xl leading-none">O Grupo 4</h2>
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {EQUIPE.map((pessoa, i) => (
+            <li key={pessoa.nome} className="surge" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+              <a href={`https://github.com/${pessoa.github}`} target="_blank" rel="noopener noreferrer" className="flex h-full flex-col items-center gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 text-center shadow-bloco transition-transform hover:-translate-y-1">
+                <Image src={pessoa.foto} alt={`Foto de ${pessoa.nome} no GitHub`} width={96} height={96} className="size-24 rounded-total border-[3px] border-tinta object-cover" />
+                <span className="font-display text-2xl leading-none">{pessoa.nome}</span>
+                <span className="text-base font-bold text-tinta-2">{pessoa.papel}</span>
+                <span className="mt-auto flex items-center gap-1 text-sm text-tinta-3"><Icone nome="link" tamanho={14} />@{pessoa.github}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     ),
   },
   {
     chave: "visao",
     no: (
-      <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="coracao" sobre="A ideia" titulo="Checar sem decidir por você" />
-        <p className="text-xl leading-relaxed">
-          Para quem recebe notícia por rede social e não sabe se pode confiar, a Vera é
-          uma <strong>checadora em formato de conversa</strong> que cruza o que você leu
-          com fontes confiáveis e <strong>explica</strong> por que aquilo parece
-          verdadeiro ou falso.
-        </p>
-        <p className="mt-4 text-xl leading-relaxed">
-          Diferente de um classificador que só diz “fake / não fake”, ela mostra o
-          caminho, para <strong>fortalecer o pensamento crítico</strong>, não substituir.
-        </p>
+      <div className="flex h-full flex-col justify-center gap-5">
+        <div>
+          <Super icone="coracao" texto="A ideia" />
+          <h2 className="font-display text-5xl leading-none">Checar sem decidir por você</h2>
+        </div>
+        <div className="grid items-center gap-5 md:grid-cols-[1fr_auto]">
+          <div className="flex flex-col gap-4">
+            <Balao>
+              <p className="text-2xl leading-snug">
+                Você manda a notícia, eu cruzo com <strong>fontes confiáveis</strong> e te mostro <strong>por que</strong> ela parece verdadeira ou falsa.
+              </p>
+            </Balao>
+            <p className="text-xl leading-relaxed text-tinta-2">
+              Diferente de um classificador que só diz “fake / não fake”, a Vera mostra o caminho, para <strong>fortalecer o pensamento crítico</strong>, não substituir.
+            </p>
+          </div>
+          <Image src="/vera-corpo.png" alt="Senhora Vera avaliando" width={220} height={300} className="hidden h-64 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:block" />
+        </div>
       </div>
     ),
   },
@@ -199,25 +227,20 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
     chave: "camadas",
     no: (
       <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="lupa" sobre="Como investiga" titulo="Uma investigação em camadas" />
-        <p className="mb-4 text-lg text-tinta-2">
-          Da mais barata para a mais cara. Depois de cada camada, se já tem certeza, ela
-          para e responde.
-        </p>
-        <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <Super icone="lupa" texto="Como investiga" />
+        <h2 className="mb-2 font-display text-5xl leading-none">Investigação em camadas</h2>
+        <p className="mb-5 text-xl text-tinta-2">Da mais barata para a mais cara. Achou certeza, <strong>parou e respondeu</strong>.</p>
+        <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {CAMADAS.map((c, i) => (
-            <li
-              key={c.id}
-              className="surge flex flex-col gap-1.5 rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm"
-              style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}
-            >
+            <li key={c.id} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <div className="flex items-center justify-between">
-                <span className="font-display text-2xl">{c.id}</span>
+                <span className="font-display text-3xl">{c.id}</span>
                 <Icone nome={c.icone} tamanho={30} className="text-vermelho" />
               </div>
-              <span className="font-display text-xl leading-none">{c.nome}</span>
-              <span className="text-base font-bold text-tinta-2">{c.pergunta}</span>
+              <span className="font-display text-2xl leading-none">{c.nome}</span>
+              <span className="text-lg font-bold text-tinta-2">{c.pergunta}</span>
               <span className="text-base">{c.comoFaz}</span>
+              <span className="mt-auto inline-flex w-fit rounded-total border-2 border-borda px-2 text-sm font-bold text-tinta-3">{c.custo}</span>
             </li>
           ))}
         </ol>
@@ -225,13 +248,33 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
     ),
   },
   {
+    chave: "dificuldade",
+    no: (
+      <div className="flex h-full flex-col justify-center">
+        <Super icone="etiqueta" texto="O quanto custa" />
+        <h2 className="mb-5 font-display text-5xl leading-none">A dificuldade da notícia</h2>
+        <p className="mb-5 text-xl text-tinta-2">A camada em que a Vera para define o quão difícil era a checagem.</p>
+        <div className="grid gap-4 md:grid-cols-3">
+          {DIFICULDADE.map((d, i) => (
+            <div key={d.nivel} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 120}ms` } as React.CSSProperties}>
+              <span className="inline-flex w-fit items-center gap-2 rounded-md border-[3px] border-tinta px-3 py-1 font-display text-2xl text-white" style={{ background: d.cor }}>
+                {d.nivel}
+              </span>
+              <span className="font-display text-xl text-tinta-2">parou em {d.onde}</span>
+              <span className="text-lg">{d.exemplo}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
     chave: "demo",
     no: (
       <div className="flex h-full flex-col">
-        <CabecalhoSlide icone="robo" sobre="Ao vivo" titulo="Vê a Vera trabalhando" />
-        <p className="mb-3 text-lg text-tinta-2">
-          Isto não é vídeo: toca num exemplo e o pipeline roda de verdade, aqui mesmo.
-        </p>
+        <Super icone="robo" texto="Ao vivo" />
+        <h2 className="font-display text-5xl leading-none">Vê a Vera trabalhando</h2>
+        <p className="mb-4 text-xl text-tinta-2">Isto não é vídeo: toca num exemplo e o pipeline roda de verdade, aqui mesmo.</p>
         <DemoAoVivo />
       </div>
     ),
@@ -240,22 +283,23 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
     chave: "sinais",
     no: (
       <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="contas" sobre="O que ela mede" titulo="13 sinais, 100 pontos" />
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <Super icone="contas" texto="O que ela mede" />
+            <h2 className="font-display text-5xl leading-none">13 sinais, 100 pontos</h2>
+          </div>
+          <Carimbo cor="bg-confirmada">a média só do que deu pra medir</Carimbo>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
           {DIMENSOES.map((d, i) => (
-            <div
-              key={d.nome}
-              className="surge flex flex-col rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco-sm"
-              style={{ "--atraso": `${i * 120}ms` } as React.CSSProperties}
-            >
+            <div key={d.nome} className="surge flex flex-col rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 110}ms` } as React.CSSProperties}>
               <div className="flex items-center gap-2">
-                <Icone nome={d.icone} tamanho={25} className="text-vermelho" />
+                <Icone nome={d.icone} tamanho={24} className="text-vermelho" />
                 <h3 className="font-display text-2xl">{d.nome}</h3>
-                <span className="ml-auto font-display text-xl tabular-nums text-tinta-2">
-                  {d.pontos}
-                </span>
+                <span className="ml-auto font-display text-2xl tabular-nums text-tinta-2">{d.pontos}</span>
               </div>
-              <ul className="mt-2 space-y-1">
+              <span className="mb-2 text-sm font-bold uppercase tracking-wide text-vermelho">{d.marca}</span>
+              <ul className="space-y-1.5">
                 {d.sinais.map((s) => (
                   <li key={s.id} className="flex items-baseline gap-2 text-base">
                     <span className="font-mono text-sm text-tinta-3">{s.id}</span>
@@ -267,9 +311,25 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
             </div>
           ))}
         </div>
-        <p className="mt-3 text-base text-tinta-2">
-          O veredito é a média ponderada só dos sinais que ela conseguiu medir.
-        </p>
+      </div>
+    ),
+  },
+  {
+    chave: "faixas",
+    no: (
+      <div className="flex h-full flex-col justify-center">
+        <Super icone="quase" texto="O veredito" />
+        <h2 className="mb-2 font-display text-5xl leading-none">As faixas de veracidade</h2>
+        <p className="mb-5 text-xl text-tinta-2">A cor comunica o resultado, e nunca sozinha: vem sempre com a palavra escrita.</p>
+        <ul className="flex flex-col gap-3">
+          {FAIXAS.map((f, i) => (
+            <li key={f.nome} className="surge flex items-center gap-4 rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm" style={{ "--atraso": `${i * 80}ms` } as React.CSSProperties}>
+              <span className="size-10 shrink-0 rounded-md border-[3px] border-tinta" style={{ background: f.cor }} />
+              <span className="font-display text-2xl md:text-3xl">{f.nome}</span>
+              <span className="ml-auto font-display text-2xl tabular-nums text-tinta-3">{i * 20}–{(i + 1) * 20}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     ),
   },
@@ -277,22 +337,19 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
     chave: "frentes",
     no: (
       <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="etiqueta" sobre="A engenharia" titulo="As frentes do projeto" />
-        <div className="grid gap-3 md:grid-cols-2">
+        <Super icone="etiqueta" texto="A engenharia" />
+        <h2 className="mb-5 font-display text-5xl leading-none">As frentes do projeto</h2>
+        <div className="grid gap-4 md:grid-cols-2">
           {FRENTES.map((f, i) => (
-            <div
-              key={f.titulo}
-              className="surge rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco-sm"
-              style={{ "--atraso": `${i * 100}ms` } as React.CSSProperties}
-            >
+            <div key={f.titulo} className="surge rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 100}ms` } as React.CSSProperties}>
               <h3 className="flex items-center gap-2 font-display text-2xl">
-                <Icone nome={f.icone} tamanho={25} className="text-vermelho" />
+                <Icone nome={f.icone} tamanho={26} className="text-vermelho" />
                 {f.titulo}
               </h3>
-              <ul className="mt-2 space-y-1">
+              <ul className="mt-2 space-y-1.5">
                 {f.itens.map((it) => (
-                  <li key={it} className="flex items-start gap-2 text-base">
-                    <Icone nome="visto" tamanho={19} className="mt-0.5 shrink-0 text-confirmada" />
+                  <li key={it} className="flex items-start gap-2 text-lg">
+                    <Icone nome="visto" tamanho={20} className="mt-0.5 shrink-0 text-confirmada" />
                     <span>{it}</span>
                   </li>
                 ))}
@@ -307,18 +364,15 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
     chave: "principios",
     no: (
       <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="coracao" sobre="O jeito dela" titulo="Quatro regras da casa" />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <Super icone="coracao" texto="O jeito dela" />
+        <h2 className="mb-5 font-display text-5xl leading-none">As regras da casa</h2>
+        <div className="grid gap-4 sm:grid-cols-2">
           {PRINCIPIOS.map((p, i) => (
-            <div
-              key={p.titulo}
-              className="surge flex items-start gap-3 rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco-sm"
-              style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}
-            >
-              <Icone nome={p.icone} tamanho={33} className="mt-0.5 shrink-0 text-vermelho" />
+            <div key={p.titulo} className="surge flex items-start gap-3 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+              <Icone nome={p.icone} tamanho={34} className="mt-0.5 shrink-0 text-vermelho" />
               <div>
-                <h3 className="font-display text-xl leading-none">{p.titulo}</h3>
-                <p className="mt-1.5 text-base">{p.texto}</p>
+                <h3 className="font-display text-2xl leading-none">{p.titulo}</h3>
+                <p className="mt-1.5 text-lg">{p.texto}</p>
               </div>
             </div>
           ))}
@@ -329,50 +383,41 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "metodologia",
     no: (
-      <div className="flex h-full flex-col items-center justify-center text-center">
-        <CabecalhoSlide icone="etiqueta" sobre="Como foi feito" titulo="CBL + Scrum" />
-        <p className="max-w-xl text-xl leading-relaxed">
-          O projeto seguiu <strong>Challenge Based Learning</strong> com{" "}
-          <strong>Scrum adaptado</strong>, no tema Fake News e Desinformação. As cinco
-          camadas do pipeline foram divididas entre as cinco pessoas do grupo.
+      <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden text-center">
+        <Reticula className="text-ocre" />
+        <Super icone="etiqueta" texto="Como foi feito" />
+        <h2 className="relative font-display text-6xl leading-none">CBL + Scrum</h2>
+        <p className="relative max-w-2xl text-2xl leading-relaxed">
+          Challenge Based Learning com Scrum adaptado, no tema <strong>Fake News e Desinformação</strong>. As cinco camadas do pipeline foram divididas entre as cinco pessoas.
         </p>
+        <div className="relative flex flex-wrap items-center justify-center gap-3">
+          <Carimbo cor="bg-vermelho">1 Product Owner</Carimbo>
+          <Carimbo cor="bg-ocre">1 Scrum Master</Carimbo>
+          <Carimbo cor="bg-confirmada">5 Developers</Carimbo>
+        </div>
+        <p className="relative text-lg text-tinta-2">Estimativa por Planning Poker · backlog em épicos e histórias · requisitos RF e regras RN.</p>
       </div>
     ),
   },
   {
-    chave: "equipe",
+    chave: "numeros",
     no: (
-      <div className="flex h-full flex-col justify-center">
-        <CabecalhoSlide icone="assinatura" sobre="Quem fez" titulo="O Grupo 4" />
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {EQUIPE.map((pessoa, i) => (
-            <li
-              key={pessoa.nome}
-              className="surge"
-              style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}
-            >
-              <a
-                href={`https://github.com/${pessoa.github}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-full flex-col items-center gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 text-center shadow-bloco-sm transition-colors hover:bg-vermelho-suave"
-              >
-                <Image
-                  src={pessoa.foto}
-                  alt={`Foto de ${pessoa.nome} no GitHub`}
-                  width={80}
-                  height={80}
-                  className="size-20 rounded-total border-[3px] border-tinta object-cover"
-                />
-                <span className="font-bold leading-tight">{pessoa.nome}</span>
-                <span className="text-sm text-tinta-2">{pessoa.papel}</span>
-                <span className="mt-auto flex items-center gap-1 text-sm text-tinta-3">
-                  <Icone nome="link" tamanho={15} />@{pessoa.github}
-                </span>
-              </a>
+      <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
+        <Super icone="contas" texto="Em números" />
+        <h2 className="font-display text-5xl leading-none">O motor da Vera</h2>
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {NUMEROS.map((n, i) => (
+            <li key={n.rotulo} className="surge flex flex-col items-center rounded-md border-[3px] border-tinta bg-papel-2 px-6 py-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+              <span className="font-display text-6xl leading-none text-vermelho">{n.valor}</span>
+              <span className="mt-1 font-display text-2xl text-tinta-2">{n.rotulo}</span>
             </li>
           ))}
         </ul>
+        <div className="w-full max-w-md">
+          <Balao>
+            <p className="fonte-mao text-3xl">“Manda a notícia aí, meu bem, que eu vou atrás.”</p>
+          </Balao>
+        </div>
       </div>
     ),
   },
@@ -380,35 +425,17 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
 
 // --- Deck ----------------------------------------------------------------------------
 
-/** Ordem de exibição: a apresentação da equipe entra logo depois da capa (2º slide). */
-const ORDEM = [
-  "capa",
-  "equipe",
-  "visao",
-  "camadas",
-  "demo",
-  "sinais",
-  "frentes",
-  "principios",
-  "metodologia",
-] as const;
-
-const SLIDES_EM_ORDEM = ORDEM.map(
-  (chave) => SLIDES.find((s) => s.chave === chave)!,
-);
-
 export function Apresentacao() {
   const [indice, setIndice] = useState(0);
   const [telaCheia, setTelaCheia] = useState(false);
   const deckRef = useRef<HTMLDivElement>(null);
-  const total = SLIDES_EM_ORDEM.length;
+  const total = SLIDES.length;
 
   const ir = useCallback(
     (destino: number) => setIndice((i) => Math.max(0, Math.min(total - 1, destino))),
     [total],
   );
 
-  // Teclado: ← → navegam, como num projetor.
   useEffect(() => {
     function aoTeclar(e: KeyboardEvent) {
       if (e.key === "ArrowRight") ir(indice + 1);
@@ -418,8 +445,6 @@ export function Apresentacao() {
     return () => window.removeEventListener("keydown", aoTeclar);
   }, [indice, ir]);
 
-  // Acompanha o estado real de tela cheia: o usuário pode sair com Esc, e o botão
-  // precisa refletir isso. `fullscreenElement` é nulo quando não há nada em tela cheia.
   useEffect(() => {
     function aoMudar() {
       setTelaCheia(document.fullscreenElement === deckRef.current);
@@ -435,11 +460,11 @@ export function Apresentacao() {
       if (document.fullscreenElement) void document.exitFullscreen();
       else void el.requestFullscreen();
     } catch {
-      // Navegador sem suporte ou gesto negado: a apresentação segue na página.
+      /* navegador sem suporte: segue na página */
     }
   }, []);
 
-  const slide = SLIDES_EM_ORDEM[indice];
+  const slide = SLIDES[indice];
 
   return (
     <div
@@ -450,73 +475,37 @@ export function Apresentacao() {
           : "mx-auto flex w-full max-w-5xl flex-col px-4 py-6 md:px-8"
       }
     >
-      {/* Palco: moldura de quadrinho. Em tela cheia preenche a altura disponível. */}
       <div
-        className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${
-          telaCheia ? "flex-1" : "min-h-[68vh] md:min-h-[70vh]"
-        }`}
+        className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${telaCheia ? "flex-1" : "min-h-[72vh]"}`}
+        // Em tela cheia, dá zoom no conteúdo inteiro: o texto e as peças crescem junto
+        // com a tela grande, em vez de ficarem pequenos no meio do projetor.
+        style={{ zoom: telaCheia ? 1.35 : 1 } as React.CSSProperties}
       >
-        {/* A key re-dispara a animação de entrada a cada troca de slide. */}
         <div key={slide.chave} className="surge flex flex-1 flex-col">
           {slide.no}
         </div>
       </div>
 
-      {/* Controles: ‹ · bolinhas · › e o contador. */}
       <div className="mt-4 flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={() => ir(indice - 1)}
-          disabled={indice === 0}
-          aria-label="Slide anterior"
-          className="pressiona flex size-11 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm disabled:opacity-30"
-        >
-          <Icone nome="seta" tamanho={25} className="rotate-180" />
+        <button type="button" onClick={() => ir(indice - 1)} disabled={indice === 0} aria-label="Slide anterior" className="pressiona flex size-12 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm disabled:opacity-30">
+          <Icone nome="seta" tamanho={22} className="rotate-180" />
         </button>
 
         <div className="flex flex-wrap items-center justify-center gap-2" role="tablist" aria-label="Slides">
-          {SLIDES_EM_ORDEM.map((s, i) => (
-            <button
-              key={s.chave}
-              type="button"
-              role="tab"
-              aria-selected={i === indice}
-              aria-label={`Ir para o slide ${i + 1}`}
-              onClick={() => ir(i)}
-              className={`size-3 rounded-total border-2 border-tinta transition-colors ${
-                i === indice ? "bg-vermelho" : "bg-papel-2 hover:bg-vermelho-suave"
-              }`}
-            />
+          {SLIDES.map((s, i) => (
+            <button key={s.chave} type="button" role="tab" aria-selected={i === indice} aria-label={`Ir para o slide ${i + 1}`} onClick={() => ir(i)} className={`size-3.5 rounded-total border-2 border-tinta transition-colors ${i === indice ? "bg-vermelho" : "bg-papel-2 hover:bg-vermelho-suave"}`} />
           ))}
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={alternarTelaCheia}
-            aria-label={telaCheia ? "Sair da tela cheia" : "Tela cheia"}
-            title={telaCheia ? "Sair da tela cheia" : "Tela cheia"}
-            className="pressiona flex size-11 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm"
-          >
-            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              {telaCheia ? (
-                <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
-              ) : (
-                <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
-              )}
+          <button type="button" onClick={alternarTelaCheia} aria-label={telaCheia ? "Sair da tela cheia" : "Tela cheia"} title={telaCheia ? "Sair da tela cheia" : "Tela cheia"} className="pressiona flex size-12 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm">
+            <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              {telaCheia ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}
             </svg>
           </button>
-          <span className="font-display text-xl tabular-nums text-tinta-2">
-            {indice + 1}/{total}
-          </span>
-          <button
-            type="button"
-            onClick={() => ir(indice + 1)}
-            disabled={indice === total - 1}
-            aria-label="Próximo slide"
-            className="pressiona flex size-11 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-vermelho text-white shadow-bloco-sm disabled:opacity-30"
-          >
-            <Icone nome="seta" tamanho={25} />
+          <span className="font-display text-2xl tabular-nums text-tinta-2">{indice + 1}/{total}</span>
+          <button type="button" onClick={() => ir(indice + 1)} disabled={indice === total - 1} aria-label="Próximo slide" className="pressiona flex size-12 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-vermelho text-white shadow-bloco-sm disabled:opacity-30">
+            <Icone nome="seta" tamanho={22} />
           </button>
         </div>
       </div>
