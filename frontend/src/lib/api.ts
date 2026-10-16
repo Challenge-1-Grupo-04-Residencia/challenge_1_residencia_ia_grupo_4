@@ -16,8 +16,20 @@ import type {
   TriagemResponse,
 } from "@/types/checagem";
 
-const URL_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+/**
+ * Endereço do backend.
+ *
+ * Vazio por padrão: o frontend chama caminhos **relativos** (`/api/...`), na mesma
+ * origem da página. O servidor do Next encaminha `/api` e `/health` para o backend
+ * (ver `rewrites` em `next.config.ts`). Assim o navegador fala só com a porta 3000 —
+ * uma origem só, sem CORS e sem depender de uma segunda porta (:8010), que alguns
+ * navegadores, redes e celulares bloqueiam. É o que faz funcionar igual em Windows,
+ * Mac, Linux e mobile. `NEXT_PUBLIC_API_URL` ainda sobrepõe para apontar a outro host.
+ */
+function urlBase(): string {
+  return process.env.NEXT_PUBLIC_API_URL ?? "";
+}
+
 
 /** Erro de comunicação com a API, já com mensagem na voz da Vera. */
 export class ErroDaVera extends Error {
@@ -42,7 +54,7 @@ export async function checar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/checar`, {
+    resposta = await fetch(`${urlBase()}/api/v1/checar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entrada),
@@ -71,7 +83,7 @@ export async function checar(
 /** Verifica se a API está no ar. Usado no indicador de status do rodapé. */
 export async function health(): Promise<boolean> {
   try {
-    const resposta = await fetch(`${URL_BASE}/health`, { cache: "no-store" });
+    const resposta = await fetch(`${urlBase()}/health`, { cache: "no-store" });
     return resposta.ok;
   } catch {
     return false;
@@ -92,7 +104,7 @@ export async function perguntar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/perguntar`, {
+    resposta = await fetch(`${urlBase()}/api/v1/perguntar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id_checagem: idChecagem, pergunta }),
@@ -128,7 +140,7 @@ export async function checagensRecentes(
 ): Promise<ChecagemDoFeed[]> {
   try {
     const resposta = await fetch(
-      `${URL_BASE}/api/v1/checagens/recentes?limite=${limite}`,
+      `${urlBase()}/api/v1/checagens/recentes?limite=${limite}`,
       { cache: "no-store" },
     );
     if (!resposta.ok) return [];
@@ -155,7 +167,7 @@ export async function triar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/triagem`, {
+    resposta = await fetch(`${urlBase()}/api/v1/triagem`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -211,7 +223,7 @@ export async function checarComAndamento(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/checar/stream`, {
+    resposta = await fetch(`${urlBase()}/api/v1/checar/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entrada),
@@ -288,7 +300,7 @@ export interface Avaliacao {
  * Busca o histórico de avaliações em lote (Auditoria).
  */
 export async function listarAvaliacoesLote(): Promise<Avaliacao[]> {
-  const resposta = await fetch(`${URL_BASE}/api/v1/avaliacoes/lote`);
+  const resposta = await fetch(`${urlBase()}/api/v1/avaliacoes/lote`);
   if (!resposta.ok) {
     throw new ErroDaVera("Erro ao buscar avaliações.", resposta.status);
   }

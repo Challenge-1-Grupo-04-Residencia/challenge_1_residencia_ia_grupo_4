@@ -6,6 +6,7 @@
 #   ./scripts/subir.sh                  backend + frontend
 #   ./scripts/subir.sh --com-ollama     também sobe o Ollama (camada N4 ativa)
 #   ./scripts/subir.sh --so-backend     só a API, sem frontend
+#   ./scripts/subir.sh --rede           frontend em produção, acessível por outras máquinas na rede
 #   ./scripts/subir.sh --ajuda
 #
 # Ctrl+C derruba tudo o que este script subiu.
@@ -43,6 +44,7 @@ MODELO_OLLAMA="${OLLAMA_MODEL:-llama3}"
 
 COM_OLLAMA=0
 SO_BACKEND=0
+REDE=0   # --rede: frontend em produção (sem o WebSocket de dev) para acesso na rede
 
 # Cores só quando a saída é um terminal, para o log em arquivo não encher de escapes.
 if [[ -t 1 ]]; then
@@ -65,6 +67,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --com-ollama) COM_OLLAMA=1 ;;
     --so-backend) SO_BACKEND=1 ;;
+    --rede) REDE=1 ;;
     --ajuda|-h|--help) ajuda ;;
     *) erro "opção desconhecida: $1"; echo "Use --ajuda."; exit 2 ;;
   esac
@@ -298,6 +301,7 @@ info "Subindo a API na porta ${PORTA_BACKEND}…"
 # cinco dias servindo código velho sem ninguém perceber.
 uv run uvicorn src.main:app \
   --app-dir backend \
+  --host 0.0.0.0 \
   --reload \
   --port "$PORTA_BACKEND" \
   >>"$DIRETORIO_DE_LOGS/backend.log" 2>&1 &
@@ -335,8 +339,18 @@ if [[ $SO_BACKEND -eq 0 ]]; then
     info "Criei frontend/.env.local a partir do .env.example"
   fi
 
-  info "Subindo o frontend na porta ${PORTA_FRONTEND}…"
-  (cd "$RAIZ/frontend" && npm run dev >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1) &
+  if [[ $REDE -eq 1 ]]; then
+    # Modo rede: produção. O `next dev` abre um WebSocket de HMR que falha quando a
+    # página é aberta de outra máquina, e aí a tela não hidrata e nenhum botão responde.
+    # O build + `next start` não tem esse socket, então funciona na rede.
+    info "Modo rede: fazendo o build do frontend (produção)…"
+    (cd "$RAIZ/frontend" && npm run build >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1)
+    info "Subindo o frontend (produção) em 0.0.0.0:${PORTA_FRONTEND}…"
+    (cd "$RAIZ/frontend" && npx next start -H 0.0.0.0 -p "$PORTA_FRONTEND" >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1) &
+  else
+    info "Subindo o frontend na porta ${PORTA_FRONTEND}…"
+    (cd "$RAIZ/frontend" && npm run dev >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1) &
+  fi
   PIDS+=($!)
 
   tentativa=0
@@ -358,6 +372,10 @@ fi
 printf "\n${NEGRITO}No ar${N}\n"
 printf "  API       http://localhost:%s/docs\n" "$PORTA_BACKEND"
 [[ $SO_BACKEND -eq 0 ]] && printf "  Chat      http://localhost:%s\n" "$PORTA_FRONTEND"
+if [[ $REDE -eq 1 && $SO_BACKEND -eq 0 ]]; then
+  IP_REDE=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')
+  [[ -n "$IP_REDE" ]] && printf "  Na rede   http://%s:%s   (abra isto no outro computador)\n" "$IP_REDE" "$PORTA_FRONTEND"
+fi
 printf "  Logs      logs/backend.log"
 [[ $SO_BACKEND -eq 0 ]] && printf "  ·  logs/frontend.log"
 printf "\n"
