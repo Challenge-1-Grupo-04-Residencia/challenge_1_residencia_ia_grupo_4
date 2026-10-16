@@ -223,10 +223,10 @@ const SLIDES_DEF: Slide[] = [
           {EQUIPE.map((pessoa, i) => (
             <li key={pessoa.nome} className="sobe-pop" style={{ "--atraso": `${i * 70}ms` } as React.CSSProperties}>
               <a href={`https://github.com/${pessoa.github}`} target="_blank" rel="noopener noreferrer" className={`flex h-full flex-col items-center gap-2 p-4 text-center transition-transform duration-200 hover:-translate-y-1 ${CARD}`}>
-                <Image src={pessoa.foto} alt={`Foto de ${pessoa.nome} no GitHub`} width={96} height={96} className="size-24 rounded-total border-[3px] border-tinta object-cover" />
-                <span className="font-display text-2xl leading-none">{pessoa.nome}</span>
-                <span className="text-base font-bold text-tinta-2">{pessoa.papel}</span>
-                <span className="mt-auto flex items-center gap-1 text-sm text-tinta-3"><Icone nome="link" tamanho={14} />@{pessoa.github}</span>
+                <Image src={pessoa.foto} alt={`Foto de ${pessoa.nome} no GitHub`} width={80} height={80} className="size-20 rounded-total border-[3px] border-tinta object-cover" />
+                <span className="font-display text-xl leading-none">{pessoa.nome}</span>
+                <span className="text-sm font-bold text-tinta-2">{pessoa.papel}</span>
+                <span className="mt-auto flex items-center gap-1 text-xs text-tinta-3"><Icone nome="link" tamanho={13} />@{pessoa.github}</span>
               </a>
             </li>
           ))}
@@ -265,15 +265,15 @@ const SLIDES_DEF: Slide[] = [
         <p className="mb-5 text-xl text-tinta-2">Da mais barata para a mais cara. Achou certeza, <strong>parou e respondeu</strong>.</p>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {CAMADAS.map((c, i) => (
-            <Revela key={c.id} mostrar={p >= i} className={`flex flex-col gap-2 p-4 ${CARD}`}>
+            <Revela key={c.id} mostrar={p >= i} className={`flex flex-col gap-1.5 p-4 ${CARD}`}>
               <div className="flex items-center justify-between">
-                <span className="font-display text-3xl">{c.id}</span>
-                <Icone nome={c.icone} tamanho={30} className="text-vermelho" />
+                <span className="font-display text-2xl">{c.id}</span>
+                <Icone nome={c.icone} tamanho={26} className="text-vermelho" />
               </div>
-              <span className="font-display text-2xl leading-none">{c.nome}</span>
-              <span className="text-lg font-bold text-tinta-2">{c.pergunta}</span>
-              <span className="text-base">{c.comoFaz}</span>
-              <span className="mt-auto inline-flex w-fit rounded-total border-2 border-borda px-2 text-sm font-bold text-tinta-3">{c.custo}</span>
+              <span className="font-display text-xl leading-none">{c.nome}</span>
+              <span className="text-base font-bold text-tinta-2">{c.pergunta}</span>
+              <span className="text-sm leading-snug">{c.comoFaz}</span>
+              <span className="mt-auto inline-flex w-fit rounded-total border-2 border-borda px-2 text-xs font-bold text-tinta-3">{c.custo}</span>
             </Revela>
           ))}
         </ol>
