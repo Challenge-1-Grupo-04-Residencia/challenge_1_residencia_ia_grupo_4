@@ -186,7 +186,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <h2 className="mb-6 font-display text-4xl leading-none">O Grupo 4</h2>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {EQUIPE.map((pessoa, i) => (
-            <li key={pessoa.nome} className="surge" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+            <li key={pessoa.nome} className="sobe-pop" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <a href={`https://github.com/${pessoa.github}`} target="_blank" rel="noopener noreferrer" className="flex h-full flex-col items-center gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 text-center shadow-bloco transition-transform hover:-translate-y-1">
                 <Image src={pessoa.foto} alt={`Foto de ${pessoa.nome} no GitHub`} width={96} height={96} className="size-24 rounded-total border-[3px] border-tinta object-cover" />
                 <span className="font-display text-xl leading-none">{pessoa.nome}</span>
@@ -232,7 +232,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <p className="mb-5 text-lg text-tinta-2">Da mais barata para a mais cara. Achou certeza, <strong>parou e respondeu</strong>.</p>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {CAMADAS.map((c, i) => (
-            <li key={c.id} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+            <li key={c.id} className="sobe-pop flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <div className="flex items-center justify-between">
                 <span className="font-display text-2xl">{c.id}</span>
                 <Icone nome={c.icone} tamanho={30} className="text-vermelho" />
@@ -256,7 +256,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <p className="mb-5 text-lg text-tinta-2">A camada em que a Vera para define o quão difícil era a checagem.</p>
         <div className="grid gap-4 md:grid-cols-3">
           {DIFICULDADE.map((d, i) => (
-            <div key={d.nivel} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 120}ms` } as React.CSSProperties}>
+            <div key={d.nivel} className="sobe-pop flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 120}ms` } as React.CSSProperties}>
               <span className="inline-flex w-fit items-center gap-2 rounded-md border-[3px] border-tinta px-3 py-1 font-display text-xl text-white" style={{ background: d.cor }}>
                 {d.nivel}
               </span>
@@ -292,7 +292,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {DIMENSOES.map((d, i) => (
-            <div key={d.nome} className="surge flex flex-col rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 110}ms` } as React.CSSProperties}>
+            <div key={d.nome} className="sobe-pop flex flex-col rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 110}ms` } as React.CSSProperties}>
               <div className="flex items-center gap-2">
                 <Icone nome={d.icone} tamanho={24} className="text-vermelho" />
                 <h3 className="font-display text-xl">{d.nome}</h3>
@@ -323,7 +323,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <p className="mb-5 text-lg text-tinta-2">A cor comunica o resultado, e nunca sozinha: vem sempre com a palavra escrita.</p>
         <ul className="flex flex-col gap-3">
           {FAIXAS.map((f, i) => (
-            <li key={f.nome} className="surge flex items-center gap-4 rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm" style={{ "--atraso": `${i * 80}ms` } as React.CSSProperties}>
+            <li key={f.nome} className="sobe-pop flex items-center gap-4 rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm" style={{ "--atraso": `${i * 80}ms` } as React.CSSProperties}>
               <span className="size-10 shrink-0 rounded-md border-[3px] border-tinta" style={{ background: f.cor }} />
               <span className="font-display text-xl md:text-2xl">{f.nome}</span>
               <span className="ml-auto font-display text-xl tabular-nums text-tinta-3">{i * 20}–{(i + 1) * 20}</span>
@@ -341,7 +341,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <h2 className="mb-5 font-display text-4xl leading-none">As frentes do projeto</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {FRENTES.map((f, i) => (
-            <div key={f.titulo} className="surge rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 100}ms` } as React.CSSProperties}>
+            <div key={f.titulo} className="sobe-pop rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 100}ms` } as React.CSSProperties}>
               <h3 className="flex items-center gap-2 font-display text-xl">
                 <Icone nome={f.icone} tamanho={26} className="text-vermelho" />
                 {f.titulo}
@@ -368,7 +368,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <h2 className="mb-5 font-display text-4xl leading-none">As regras da casa</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {PRINCIPIOS.map((p, i) => (
-            <div key={p.titulo} className="surge flex items-start gap-3 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+            <div key={p.titulo} className="sobe-pop flex items-start gap-3 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <Icone nome={p.icone} tamanho={34} className="mt-0.5 shrink-0 text-vermelho" />
               <div>
                 <h3 className="font-display text-xl leading-none">{p.titulo}</h3>
@@ -407,7 +407,7 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
         <h2 className="font-display text-4xl leading-none">O motor da Vera</h2>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {NUMEROS.map((n, i) => (
-            <li key={n.rotulo} className="surge flex flex-col items-center rounded-md border-[3px] border-tinta bg-papel-2 px-6 py-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
+            <li key={n.rotulo} className="sobe-pop flex flex-col items-center rounded-md border-[3px] border-tinta bg-papel-2 px-6 py-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <span className="font-display text-5xl leading-none text-vermelho">{n.valor}</span>
               <span className="mt-1 font-display text-xl text-tinta-2">{n.rotulo}</span>
             </li>
@@ -471,17 +471,17 @@ export function Apresentacao() {
       ref={deckRef}
       className={
         telaCheia
-          ? "flex h-screen w-full flex-col justify-center overflow-hidden bg-papel px-4 py-4 md:px-8"
-          : "mx-auto flex w-full max-w-5xl flex-col px-4 py-6 md:px-8"
+          ? "cursor-vera flex h-screen w-full flex-col justify-center overflow-hidden bg-papel px-4 py-4 md:px-8"
+          : "cursor-vera mx-auto flex w-full max-w-5xl flex-col px-4 py-6 md:px-8"
       }
     >
       <div
-        className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${telaCheia ? "flex-1" : "min-h-[72vh]"}`}
+        className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${telaCheia ? "flex-1" : "min-h-[82vh]"}`}
         // Em tela cheia, dá zoom no conteúdo inteiro: o texto e as peças crescem junto
         // com a tela grande, em vez de ficarem pequenos no meio do projetor.
-        style={{ zoom: telaCheia ? 1.1 : 1 } as React.CSSProperties}
+        style={{ zoom: telaCheia ? 1.25 : 1 } as React.CSSProperties}
       >
-        <div key={slide.chave} className="surge flex min-h-full flex-col justify-center">
+        <div key={slide.chave} className="slide-entra flex min-h-full flex-col justify-center">
           {slide.no}
         </div>
       </div>

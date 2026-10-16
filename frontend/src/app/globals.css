@@ -359,6 +359,51 @@ h3,
   animation-delay: var(--atraso, 0ms);
 }
 
+/* Troca de slide: a prancha desliza da direita com um leve pop. Re-dispara a cada
+   mudança de slide (a key do React força a remontagem). */
+@keyframes vera-slide-entra {
+  from {
+    opacity: 0;
+    transform: translateX(46px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+.slide-entra {
+  animation: vera-slide-entra 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Entrada escalonada dos blocos dentro do slide: cada um sobe com um pop, guiando o
+   olho em sequência (foco em um conteúdo de cada vez). O atraso vem de --atraso. */
+@keyframes vera-sobe-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.sobe-pop {
+  animation: vera-sobe-pop 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: var(--atraso, 0ms);
+}
+
+/* Cursor de lupa: dá à apresentação a cara da investigadora. Só onde a classe é posta
+   (o deck), não no app inteiro. Hotspot no centro da lente. */
+.cursor-vera {
+  cursor: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='32'%20height='32'%20viewBox='0%200%2032%2032'%3E%3Ccircle%20cx='13'%20cy='13'%20r='8'%20fill='%23C1121F'%20stroke='%231A1410'%20stroke-width='3'/%3E%3Cline%20x1='18'%20y1='18'%20x2='28'%20y2='28'%20stroke='%231A1410'%20stroke-width='4'%20stroke-linecap='round'/%3E%3C/svg%3E")
+      13 13,
+    auto;
+}
+
 /* O risco vermelho sob o "Olá!" é desenhado, como quem sublinha à mão. */
 .risco {
   transform-origin: left center;
