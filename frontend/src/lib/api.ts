@@ -16,24 +16,18 @@ import type {
   TriagemResponse,
 } from "@/types/checagem";
 
-/** Porta do backend em desenvolvimento (a 8000 costuma ter o mkdocs). */
-const PORTA_API = 8010;
-
 /**
  * Endereço do backend.
  *
- * Deriva do host que a pessoa abriu: acessando pelo IP da máquina na rede
- * (`http://192.168.0.x:3000`), o navegador fala com `http://192.168.0.x:8010` sozinho —
- * sem isso, ele batia em `localhost`, que no outro computador é o localhost *dele*, e o
- * backend parecia estar fora. `NEXT_PUBLIC_API_URL` ainda sobrepõe, para apontar a um
- * backend em outro endereço. No servidor (SSR) não há `window`: cai no localhost.
+ * Vazio por padrão: o frontend chama caminhos **relativos** (`/api/...`), na mesma
+ * origem da página. O servidor do Next encaminha `/api` e `/health` para o backend
+ * (ver `rewrites` em `next.config.ts`). Assim o navegador fala só com a porta 3000 —
+ * uma origem só, sem CORS e sem depender de uma segunda porta (:8010), que alguns
+ * navegadores, redes e celulares bloqueiam. É o que faz funcionar igual em Windows,
+ * Mac, Linux e mobile. `NEXT_PUBLIC_API_URL` ainda sobrepõe para apontar a outro host.
  */
 function urlBase(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
-  if (typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:${PORTA_API}`;
-  }
-  return `http://localhost:${PORTA_API}`;
+  return process.env.NEXT_PUBLIC_API_URL ?? "";
 }
 
 
