@@ -16,8 +16,26 @@ import type {
   TriagemResponse,
 } from "@/types/checagem";
 
-const URL_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+/** Porta do backend em desenvolvimento (a 8000 costuma ter o mkdocs). */
+const PORTA_API = 8010;
+
+/**
+ * Endereço do backend.
+ *
+ * Deriva do host que a pessoa abriu: acessando pelo IP da máquina na rede
+ * (`http://192.168.0.x:3000`), o navegador fala com `http://192.168.0.x:8010` sozinho —
+ * sem isso, ele batia em `localhost`, que no outro computador é o localhost *dele*, e o
+ * backend parecia estar fora. `NEXT_PUBLIC_API_URL` ainda sobrepõe, para apontar a um
+ * backend em outro endereço. No servidor (SSR) não há `window`: cai no localhost.
+ */
+function urlBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined") {
+    return `${window.location.protocol}//${window.location.hostname}:${PORTA_API}`;
+  }
+  return `http://localhost:${PORTA_API}`;
+}
+
 
 /** Erro de comunicação com a API, já com mensagem na voz da Vera. */
 export class ErroDaVera extends Error {
@@ -42,7 +60,7 @@ export async function checar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/checar`, {
+    resposta = await fetch(`${urlBase()}/api/v1/checar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entrada),
@@ -71,7 +89,7 @@ export async function checar(
 /** Verifica se a API está no ar. Usado no indicador de status do rodapé. */
 export async function health(): Promise<boolean> {
   try {
-    const resposta = await fetch(`${URL_BASE}/health`, { cache: "no-store" });
+    const resposta = await fetch(`${urlBase()}/health`, { cache: "no-store" });
     return resposta.ok;
   } catch {
     return false;
@@ -92,7 +110,7 @@ export async function perguntar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/perguntar`, {
+    resposta = await fetch(`${urlBase()}/api/v1/perguntar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id_checagem: idChecagem, pergunta }),
@@ -128,7 +146,7 @@ export async function checagensRecentes(
 ): Promise<ChecagemDoFeed[]> {
   try {
     const resposta = await fetch(
-      `${URL_BASE}/api/v1/checagens/recentes?limite=${limite}`,
+      `${urlBase()}/api/v1/checagens/recentes?limite=${limite}`,
       { cache: "no-store" },
     );
     if (!resposta.ok) return [];
@@ -155,7 +173,7 @@ export async function triar(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/triagem`, {
+    resposta = await fetch(`${urlBase()}/api/v1/triagem`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -211,7 +229,7 @@ export async function checarComAndamento(
   let resposta: Response;
 
   try {
-    resposta = await fetch(`${URL_BASE}/api/v1/checar/stream`, {
+    resposta = await fetch(`${urlBase()}/api/v1/checar/stream`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(entrada),
@@ -288,7 +306,7 @@ export interface Avaliacao {
  * Busca o histórico de avaliações em lote (Auditoria).
  */
 export async function listarAvaliacoesLote(): Promise<Avaliacao[]> {
-  const resposta = await fetch(`${URL_BASE}/api/v1/avaliacoes/lote`);
+  const resposta = await fetch(`${urlBase()}/api/v1/avaliacoes/lote`);
   if (!resposta.ok) {
     throw new ErroDaVera("Erro ao buscar avaliações.", resposta.status);
   }

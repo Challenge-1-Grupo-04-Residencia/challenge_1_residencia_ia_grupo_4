@@ -138,7 +138,7 @@ function Reticula({ className = "" }: { className?: string }) {
 /** Carimbo torto, como batido à mão. */
 function Carimbo({ children, cor = "bg-vermelho" }: { children: React.ReactNode; cor?: string }) {
   return (
-    <span className={`carimbo inline-flex items-center gap-1.5 rounded-md border-[3px] border-tinta ${cor} px-3 py-1 font-display text-xl text-white shadow-bloco-sm`}>
+    <span className={`carimbo inline-flex items-center gap-1.5 rounded-md border-[3px] border-tinta ${cor} px-3 py-1 font-display text-lg text-white shadow-bloco-sm`}>
       {children}
     </span>
   );
@@ -147,7 +147,7 @@ function Carimbo({ children, cor = "bg-vermelho" }: { children: React.ReactNode;
 /** Supertítulo: a linha vermelha em caixa alta acima do título de cada slide. */
 function Super({ icone, texto }: { icone: NomeDoIcone; texto: string }) {
   return (
-    <p className="flex items-center gap-2 font-display text-xl uppercase tracking-wide text-vermelho">
+    <p className="flex items-center gap-2 font-display text-lg uppercase tracking-wide text-vermelho">
       <Icone nome={icone} tamanho={24} />
       {texto}
     </p>
@@ -160,19 +160,19 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "capa",
     no: (
-      <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden text-center">
+      <div className="relative flex flex-col items-center gap-5 overflow-hidden text-center">
         <Reticula className="text-vermelho" />
         <Image src="/vera-corpo-apontando.png" alt="Senhora Vera apontando" width={260} height={320} priority className="relative h-56 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-72" />
         <div className="relative">
           <Carimbo cor="bg-ocre">Residência em IA · Challenge 1 · Grupo 4</Carimbo>
         </div>
-        <h1 className="relative font-display text-6xl leading-none md:text-7xl">A Senhora Vera</h1>
+        <h1 className="relative font-display text-5xl leading-none md:text-5xl">A Senhora Vera</h1>
         <div className="relative w-full max-w-xl">
           <Balao>
-            <p className="fonte-mao text-3xl">“O que é que tu quer saber que é verdade?”</p>
+            <p className="fonte-mao text-2xl">“O que é que tu quer saber que é verdade?”</p>
           </Balao>
         </div>
-        <p className="relative max-w-2xl text-2xl">
+        <p className="relative max-w-2xl text-xl">
           Uma senhora do Recife que sabe de tudo, mas <strong>não repassa nada sem conferir a fonte antes</strong>.
         </p>
       </div>
@@ -181,15 +181,15 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "equipe",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="assinatura" texto="Quem fez" />
-        <h2 className="mb-6 font-display text-5xl leading-none">O Grupo 4</h2>
+        <h2 className="mb-6 font-display text-4xl leading-none">O Grupo 4</h2>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {EQUIPE.map((pessoa, i) => (
             <li key={pessoa.nome} className="surge" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <a href={`https://github.com/${pessoa.github}`} target="_blank" rel="noopener noreferrer" className="flex h-full flex-col items-center gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 text-center shadow-bloco transition-transform hover:-translate-y-1">
                 <Image src={pessoa.foto} alt={`Foto de ${pessoa.nome} no GitHub`} width={96} height={96} className="size-24 rounded-total border-[3px] border-tinta object-cover" />
-                <span className="font-display text-2xl leading-none">{pessoa.nome}</span>
+                <span className="font-display text-xl leading-none">{pessoa.nome}</span>
                 <span className="text-base font-bold text-tinta-2">{pessoa.papel}</span>
                 <span className="mt-auto flex items-center gap-1 text-sm text-tinta-3"><Icone nome="link" tamanho={14} />@{pessoa.github}</span>
               </a>
@@ -202,19 +202,19 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "visao",
     no: (
-      <div className="flex h-full flex-col justify-center gap-5">
+      <div className="flex flex-col gap-5">
         <div>
           <Super icone="coracao" texto="A ideia" />
-          <h2 className="font-display text-5xl leading-none">Checar sem decidir por você</h2>
+          <h2 className="font-display text-4xl leading-none">Checar sem decidir por você</h2>
         </div>
         <div className="grid items-center gap-5 md:grid-cols-[1fr_auto]">
           <div className="flex flex-col gap-4">
             <Balao>
-              <p className="text-2xl leading-snug">
+              <p className="text-xl leading-snug">
                 Você manda a notícia, eu cruzo com <strong>fontes confiáveis</strong> e te mostro <strong>por que</strong> ela parece verdadeira ou falsa.
               </p>
             </Balao>
-            <p className="text-xl leading-relaxed text-tinta-2">
+            <p className="text-lg leading-relaxed text-tinta-2">
               Diferente de um classificador que só diz “fake / não fake”, a Vera mostra o caminho, para <strong>fortalecer o pensamento crítico</strong>, não substituir.
             </p>
           </div>
@@ -226,18 +226,18 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "camadas",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="lupa" texto="Como investiga" />
-        <h2 className="mb-2 font-display text-5xl leading-none">Investigação em camadas</h2>
-        <p className="mb-5 text-xl text-tinta-2">Da mais barata para a mais cara. Achou certeza, <strong>parou e respondeu</strong>.</p>
+        <h2 className="mb-2 font-display text-4xl leading-none">Investigação em camadas</h2>
+        <p className="mb-5 text-lg text-tinta-2">Da mais barata para a mais cara. Achou certeza, <strong>parou e respondeu</strong>.</p>
         <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {CAMADAS.map((c, i) => (
             <li key={c.id} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <div className="flex items-center justify-between">
-                <span className="font-display text-3xl">{c.id}</span>
+                <span className="font-display text-2xl">{c.id}</span>
                 <Icone nome={c.icone} tamanho={30} className="text-vermelho" />
               </div>
-              <span className="font-display text-2xl leading-none">{c.nome}</span>
+              <span className="font-display text-xl leading-none">{c.nome}</span>
               <span className="text-lg font-bold text-tinta-2">{c.pergunta}</span>
               <span className="text-base">{c.comoFaz}</span>
               <span className="mt-auto inline-flex w-fit rounded-total border-2 border-borda px-2 text-sm font-bold text-tinta-3">{c.custo}</span>
@@ -250,17 +250,17 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "dificuldade",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="etiqueta" texto="O quanto custa" />
-        <h2 className="mb-5 font-display text-5xl leading-none">A dificuldade da notícia</h2>
-        <p className="mb-5 text-xl text-tinta-2">A camada em que a Vera para define o quão difícil era a checagem.</p>
+        <h2 className="mb-5 font-display text-4xl leading-none">A dificuldade da notícia</h2>
+        <p className="mb-5 text-lg text-tinta-2">A camada em que a Vera para define o quão difícil era a checagem.</p>
         <div className="grid gap-4 md:grid-cols-3">
           {DIFICULDADE.map((d, i) => (
             <div key={d.nivel} className="surge flex flex-col gap-2 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 120}ms` } as React.CSSProperties}>
-              <span className="inline-flex w-fit items-center gap-2 rounded-md border-[3px] border-tinta px-3 py-1 font-display text-2xl text-white" style={{ background: d.cor }}>
+              <span className="inline-flex w-fit items-center gap-2 rounded-md border-[3px] border-tinta px-3 py-1 font-display text-xl text-white" style={{ background: d.cor }}>
                 {d.nivel}
               </span>
-              <span className="font-display text-xl text-tinta-2">parou em {d.onde}</span>
+              <span className="font-display text-lg text-tinta-2">parou em {d.onde}</span>
               <span className="text-lg">{d.exemplo}</span>
             </div>
           ))}
@@ -271,10 +271,10 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "demo",
     no: (
-      <div className="flex h-full flex-col">
+      <div className="flex flex-col">
         <Super icone="robo" texto="Ao vivo" />
-        <h2 className="font-display text-5xl leading-none">Vê a Vera trabalhando</h2>
-        <p className="mb-4 text-xl text-tinta-2">Isto não é vídeo: toca num exemplo e o pipeline roda de verdade, aqui mesmo.</p>
+        <h2 className="font-display text-4xl leading-none">Vê a Vera trabalhando</h2>
+        <p className="mb-4 text-lg text-tinta-2">Isto não é vídeo: toca num exemplo e o pipeline roda de verdade, aqui mesmo.</p>
         <DemoAoVivo />
       </div>
     ),
@@ -282,11 +282,11 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "sinais",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <Super icone="contas" texto="O que ela mede" />
-            <h2 className="font-display text-5xl leading-none">13 sinais, 100 pontos</h2>
+            <h2 className="font-display text-4xl leading-none">13 sinais, 100 pontos</h2>
           </div>
           <Carimbo cor="bg-confirmada">a média só do que deu pra medir</Carimbo>
         </div>
@@ -295,8 +295,8 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
             <div key={d.nome} className="surge flex flex-col rounded-md border-[3px] border-tinta bg-papel-2 p-4 shadow-bloco" style={{ "--atraso": `${i * 110}ms` } as React.CSSProperties}>
               <div className="flex items-center gap-2">
                 <Icone nome={d.icone} tamanho={24} className="text-vermelho" />
-                <h3 className="font-display text-2xl">{d.nome}</h3>
-                <span className="ml-auto font-display text-2xl tabular-nums text-tinta-2">{d.pontos}</span>
+                <h3 className="font-display text-xl">{d.nome}</h3>
+                <span className="ml-auto font-display text-xl tabular-nums text-tinta-2">{d.pontos}</span>
               </div>
               <span className="mb-2 text-sm font-bold uppercase tracking-wide text-vermelho">{d.marca}</span>
               <ul className="space-y-1.5">
@@ -317,16 +317,16 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "faixas",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="quase" texto="O veredito" />
-        <h2 className="mb-2 font-display text-5xl leading-none">As faixas de veracidade</h2>
-        <p className="mb-5 text-xl text-tinta-2">A cor comunica o resultado, e nunca sozinha: vem sempre com a palavra escrita.</p>
+        <h2 className="mb-2 font-display text-4xl leading-none">As faixas de veracidade</h2>
+        <p className="mb-5 text-lg text-tinta-2">A cor comunica o resultado, e nunca sozinha: vem sempre com a palavra escrita.</p>
         <ul className="flex flex-col gap-3">
           {FAIXAS.map((f, i) => (
             <li key={f.nome} className="surge flex items-center gap-4 rounded-md border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm" style={{ "--atraso": `${i * 80}ms` } as React.CSSProperties}>
               <span className="size-10 shrink-0 rounded-md border-[3px] border-tinta" style={{ background: f.cor }} />
-              <span className="font-display text-2xl md:text-3xl">{f.nome}</span>
-              <span className="ml-auto font-display text-2xl tabular-nums text-tinta-3">{i * 20}–{(i + 1) * 20}</span>
+              <span className="font-display text-xl md:text-2xl">{f.nome}</span>
+              <span className="ml-auto font-display text-xl tabular-nums text-tinta-3">{i * 20}–{(i + 1) * 20}</span>
             </li>
           ))}
         </ul>
@@ -336,13 +336,13 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "frentes",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="etiqueta" texto="A engenharia" />
-        <h2 className="mb-5 font-display text-5xl leading-none">As frentes do projeto</h2>
+        <h2 className="mb-5 font-display text-4xl leading-none">As frentes do projeto</h2>
         <div className="grid gap-4 md:grid-cols-2">
           {FRENTES.map((f, i) => (
             <div key={f.titulo} className="surge rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 100}ms` } as React.CSSProperties}>
-              <h3 className="flex items-center gap-2 font-display text-2xl">
+              <h3 className="flex items-center gap-2 font-display text-xl">
                 <Icone nome={f.icone} tamanho={26} className="text-vermelho" />
                 {f.titulo}
               </h3>
@@ -363,15 +363,15 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "principios",
     no: (
-      <div className="flex h-full flex-col justify-center">
+      <div className="flex flex-col">
         <Super icone="coracao" texto="O jeito dela" />
-        <h2 className="mb-5 font-display text-5xl leading-none">As regras da casa</h2>
+        <h2 className="mb-5 font-display text-4xl leading-none">As regras da casa</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {PRINCIPIOS.map((p, i) => (
             <div key={p.titulo} className="surge flex items-start gap-3 rounded-md border-[3px] border-tinta bg-papel-2 p-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
               <Icone nome={p.icone} tamanho={34} className="mt-0.5 shrink-0 text-vermelho" />
               <div>
-                <h3 className="font-display text-2xl leading-none">{p.titulo}</h3>
+                <h3 className="font-display text-xl leading-none">{p.titulo}</h3>
                 <p className="mt-1.5 text-lg">{p.texto}</p>
               </div>
             </div>
@@ -383,11 +383,11 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "metodologia",
     no: (
-      <div className="relative flex h-full flex-col items-center justify-center gap-5 overflow-hidden text-center">
+      <div className="relative flex flex-col items-center gap-5 overflow-hidden text-center">
         <Reticula className="text-ocre" />
         <Super icone="etiqueta" texto="Como foi feito" />
-        <h2 className="relative font-display text-6xl leading-none">CBL + Scrum</h2>
-        <p className="relative max-w-2xl text-2xl leading-relaxed">
+        <h2 className="relative font-display text-5xl leading-none">CBL + Scrum</h2>
+        <p className="relative max-w-2xl text-xl leading-relaxed">
           Challenge Based Learning com Scrum adaptado, no tema <strong>Fake News e Desinformação</strong>. As cinco camadas do pipeline foram divididas entre as cinco pessoas.
         </p>
         <div className="relative flex flex-wrap items-center justify-center gap-3">
@@ -402,20 +402,20 @@ const SLIDES: Array<{ chave: string; no: React.ReactNode }> = [
   {
     chave: "numeros",
     no: (
-      <div className="flex h-full flex-col items-center justify-center gap-6 text-center">
+      <div className="flex flex-col items-center gap-6 text-center">
         <Super icone="contas" texto="Em números" />
-        <h2 className="font-display text-5xl leading-none">O motor da Vera</h2>
+        <h2 className="font-display text-4xl leading-none">O motor da Vera</h2>
         <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {NUMEROS.map((n, i) => (
             <li key={n.rotulo} className="surge flex flex-col items-center rounded-md border-[3px] border-tinta bg-papel-2 px-6 py-5 shadow-bloco" style={{ "--atraso": `${i * 90}ms` } as React.CSSProperties}>
-              <span className="font-display text-6xl leading-none text-vermelho">{n.valor}</span>
-              <span className="mt-1 font-display text-2xl text-tinta-2">{n.rotulo}</span>
+              <span className="font-display text-5xl leading-none text-vermelho">{n.valor}</span>
+              <span className="mt-1 font-display text-xl text-tinta-2">{n.rotulo}</span>
             </li>
           ))}
         </ul>
         <div className="w-full max-w-md">
           <Balao>
-            <p className="fonte-mao text-3xl">“Manda a notícia aí, meu bem, que eu vou atrás.”</p>
+            <p className="fonte-mao text-2xl">“Manda a notícia aí, meu bem, que eu vou atrás.”</p>
           </Balao>
         </div>
       </div>
@@ -479,9 +479,9 @@ export function Apresentacao() {
         className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${telaCheia ? "flex-1" : "min-h-[72vh]"}`}
         // Em tela cheia, dá zoom no conteúdo inteiro: o texto e as peças crescem junto
         // com a tela grande, em vez de ficarem pequenos no meio do projetor.
-        style={{ zoom: telaCheia ? 1.35 : 1 } as React.CSSProperties}
+        style={{ zoom: telaCheia ? 1.1 : 1 } as React.CSSProperties}
       >
-        <div key={slide.chave} className="surge flex flex-1 flex-col">
+        <div key={slide.chave} className="surge flex min-h-full flex-col justify-center">
           {slide.no}
         </div>
       </div>
@@ -503,7 +503,7 @@ export function Apresentacao() {
               {telaCheia ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}
             </svg>
           </button>
-          <span className="font-display text-2xl tabular-nums text-tinta-2">{indice + 1}/{total}</span>
+          <span className="font-display text-xl tabular-nums text-tinta-2">{indice + 1}/{total}</span>
           <button type="button" onClick={() => ir(indice + 1)} disabled={indice === total - 1} aria-label="Próximo slide" className="pressiona flex size-12 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-vermelho text-white shadow-bloco-sm disabled:opacity-30">
             <Icone nome="seta" tamanho={22} />
           </button>

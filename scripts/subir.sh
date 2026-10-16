@@ -298,6 +298,7 @@ info "Subindo a API na porta ${PORTA_BACKEND}…"
 # cinco dias servindo código velho sem ninguém perceber.
 uv run uvicorn src.main:app \
   --app-dir backend \
+  --host 0.0.0.0 \
   --reload \
   --port "$PORTA_BACKEND" \
   >>"$DIRETORIO_DE_LOGS/backend.log" 2>&1 &
