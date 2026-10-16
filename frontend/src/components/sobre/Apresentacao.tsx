@@ -4,7 +4,7 @@
  * Apresentação do projeto em formato de slides, dentro do próprio app.
  *
  * Prancha de quadrinho (vera-estilo): painéis, balões, retícula, carimbos e a arte da
- * Vera. Mostra persona, pipeline N0–N4, dificuldade, os 13 sinais (ML e LLM), as faixas
+ * Vera. Mostra persona, pipeline N0 a N4, dificuldade, os 13 sinais (ML e LLM), as faixas
  * de veracidade, as frentes, os princípios, a metodologia (CBL + Scrum), a equipe e os
  * números. Um slide é demonstração ao vivo: roda o pipeline de verdade.
  *
@@ -36,8 +36,8 @@ const CAMADAS: Array<{ id: string; nome: string; icone: NomeDoIcone; pergunta: s
 ];
 
 const DIFICULDADE: Array<{ nivel: string; onde: string; cor: string; exemplo: string }> = [
-  { nivel: "Fácil", onde: "N0–N1", cor: "#2E7D32", exemplo: "Já desmentida por agência, ou site que nasceu semana passada." },
-  { nivel: "Mediano", onde: "N2–N3", cor: "#F9A825", exemplo: "Texto sensacionalista que nenhum veículo sério replicou." },
+  { nivel: "Fácil", onde: "N0 a N1", cor: "#2E7D32", exemplo: "Já desmentida por agência, ou site que nasceu semana passada." },
+  { nivel: "Mediano", onde: "N2 a N3", cor: "#F9A825", exemplo: "Texto sensacionalista que nenhum veículo sério replicou." },
   { nivel: "Difícil", onde: "N4", cor: "#C62828", exemplo: "Notícia plausível, bem escrita, com meia-verdade." },
 ];
 
@@ -72,9 +72,9 @@ const FAIXAS: Array<{ nome: string; cor: string }> = [
 ];
 
 const FRENTES: Array<{ titulo: string; icone: NomeDoIcone; itens: string[] }> = [
-  { titulo: "Motor de veracidade", icone: "contas", itens: ["Python + FastAPI, arquitetura hexagonal", "Camadas N0–N4 em cadeia de responsabilidade", "PostgreSQL + pgvector (cache e similaridade)"] },
+  { titulo: "Motor de veracidade", icone: "contas", itens: ["Python + FastAPI, arquitetura hexagonal", "Camadas N0 a N4 em cadeia de responsabilidade", "PostgreSQL + pgvector (cache e similaridade)"] },
   { titulo: "Aprendizado de máquina", icone: "etiqueta", itens: ["Classificador de estilo: TF-IDF + SVM/Regressão", "Emoção com o NRC Emotion Lexicon", "Notebooks de EDA e datasets em Parquet"] },
-  { titulo: "IA generativa (LLM)", icone: "robo", itens: ["Camada N4: LLM via Ollama (llama3)", "NLI: sustenta, contradiz ou é neutro", "Chamada só quando N0–N3 não bastam"] },
+  { titulo: "IA generativa (LLM)", icone: "robo", itens: ["Camada N4: LLM via Ollama (llama3)", "NLI: sustenta, contradiz ou é neutro", "Chamada só quando N0 a N3 não bastam"] },
   { titulo: "Frontend", icone: "conversa", itens: ["Next.js + TypeScript + Tailwind, em chat", "Mostra o andamento, os sinais e as fontes", "PWA instalável e extensão de navegador"] },
 ];
 
@@ -274,7 +274,7 @@ const SLIDES_DEF: Slide[] = [
             </Balao>
             <Revela mostrar={p >= 1}>
               <p className="text-xl leading-relaxed text-tinta-2">
-                A gente quis que checar notícia parecesse <strong>conversar com uma vizinha de confiança</strong>, não um robô que só carimba “fake”. Por isso ela tem sotaque, mostra o caminho que fez e deixa <strong>você</strong> decidir — a explicação é o produto.
+                A gente quis que checar notícia fosse como <strong>conversar com uma vizinha de confiança</strong>, e não com um robô que só carimba “fake”. Por isso ela tem sotaque, mostra o caminho que fez e deixa <strong>você</strong> decidir. Pra gente, a explicação é o que mais importa.
               </p>
             </Revela>
           </div>
@@ -387,7 +387,7 @@ const SLIDES_DEF: Slide[] = [
             <Revela key={f.nome} mostrar={p >= i} className={`flex items-center gap-4 p-3 ${CARD}`}>
               <span className="size-10 shrink-0 rounded-md border-[3px] border-tinta" style={{ background: f.cor }} />
               <span className="font-display text-2xl md:text-3xl">{f.nome}</span>
-              <span className="ml-auto font-display text-2xl tabular-nums text-tinta-3">{i * 20}–{(i + 1) * 20}</span>
+              <span className="ml-auto font-display text-2xl tabular-nums text-tinta-3">{i * 20} a {(i + 1) * 20}</span>
             </Revela>
           ))}
         </ul>

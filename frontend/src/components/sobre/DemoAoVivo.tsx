@@ -8,7 +8,7 @@
  * "veja a Vera trabalhando" simular um prompt de verdade na frente de quem assiste.
  *
  * Exige o backend no ar (e o Ollama, para a N4). Se cair, mostra o recado da Vera e a
- * apresentação segue — a demo é um extra, não trava o slide.
+ * apresentação segue normalmente. A demo é um extra e não trava o slide.
  */
 
 import { useRef, useState } from "react";
