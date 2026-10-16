@@ -256,6 +256,33 @@ const SLIDES_DEF: Slide[] = [
     ),
   },
   {
+    chave: "historia",
+    passos: 1,
+    render: (p) => (
+      <div className="flex flex-col justify-center gap-5">
+        <div>
+          <Super icone="coracao" texto="A história" />
+          <h2 className="font-display text-5xl leading-none">De onde vem a Vera</h2>
+        </div>
+        <div className="grid items-center gap-6 md:grid-cols-[auto_1fr]">
+          <Image src="/vera-cena-calcada.png" alt="Senhora Vera na calçada, em frente de casa" width={300} height={300} className="estufa mx-auto h-60 w-auto rounded-md border-[3px] border-tinta object-cover shadow-bloco md:h-72" />
+          <div className="flex flex-col gap-4">
+            <Balao>
+              <p className="text-2xl leading-snug">
+                <strong>Vera</strong> vem de <strong>VERAcidade</strong>: uma senhora do Recife que sabe de tudo do bairro, mas, antes de espalhar qualquer coisa, <strong>vai atrás da fonte</strong>.
+              </p>
+            </Balao>
+            <Revela mostrar={p >= 1}>
+              <p className="text-xl leading-relaxed text-tinta-2">
+                A gente quis que checar notícia parecesse <strong>conversar com uma vizinha de confiança</strong>, não um robô que só carimba “fake”. Por isso ela tem sotaque, mostra o caminho que fez e deixa <strong>você</strong> decidir — a explicação é o produto.
+              </p>
+            </Revela>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
     chave: "camadas",
     passos: 4,
     render: (p) => (
@@ -460,12 +487,12 @@ const SLIDES_DEF: Slide[] = [
     chave: "obrigado",
     passos: 0,
     render: () => (
-      <div className="relative flex flex-col items-center gap-5 overflow-hidden text-center">
+      <div className="relative flex flex-col items-center gap-4 overflow-hidden text-center">
         <Reticula className="text-vermelho" />
-        <Image src="/vera-corpo.png" alt="Senhora Vera agradecendo" width={240} height={320} className="estufa relative h-56 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-72" />
-        <h2 className="surge relative font-display text-6xl leading-none md:text-7xl" style={{ "--atraso": "150ms" } as React.CSSProperties}>Obrigado!</h2>
+        <Image src="/vera-corpo.png" alt="Senhora Vera agradecendo" width={200} height={267} className="estufa relative h-40 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-52" />
+        <h2 className="surge relative font-display text-5xl leading-none md:text-6xl" style={{ "--atraso": "150ms" } as React.CSSProperties}>Obrigado!</h2>
         <div className="surge relative w-full max-w-xl" style={{ "--atraso": "300ms" } as React.CSSProperties}>
-          <Balao><p className="fonte-mao text-3xl">“Valeu, parêia! Qualquer notícia que te mandarem, traz aqui que eu confiro, visse?”</p></Balao>
+          <Balao><p className="fonte-mao text-2xl">“Valeu, parêia! Qualquer notícia que te mandarem, traz aqui que eu confiro, visse?”</p></Balao>
         </div>
         <div className="surge relative" style={{ "--atraso": "440ms" } as React.CSSProperties}>
           <Carimbo cor="bg-ocre">Grupo 4 · Residência em IA</Carimbo>
@@ -486,6 +513,7 @@ const ORDEM = [
   "qrcode",
   "equipe",
   "visao",
+  "historia",
   "camadas",
   "dificuldade",
   "demo",
