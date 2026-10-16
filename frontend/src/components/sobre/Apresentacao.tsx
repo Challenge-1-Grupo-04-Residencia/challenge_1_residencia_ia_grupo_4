@@ -149,9 +149,13 @@ function Carimbo({ children, cor = "bg-vermelho" }: { children: React.ReactNode;
 
 function Super({ icone, texto }: { icone: NomeDoIcone; texto: string }) {
   return (
-    <p className="flex items-center gap-2 font-display text-xl uppercase tracking-wide text-vermelho">
+    <p className="flex w-fit items-center gap-2 font-display text-xl uppercase tracking-wide text-vermelho">
       <Icone nome={icone} tamanho={24} />
-      {texto}
+      <span className="relative">
+        {texto}
+        {/* Risco vermelho de marcador sob o rótulo: toque de cordel/quadrinho. */}
+        <span aria-hidden className="absolute -bottom-1 left-0 h-1.5 w-full rounded-total bg-vermelho/40" />
+      </span>
     </p>
   );
 }
@@ -565,9 +569,14 @@ export function Apresentacao() {
         className={`painel relative flex flex-col overflow-y-auto p-6 md:p-10 ${telaCheia ? "flex-1" : "min-h-[82vh]"}`}
         style={{ zoom: telaCheia ? 1.25 : 1 } as React.CSSProperties}
       >
+        {/* Retícula de impressão nos cantos (margem, nunca atrás do texto): dá a cada
+            slide a textura de página de quadrinho, de leve. */}
+        <span aria-hidden className="reticula pointer-events-none absolute left-0 top-0 h-28 w-28" />
+        <span aria-hidden className="reticula pointer-events-none absolute bottom-0 right-0 h-28 w-28" />
+
         {/* key só no índice: trocar de slide re-dispara a entrada; mudar de passo não
             remonta (os blocos revelam por transição, sem reiniciar o slide). */}
-        <div key={slide.chave} className="slide-entra flex min-h-full flex-col justify-center">
+        <div key={slide.chave} className="slide-entra relative flex min-h-full flex-col justify-center">
           {slide.render(passo)}
         </div>
 
@@ -581,7 +590,9 @@ export function Apresentacao() {
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-3">
+      {/* Em tela cheia os controles sao escondidos: navega-se por teclado (setas /
+          espaco) e sai-se com Esc. Fora dela, a barra completa aparece. */}
+      <div className={`mt-4 items-center justify-between gap-3 ${telaCheia ? "hidden" : "flex"}`}>
         <button type="button" onClick={voltar} disabled={noInicio} aria-label="Voltar" className="pressiona flex size-12 shrink-0 items-center justify-center rounded-total border-[3px] border-tinta bg-papel-2 shadow-bloco-sm transition-transform active:scale-95 disabled:opacity-30">
           <Icone nome="seta" tamanho={22} className="rotate-180" />
         </button>
