@@ -456,6 +456,23 @@ const SLIDES_DEF: Slide[] = [
     passos: 0,
     render: () => <SlideQRCode />,
   },
+  {
+    chave: "obrigado",
+    passos: 0,
+    render: () => (
+      <div className="relative flex flex-col items-center gap-5 overflow-hidden text-center">
+        <Reticula className="text-vermelho" />
+        <Image src="/vera-corpo.png" alt="Senhora Vera agradecendo" width={240} height={320} className="estufa relative h-56 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-72" />
+        <h2 className="surge relative font-display text-6xl leading-none md:text-7xl" style={{ "--atraso": "150ms" } as React.CSSProperties}>Obrigado!</h2>
+        <div className="surge relative w-full max-w-xl" style={{ "--atraso": "300ms" } as React.CSSProperties}>
+          <Balao><p className="fonte-mao text-3xl">“Valeu, parêia! Qualquer notícia que te mandarem, traz aqui que eu confiro, visse?”</p></Balao>
+        </div>
+        <div className="surge relative" style={{ "--atraso": "440ms" } as React.CSSProperties}>
+          <Carimbo cor="bg-ocre">Grupo 4 · Residência em IA</Carimbo>
+        </div>
+      </div>
+    ),
+  },
 ];
 
 /**
@@ -478,6 +495,7 @@ const ORDEM = [
   "principios",
   "metodologia",
   "numeros",
+  "obrigado",
 ] as const;
 
 const SLIDES: Slide[] = ORDEM.map((c) => SLIDES_DEF.find((s) => s.chave === c)!);
