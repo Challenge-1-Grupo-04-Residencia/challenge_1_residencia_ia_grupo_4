@@ -83,7 +83,9 @@ class CamadaVerificacao(ABC):
         """Mede os sinais desta camada e devolve a notícia, normalmente via ``repassar``."""
 
     def atingiu_regra_parada(self, noticia: NoticiaRequest) -> bool:
-        """Confiança suficiente e score fora da zona de dúvida."""
+        """Confiança suficiente e score fora da zona de dúvida, ou checagem de agência encontrada."""
+        if noticia.resultado.veredito_agencia is not None:
+            return True
         return scoring.deve_parar(
             noticia.resultado.veracidade, noticia.resultado.confianca
         )

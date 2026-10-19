@@ -73,11 +73,11 @@ class Sinal(BaseModel):
 
 
 # --- Dimensão 0 · Cache · Pontuação máxima imediata --------------------------------
-# "Alguém já desmentiu isso? Se sim, a checagem para aqui."
+# "Alguém já desmentiu ou confirmou isso? Se sim, a checagem para aqui com 100 pontos."
 
 S00 = DefinicaoSinal(
     id="S-00",
-    nome="Checagem oficial anterior (Cache)",
+    nome="Checagem oficial em cache (N0)",
     peso=0,
     dimensao=Dimensao.CORROBORACAO,
     camada="N0",
@@ -85,14 +85,6 @@ S00 = DefinicaoSinal(
 
 # --- Dimensão 1 · Fonte · 35 pontos ------------------------------------------------
 # "Quem publicou? Esse veículo teve outras notícias falsas recentemente?"
-
-S00 = DefinicaoSinal(
-    id="S-00",
-    nome="Checagem em cache",
-    peso=0,
-    dimensao=Dimensao.FONTE,
-    camada="N0",
-)
 S01 = DefinicaoSinal(
     id="S-01",
     nome="Reputação do veículo na base curada",

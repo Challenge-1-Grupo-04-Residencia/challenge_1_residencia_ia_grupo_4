@@ -68,6 +68,18 @@ const ITENS: Item[] = [
     ),
   },
   {
+    href: "/sobre",
+    rotulo: "Sobre a Vera",
+    curto: "Sobre",
+    icone: (
+      <svg viewBox="0 0 24 24" className="size-6" {...traco}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5" />
+        <circle cx="12" cy="7.75" r="0.6" fill="currentColor" stroke="none" />
+      </svg>
+    ),
+  },
+  {
     href: "/favoritos",
     rotulo: "Favoritos",
     curto: "Salvos",

@@ -87,7 +87,7 @@ _RUIDO = frozenset(
         "imagem", "imagens", "redes", "sociais", "circula", "circulam", "afirma",
         "afirmam", "dizem", "dizendo", "sobre", "contra", "apos", "ainda", "mesmo",
         "falso", "fake", "fato", "verdade", "mentira", "boato", "montagem",
-        "checagem", "verificacao",
+        "checagem", "verificacao", "para", "como", "pelo", "pela",
     }
 )
 
@@ -108,10 +108,16 @@ def _sem_acento(texto: str) -> str:
     return "".join(c for c in decomposto if not unicodedata.combining(c))
 
 
+def _normalizar_termo(palavra: str) -> str:
+    if palavra in ("microchip", "nanochip", "microchips", "nanochips", "chips"):
+        return "chip"
+    return palavra
+
+
 def _conteudo(texto: str) -> set[str]:
     """Vocabulário de conteúdo: palavras longas, sem acento e sem o ruído de checagem."""
     return {
-        palavra
+        _normalizar_termo(palavra)
         for palavra in _PALAVRA.findall(_sem_acento(texto))
         if palavra not in _RUIDO
     }
@@ -157,12 +163,14 @@ def trata_da_mesma_alegacao(titulo: str, texto_do_usuario: str) -> bool:
     as duas citam a mesma pessoa.
     """
     da_checagem = _conteudo(titulo)
-    if not da_checagem:
+    do_usuario = _conteudo(texto_do_usuario)
+    if not da_checagem or not do_usuario:
         return False
-    em_comum = da_checagem & _conteudo(texto_do_usuario)
+    em_comum = da_checagem & do_usuario
     if len(em_comum) < PALAVRAS_EM_COMUM_MINIMAS:
         return False
-    return len(em_comum) / len(da_checagem) >= SOBREPOSICAO_MINIMA
+    base = min(len(da_checagem), len(do_usuario))
+    return len(em_comum) / base >= SOBREPOSICAO_MINIMA
 
 
 def e_checagem_desta_alegacao(titulo: str, texto_do_usuario: str) -> bool:

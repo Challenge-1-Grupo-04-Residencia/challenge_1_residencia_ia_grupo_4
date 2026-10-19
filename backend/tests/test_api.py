@@ -183,3 +183,23 @@ class TestFeedEAcompanhamento:
             )
 
         assert resposta.status_code == 422
+
+    def test_obter_checagem_por_id(self, monkeypatch):
+        n2 = CamadaN2Conteudo()
+        monkeypatch.setattr("src.main.obter_orquestrador", lambda: Orquestrador(n2))
+
+        with TestClient(app) as c:
+            criada = self._checar(c, "Notícia para recuperar pelo ID no histórico.").json()
+            resposta = c.get(f"/api/v1/checagens/{criada['id']}")
+
+        assert resposta.status_code == 200
+        corpo = resposta.json()
+        assert corpo["id"] == criada["id"]
+        assert corpo["trecho"].startswith("Notícia para recuperar")
+
+    def test_obter_checagem_inexistente_da_404(self):
+        with TestClient(app) as c:
+            resposta = c.get("/api/v1/checagens/nao-existe")
+
+        assert resposta.status_code == 404
+
