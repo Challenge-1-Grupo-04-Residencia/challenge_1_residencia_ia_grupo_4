@@ -110,6 +110,10 @@ class CamadaN4Inferencia(CamadaVerificacao):
         resultado = noticia.resultado
         resultado.camada_atual = "N4"
 
+        if resultado.veredito_agencia is not None:
+            # RN-01 prevalece: verificação humana de agência encerra a análise lógica
+            return self.repassar(noticia)
+
         if not resultado.evidencias:
             # Sem evidência não há o que inferir, e a ausência de publicação já está
             # refletida em S-11: contar de novo aqui puniria a mesma lacuna duas vezes.

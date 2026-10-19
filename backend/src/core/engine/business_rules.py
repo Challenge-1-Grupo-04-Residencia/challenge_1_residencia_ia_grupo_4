@@ -99,13 +99,26 @@ def aplicar(
 
     # RN-01 — o veredito da agência prevalece sobre o score calculado.
     if contexto.veredito_agencia is not None:
-        agencia = contexto.agencia or "uma agência signatária da IFCN"
+        agencia_raw = (contexto.agencia or "uma agência signatária da IFCN").strip()
+        mapa_agencias = {
+            "lupa": "Agência Lupa",
+            "aos fatos": "Aos Fatos",
+            "fato-ou-fake": "Fato ou Fake (G1)",
+            "boatos": "Boatos.org",
+            "estadao_verifica": "Estadão Verifica",
+            "comprova": "Projeto Comprova",
+        }
+        agencia = mapa_agencias.get(
+            agencia_raw.lower(),
+            agencia_raw.title() if agencia_raw.islower() else agencia_raw,
+        )
+
         if contexto.veredito_agencia == "falso":
-            v = min(10.0, veracidade if veracidade is not None else 10.0)
-            motivo = f"{agencia} já desmentiu esta alegação."
+            v = 10.0
+            motivo = f"{agencia} já verificou esta alegação e a desmentiu como falsa (chance altíssima de falsidade)."
         else:
-            v = max(90.0, veracidade if veracidade is not None else 90.0)
-            motivo = f"{agencia} já confirmou esta alegação."
+            v = 90.0
+            motivo = f"{agencia} já verificou esta alegação oficialmente e confirmou os fatos (chance altíssima de ser verdadeira)."
         return Veredito(
             veracidade=v,
             confianca=max(confianca, C_INCONCLUSIVO),

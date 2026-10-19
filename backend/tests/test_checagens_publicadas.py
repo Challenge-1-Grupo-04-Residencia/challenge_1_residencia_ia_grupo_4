@@ -116,3 +116,19 @@ class TestEncontrar:
 
     def test_titulo_vazio_nao_quebra(self):
         assert cp.encontrar("qualquer texto aqui", [("g1.globo.com", "")]) is None
+
+    def test_pergunta_curta_casa_com_manchete_longa_da_agencia(self):
+        achado = cp.encontrar(
+            "A vacina da Covid tem chip?",
+            [
+                (
+                    "fato-ou-fake",
+                    "É #FAKE que vacina contra Covid-19 tem chip líquido e inteligência artificial para controle populacional",
+                )
+            ],
+        )
+
+        assert achado is not None
+        assert achado.veredito == "falso"
+        assert achado.agencia == "fato-ou-fake"
+

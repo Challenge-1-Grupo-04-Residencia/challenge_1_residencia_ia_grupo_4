@@ -3,7 +3,10 @@ import logging
 from datetime import datetime
 from functools import lru_cache
 
+from dotenv import load_dotenv
 import httpx
+
+load_dotenv()
 
 _log = logging.getLogger(__name__)
 

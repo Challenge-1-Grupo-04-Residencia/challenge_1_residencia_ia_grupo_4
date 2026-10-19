@@ -1,3 +1,4 @@
+from src.core.engine.checagens_publicadas import _tem_negacao, veredito_no_titulo
 from src.core.entities.claim import DocumentoRelacionado
 from src.core.ports.news_search import BuscadorDeNoticias
 from src.infrastructure.database import SessionLocal, ChecagemCache
@@ -11,6 +12,24 @@ try:
 except Exception as e:
     print(f"[Aviso] Falha ao carregar o SentenceTransformer: {e}")
     MODELO_EMBEDDING = None
+
+
+def _formatar_titulo_checagem(texto_alegacao: str, veredicto: str) -> str:
+    """Formata o título da checagem sem criar dupla negação para a N3/N4."""
+    alegacao = (texto_alegacao or "").strip()
+    v_norm = (veredicto or "").strip().lower()
+    v_titulo = veredito_no_titulo(alegacao)
+
+    if v_norm == "falso":
+        if v_titulo == "falso" or _tem_negacao(alegacao):
+            return alegacao
+        return f"É falso que {alegacao}"
+    if v_norm == "verdadeiro":
+        if v_titulo == "verdadeiro":
+            return alegacao
+        return f"É verdade que {alegacao}"
+    return alegacao
+
 
 class BuscadorVetorial(BuscadorDeNoticias):
     """
@@ -54,16 +73,17 @@ class BuscadorVetorial(BuscadorDeNoticias):
                     if row.similaridade < self.limiar_minimo:
                         continue
                         
-                    # 3. Montamos a "prova" para a N4 (Llama) ler
-                    # O "titulo" da prova precisa mostrar qual foi o veredicto da agência!
-                    texto_prova = f"A {row.agencia} classificou a alegação '{row.texto_alegacao}' como {row.veredicto}."
+                    # 3. Montamos a "prova" sem dupla negação para a N3 e a N4 (Llama) lerem
+                    texto_prova = _formatar_titulo_checagem(row.texto_alegacao, row.veredicto)
+                    eh_verdadeiro = str(row.veredicto or "").strip().lower() == "verdadeiro"
                     
                     documentos.append(DocumentoRelacionado(
                         titulo=texto_prova,
                         url=row.url_agencia,
                         fonte=row.agencia,
                         similaridade=row.similaridade,
-                        fonte_confiavel=True  # 100% de confiança, pois é a nossa base oficial!
+                        # Só checagens com veredicto verdadeiro podem corroborar um fato no S-11
+                        fonte_confiavel=eh_verdadeiro,
                     ))
                 
                 return documentos

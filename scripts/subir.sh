@@ -327,9 +327,9 @@ ok "API no ar: http://localhost:$PORTA_BACKEND  (docs em /docs)"
 # ---------------------------------------------------------------------------
 
 if [[ $SO_BACKEND -eq 0 ]]; then
-  if [[ ! -d "$RAIZ/frontend/node_modules" ]]; then
-    info "Instalando dependências do frontend (primeira vez)…"
-    (cd "$RAIZ/frontend" && npm install >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1)
+  if [[ ! -d "$RAIZ/frontend/node_modules" || "$RAIZ/frontend/package.json" -nt "$RAIZ/frontend/node_modules" || ! -d "$RAIZ/frontend/node_modules/@phosphor-icons/react" ]]; then
+    info "Instalando dependências do frontend…"
+    (cd "$RAIZ/frontend" && npm install >>"$DIRETORIO_DE_LOGS/frontend.log" 2>&1 && touch node_modules)
   fi
 
   # O frontend lê a URL da API daqui; sem o arquivo ele aponta para o padrão e a

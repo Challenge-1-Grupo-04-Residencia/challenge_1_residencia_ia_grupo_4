@@ -100,6 +100,78 @@ const EQUIPE: Array<{ nome: string; papel: string; github: string; foto: string 
   { nome: "Rebeca Bontempo", papel: "Developer", github: "rebecaboncaputo", foto: "https://avatars.githubusercontent.com/u/211146495?v=4" },
 ];
 
+const METRICAS_N2: Array<{
+  cenario: string;
+  subtitulo: string;
+  acuracia: string;
+  precisao: string;
+  recall: string;
+  f1: string;
+  auc: string;
+  cor: string;
+}> = [
+  {
+    cenario: "Conjunto Global",
+    subtitulo: "Teste misto estratificado (5 corpora)",
+    acuracia: "85,2%",
+    precisao: "0,84",
+    recall: "0,86",
+    f1: "0,85",
+    auc: "0,92",
+    cor: "#2E7D32",
+  },
+  {
+    cenario: "fake-br (LODO)",
+    subtitulo: "Treino em N−1 · validação isolada",
+    acuracia: "86,1%",
+    precisao: "0,85",
+    recall: "0,87",
+    f1: "0,86",
+    auc: "0,94",
+    cor: "#2E7D32",
+  },
+  {
+    cenario: "fakewhatsapp-br (LODO)",
+    subtitulo: "Mensagens curtas e virais de rede social",
+    acuracia: "70,4%",
+    precisao: "0,69",
+    recall: "0,72",
+    f1: "0,70",
+    auc: "0,80",
+    cor: "#EF6C00",
+  },
+];
+
+const METRICAS_PIPELINE: Array<{
+  valor: string;
+  rotulo: string;
+  subtitulo: string;
+  descricao: string;
+  cor: string;
+}> = [
+  {
+    valor: "69%",
+    rotulo: "Taxa de Abstenção",
+    subtitulo: "Inconclusivos · Guardrail ético",
+    descricao: "Quando os sinais são fracos ou faltam evidências na web, a Vera se abstém em vez de chutar.",
+    cor: "#F9A825",
+  },
+  {
+    valor: "61%",
+    rotulo: "Acurácia Condicional",
+    subtitulo: "Até 87% em notícias estruturadas",
+    descricao: "Desempenho real nos casos em que a confiança superou o limiar mínimo de decisão.",
+    cor: "#2E7D32",
+  },
+  {
+    valor: "19%",
+    rotulo: "Falsos Positivos (FPR)",
+    subtitulo: "0% no corpus FakeRecogna",
+    descricao: "Mantida sob controle graças à abstenção, protegendo veículos sérios contra acusações infundadas.",
+    cor: "#C62828",
+  },
+];
+
 // --- Peças ---------------------------------------------------------------------------
 
 /**
@@ -458,6 +530,114 @@ const SLIDES_DEF: Slide[] = [
     ),
   },
   {
+    chave: "metricas-n2",
+    passos: 3,
+    render: (p) => (
+      <div className="flex flex-col justify-center">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <Super icone="contas" texto="Validação científica" />
+            <h2 className="font-display text-5xl leading-none">Métricas do Classificador (N2)</h2>
+          </div>
+          <Carimbo cor="bg-confirmada">Meta F1 ≥ 0,80 superada · &lt; 8 ms em CPU</Carimbo>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {METRICAS_N2.map((m, i) => (
+            <Revela key={m.cenario} mostrar={p >= i} className={`flex flex-col gap-3 p-4 ${CARD}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-display text-2xl leading-none">{m.cenario}</h3>
+                  <p className="mt-1 text-xs font-bold text-tinta-2">{m.subtitulo}</p>
+                </div>
+                <span className="rounded-sm border-2 border-tinta px-2 py-0.5 font-display text-sm text-white" style={{ background: m.cor }}>
+                  F1 {m.f1}
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2 border-y-2 border-borda py-2">
+                <span className="font-display text-5xl leading-none tabular-nums text-vermelho">{m.acuracia}</span>
+                <span className="text-sm font-bold uppercase tracking-wide text-tinta-2">Acurácia</span>
+              </div>
+              <dl className="grid grid-cols-3 gap-2 text-center text-sm">
+                <div className="rounded-sm bg-papel-3 px-2 py-1">
+                  <dt className="text-xs text-tinta-3">Precisão</dt>
+                  <dd className="font-bold tabular-nums">{m.precisao}</dd>
+                </div>
+                <div className="rounded-sm bg-papel-3 px-2 py-1">
+                  <dt className="text-xs text-tinta-3">Recall</dt>
+                  <dd className="font-bold tabular-nums">{m.recall}</dd>
+                </div>
+                <div className="rounded-sm bg-papel-3 px-2 py-1">
+                  <dt className="text-xs text-tinta-3">AUC-ROC</dt>
+                  <dd className="font-bold tabular-nums">{m.auc}</dd>
+                </div>
+              </dl>
+            </Revela>
+          ))}
+        </div>
+        <Revela mostrar={p >= 3} className={`mt-4 flex flex-col gap-1.5 p-4 md:flex-row md:items-center md:justify-between ${CARD}`}>
+          <div className="flex items-start gap-2.5">
+            <Icone nome="visto" tamanho={24} className="mt-0.5 shrink-0 text-confirmada" />
+            <p className="text-base leading-snug">
+              <strong>Prevenção de Data Leakage na EDA:</strong> normalização <code className="rounded bg-papel-3 px-1.5 py-0.5 font-mono text-sm">strip_accents=&quot;unicode&quot;</code> impediu que o modelo virasse um &ldquo;detector de acentuação&rdquo; entre corpora heterogêneos.
+            </p>
+          </div>
+          <span className="shrink-0 rounded-total border-2 border-tinta bg-papel-3 px-3 py-1 font-mono text-xs font-bold">
+            TF-IDF (1,2-gramas) + Regressão Logística (L2)
+          </span>
+        </Revela>
+      </div>
+    ),
+  },
+  {
+    chave: "metricas-pipeline",
+    passos: 3,
+    render: (p) => (
+      <div className="flex flex-col justify-center">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <Super icone="lupa" texto="Auditoria integrada" />
+            <h2 className="font-display text-5xl leading-none">O Pipeline no Mundo Real (N0–N4)</h2>
+          </div>
+          <Carimbo cor="bg-ocre">Abordagem híbrida: ML + RAG + LLM</Carimbo>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {METRICAS_PIPELINE.map((m, i) => (
+            <Revela key={m.rotulo} mostrar={p >= i} className={`flex flex-col gap-2 p-5 ${CARD}`}>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center rounded-md border-[3px] border-tinta px-3 py-1 font-display text-4xl leading-none text-white tabular-nums" style={{ background: m.cor }}>
+                  {m.valor}
+                </span>
+                <span className="text-xs font-bold uppercase tracking-wide text-tinta-2">{m.subtitulo}</span>
+              </div>
+              <h3 className="mt-1 font-display text-2xl leading-none">{m.rotulo}</h3>
+              <p className="text-base leading-snug text-tinta-2">{m.descricao}</p>
+            </Revela>
+          ))}
+        </div>
+        <Revela mostrar={p >= 3} className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className={`flex items-start gap-3 p-4 ${CARD}`}>
+            <Icone nome="robo" tamanho={28} className="mt-0.5 shrink-0 text-vermelho" />
+            <div>
+              <h4 className="font-display text-xl leading-none">Superando a Meta-Checagem no NLI (N4)</h4>
+              <p className="mt-1 text-sm leading-snug text-tinta-2">
+                Engenharia de prompt estruturada para a LLM distinguir que <em>&ldquo;É falso que vacinas causam X&rdquo;</em> contradiz a alegação <em>&ldquo;Vacinas causam X&rdquo;</em>, mais parser tolerante a JSON.
+              </p>
+            </div>
+          </div>
+          <div className={`flex items-start gap-3 p-4 ${CARD}`}>
+            <Icone nome="espera" tamanho={28} className="mt-0.5 shrink-0 text-vermelho" />
+            <div>
+              <h4 className="font-display text-xl leading-none">A Ética da Abstenção (Confidence Thresholding)</h4>
+              <p className="mt-1 text-sm leading-snug text-tinta-2">
+                Classificadores estatísticos aprendem forma, mas não fatos. Unir ML rápido (&lt; 8 ms) ao NLI semântico e abster-se sem evidência protege contra difamação.
+              </p>
+            </div>
+          </div>
+        </Revela>
+      </div>
+    ),
+  },
+  {
     chave: "numeros",
     passos: 4,
     render: (p) => (
@@ -506,7 +686,7 @@ const SLIDES_DEF: Slide[] = [
  * Ordem de exibição (fluxo da apresentação):
  * capa (fisga) → QR (todo mundo abre no celular) → equipe → a ideia → como investiga
  * (camadas, dificuldade) → demo ao vivo → o que mede (sinais, faixas) → engenharia →
- * princípios → como foi feito → números (fecho).
+ * princípios → como foi feito → métricas (N2 e pipeline) → números (fecho).
  */
 const ORDEM = [
   "capa",
@@ -522,6 +702,8 @@ const ORDEM = [
   "frentes",
   "principios",
   "metodologia",
+  "metricas-n2",
+  "metricas-pipeline",
   "numeros",
   "obrigado",
 ] as const;

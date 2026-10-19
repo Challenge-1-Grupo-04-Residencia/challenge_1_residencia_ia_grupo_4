@@ -78,6 +78,8 @@ export interface ChecagemRequest {
 export interface ChecagemResponse {
   /** Identificador desta checagem, usado nas perguntas de acompanhamento (RF-04). */
   id: string;
+  /** Resumo do texto original consultado. */
+  trecho?: string;
   /**
    * `null` quando uma regra de negócio suprime a porcentagem (opinião, sátira) ou
    * quando a entrada não era uma alegação de fato.

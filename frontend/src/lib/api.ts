@@ -151,6 +151,38 @@ export async function checagensRecentes(
 }
 
 /**
+ * Busca uma checagem registrada no histórico pelo ID (RF-42, RF-43).
+ */
+export async function buscarChecagem(
+  id: string,
+  sinal?: AbortSignal,
+): Promise<ChecagemResponse> {
+  let resposta: Response;
+  try {
+    resposta = await fetch(`${urlBase()}/api/v1/checagens/${encodeURIComponent(id)}`, {
+      cache: "no-store",
+      signal: sinal,
+    });
+  } catch (erro) {
+    if (erro instanceof DOMException && erro.name === "AbortError") throw erro;
+    throw new ErroDaVera(
+      "Minha internet caiu, acredita? Tenta de novo daqui a pouco.",
+    );
+  }
+
+  if (!resposta.ok) {
+    throw new ErroDaVera(
+      resposta.status === 404
+        ? "Essa checagem já não está mais guardada aqui comigo. Manda de novo lá no chat que eu confiro!"
+        : "Deu problema aqui do meu lado. Tenta de novo daqui a pouco.",
+      resposta.status,
+    );
+  }
+
+  return (await resposta.json()) as ChecagemResponse;
+}
+
+/**
  * Pergunta à API o que fazer com a mensagem: conversar, acompanhar ou checar (RF-01).
  *
  * A decisão vive no backend de propósito. Aqui ela era tomada pelo número de palavras,

@@ -136,6 +136,7 @@ class ChecagemResponse(BaseModel):
 
     #: Identificador desta checagem, usado nas perguntas de acompanhamento (RF-04).
     id: str
+    trecho: str = ""
     veracidade: float | None
     confianca: float
     faixa: str
@@ -248,11 +249,13 @@ def _montar_resposta(
     """Traduz veredito e sinais para o JSON publicável, e registra no histórico."""
     explicacao = (veredito.motivo_regra + " " + resultado.explicacao).strip()
     id_checagem = uuid.uuid4().hex
+    trecho = ChecagemRegistrada.resumir(request.texto)
 
     _registrar_no_historico(id_checagem, request, veredito, resultado, explicacao)
 
     return ChecagemResponse(
         id=id_checagem,
+        trecho=trecho,
         veracidade=veredito.veracidade,
         confianca=round(veredito.confianca, 4),
         faixa=veredito.faixa.value,
@@ -295,6 +298,10 @@ def _registrar_no_historico(
                 camada_parada=resultado.camada_atual,
                 dificuldade=resultado.dificuldade,
                 regra_aplicada=veredito.regra_aplicada,
+                motivo_regra=veredito.motivo_regra,
+                analise_ia=resultado.analise_ia,
+                cobertura=round(resultado.cobertura, 4),
+                cobertura_do_catalogo=round(resultado.cobertura_do_catalogo, 4),
                 explicacao=explicacao,
                 fontes_citadas=list(resultado.fontes_citadas),
                 evidencias=list(resultado.evidencias),
@@ -461,6 +468,39 @@ def checagens_recentes(limite: int = 10) -> list[ChecagemDoFeed]:
         )
         for c in obter_historico().recentes(max(1, min(limite, 50)))
     ]
+
+
+@app.get("/api/v1/checagens/{id_checagem}", response_model=ChecagemResponse)
+def obter_checagem(id_checagem: str) -> ChecagemResponse:
+    """Recupera uma checagem registrada no histórico pelo ID (RF-42, RF-43)."""
+    c = obter_historico().buscar(id_checagem)
+    if c is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Não encontrei essa checagem. Ela pode ter expirado do histórico.",
+        )
+    return ChecagemResponse(
+        id=c.id,
+        trecho=c.trecho,
+        veracidade=c.veracidade,
+        confianca=c.confianca,
+        faixa=c.faixa,
+        camada_parada=c.camada_parada,
+        dificuldade=c.dificuldade.value,
+        explicacao=c.explicacao,
+        exibe_porcentagem=c.exibe_porcentagem,
+        regra_aplicada=c.regra_aplicada,
+        motivo_regra=c.motivo_regra,
+        analise_ia=c.analise_ia,
+        cobertura=c.cobertura,
+        cobertura_do_catalogo=c.cobertura_do_catalogo,
+        principais_sinais=[
+            _para_response(s) for s in scoring.principais_sinais(c.sinais)
+        ],
+        sinais=[_para_response(s) for s in c.sinais],
+        documentos_relacionados=c.documentos_relacionados,
+        fontes_citadas=c.fontes_citadas,
+    )
 
 
 from src.infrastructure.database import SessionLocal, HistoricoAvaliacaoLote

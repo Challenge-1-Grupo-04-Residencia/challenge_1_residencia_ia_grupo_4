@@ -107,6 +107,9 @@ def peso_de_referencia(sinais: list[Sinal]) -> float:
     correta quando uma camada nova começa a emitir sinal antes de entrar em
     ``CAMADAS_ATIVAS``, e impede que a cobertura passe de 1.
     """
+    if any(s.id == "S-00" and s.disponivel for s in sinais):
+        return 100.0
+
     registrados = {s.id for s in sinais}
     # Sinal aferido sem achado sai do denominador: o detector rodou, não havia o que
     # anotar, e isso não é lacuna desta notícia. Mantê-lo aqui travava a cobertura de
@@ -178,6 +181,8 @@ def concordancia(sinais: list[Sinal]) -> float:
     """
     por_dimensao = list(score_por_dimensao(sinais).values())
     if not por_dimensao:
+        return 1.0
+    if any(s.id == "S-00" and s.disponivel for s in sinais):
         return 1.0
     if len(por_dimensao) == 1:
         return PENALIDADE_DE_DIMENSAO_UNICA

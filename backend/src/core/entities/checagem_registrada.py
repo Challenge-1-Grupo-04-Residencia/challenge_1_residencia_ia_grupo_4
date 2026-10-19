@@ -35,6 +35,10 @@ class ChecagemRegistrada(BaseModel):
     camada_parada: str
     dificuldade: Dificuldade = Dificuldade.MEDIANO
     regra_aplicada: str | None = None
+    motivo_regra: str = ""
+    analise_ia: str = ""
+    cobertura: float = 0.0
+    cobertura_do_catalogo: float = 0.0
     explicacao: str = ""
     fontes_citadas: list[str] = Field(default_factory=list)
     checada_em: datetime = Field(default_factory=_agora)

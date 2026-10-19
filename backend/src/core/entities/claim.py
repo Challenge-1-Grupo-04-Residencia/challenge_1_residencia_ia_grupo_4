@@ -124,11 +124,15 @@ class AnaliseResultado(BaseModel):
     @property
     def cobertura(self) -> float:
         """Fração do que as camadas existentes sabem medir que foi observada."""
+        if any(s.id == "S-00" and s.disponivel for s in self.sinais):
+            return 1.0
         return scoring.cobertura(self.sinais)
 
     @property
     def cobertura_do_catalogo(self) -> float:
         """Fração dos 100 pontos do catálogo completo que foi observada."""
+        if any(s.id == "S-00" and s.disponivel for s in self.sinais):
+            return 1.0
         return scoring.cobertura_do_catalogo(self.sinais)
 
 
