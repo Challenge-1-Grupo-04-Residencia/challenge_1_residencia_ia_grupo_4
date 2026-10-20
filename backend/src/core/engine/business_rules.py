@@ -153,7 +153,7 @@ def aplicar(
                 "Não encontrei informações confiáveis suficientes na internet para confirmar ou desmentir "
                 "isso com segurança. Na dúvida, o melhor é não compartilhar."
             ),
-            exibe_porcentagem=False,
+            exibe_porcentagem=(veracidade is not None),
         )
 
     if veracidade is None:
@@ -192,7 +192,7 @@ def aplicar(
                 "para confirmar — eu preciso ver o mesmo fato em mais de um veículo "
                 "independente. Por ora, fica em aberto: não dá para cravar."
             ),
-            exibe_porcentagem=False,
+            exibe_porcentagem=True,
         )
 
     return Veredito(
