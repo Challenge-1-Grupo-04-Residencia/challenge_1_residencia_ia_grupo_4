@@ -59,11 +59,38 @@ class ErroDoProvedor(Exception):
 
 
 def chamada_ollama_real(prompt: str) -> dict:
-    """Chamada HTTP ao modelo servido pelo Ollama.
+    """Chamada HTTP ao modelo servido pelo Groq Cloud (se houver GROQ_API_KEY) ou pelo Ollama local.
 
     Levanta :class:`ErroDoProvedor` em qualquer falha, em vez de devolver um veredito
     fabricado.
     """
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+    if groq_api_key:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        modelo = os.environ.get("GROQ_MODEL", "openai/gpt-oss-20b")
+        requisicao = urllib.request.Request(url, method="POST")
+        requisicao.add_header("Authorization", f"Bearer {groq_api_key}")
+        requisicao.add_header("Content-Type", "application/json")
+        requisicao.add_header("User-Agent", "VeraApp/1.0")
+        corpo = json.dumps(
+            {
+                "model": modelo,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0,
+                "seed": 42,
+                "response_format": {"type": "json_object"},
+            }
+        ).encode("utf-8")
+        try:
+            with urllib.request.urlopen(requisicao, corpo, timeout=30) as resposta:
+                dados = json.loads(resposta.read().decode("utf-8"))
+            conteudo = dados["choices"][0]["message"]["content"]
+            return json.loads(conteudo)
+        except (urllib.error.URLError, OSError) as erro:
+            raise ErroDoProvedor(f"não foi possível falar com o Groq: {erro}") from erro
+        except (json.JSONDecodeError, KeyError, TypeError, IndexError) as erro:
+            raise ErroDoProvedor(f"resposta do Groq ilegível: {erro}") from erro
+
     url_base = os.environ.get("OLLAMA_URL", "http://localhost:11434")
     modelo = os.environ.get("OLLAMA_MODEL", "llama3")
     timeout = float(os.environ.get("OLLAMA_TIMEOUT", "30"))
