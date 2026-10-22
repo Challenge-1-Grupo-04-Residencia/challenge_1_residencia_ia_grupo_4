@@ -44,9 +44,44 @@ const mao = Patrick_Hand({
 });
 
 export const metadata: Metadata = {
-  title: "Vera · Verificadora de Fatos",
+  metadataBase: new URL("https://challenge-1-residencia-ia-grupo-4.vercel.app"),
+  title: {
+    default: "Vera · Verificadora de Fatos",
+    template: "%s · Vera",
+  },
   description:
     "Checagem de notícias em formato de conversa: a Vera cruza o que você leu com fontes confiáveis e explica por que aquilo parece verdadeiro ou falso.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: "/vera-rosto.png",
+  },
+  openGraph: {
+    title: "Vera · Verificadora de Fatos",
+    description:
+      "Checagem de notícias em formato de conversa: a Vera cruza o que você leu com fontes confiáveis e explica o veredito.",
+    url: "https://challenge-1-residencia-ia-grupo-4.vercel.app",
+    siteName: "Senhora Vera",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/vera-rosto.png",
+        width: 580,
+        height: 640,
+        alt: "Vera - Checadora de Fatos",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Vera · Verificadora de Fatos",
+    description:
+      "Checagem de notícias em formato de conversa com fontes confiáveis.",
+    images: ["/vera-rosto.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
