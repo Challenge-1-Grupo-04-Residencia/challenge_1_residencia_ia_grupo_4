@@ -15,8 +15,9 @@ services:
     # arquivo alterado. Sem ele, o container servia indefinidamente o codigo da imagem,
     # que foi como um servidor de 5 dias atras ficou respondendo com sinais que o codigo
     # novo ja media de outro jeito.
+    # A imagem de produção não leva o `uv`: o uvicorn é chamado direto do venv.
     command: >
-      uv run uvicorn src.main:app --app-dir backend
+      uvicorn src.main:app --app-dir backend
       --host 0.0.0.0 --port 8000 --reload --reload-dir backend
     environment:
       - ENVIRONMENT=development

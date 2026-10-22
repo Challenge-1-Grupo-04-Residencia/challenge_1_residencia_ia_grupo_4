@@ -2,16 +2,13 @@ from src.core.engine.checagens_publicadas import _tem_negacao, veredito_no_titul
 from src.core.entities.claim import DocumentoRelacionado
 from src.core.ports.news_search import BuscadorDeNoticias
 from src.infrastructure.database import SessionLocal, ChecagemCache
-from sentence_transformers import SentenceTransformer
+from src.infrastructure.search.embeddings import gerar_embedding
 from sqlalchemy import text
 
-# Carregamos o modelo apenas 1 vez quando o servidor sobe para não travar a API
-print("[BuscadorVetorial] Carregando modelo de IA (isso acontece 1 vez só)...")
-try:
-    MODELO_EMBEDDING = SentenceTransformer('all-MiniLM-L6-v2')
-except Exception as e:
-    print(f"[Aviso] Falha ao carregar o SentenceTransformer: {e}")
-    MODELO_EMBEDDING = None
+# O modelo de embedding NÃO é mais carregado no import deste módulo: carregar o
+# SentenceTransformer aqui travava a primeira checagem em produção (e estourava os
+# 512 MB do Render). O carregamento agora é preguiçoso e thread-safe — ver
+# ``src.infrastructure.search.embeddings``.
 
 
 def _formatar_titulo_checagem(texto_alegacao: str, veredicto: str) -> str:
@@ -41,12 +38,14 @@ class BuscadorVetorial(BuscadorDeNoticias):
         self.limiar_minimo = limiar_minimo
 
     def buscar(self, texto: str, top_k: int = 5) -> list[DocumentoRelacionado]:
-        if not MODELO_EMBEDDING or not texto.strip():
+        if not texto.strip():
             return []
 
         try:
             # 1. Converte o texto do usuário para as coordenadas matemáticas
-            vetor_busca = MODELO_EMBEDDING.encode(texto).tolist()
+            vetor_busca = gerar_embedding(texto)
+            if vetor_busca is None:
+                return []
             
             # Formata para o SQL do pgvector: "[0.1, 0.2, ...]"
             vetor_str = str(vetor_busca)

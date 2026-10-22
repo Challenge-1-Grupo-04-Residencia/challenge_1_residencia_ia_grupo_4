@@ -82,7 +82,10 @@ def chamada_ollama_real(prompt: str) -> dict:
             }
         ).encode("utf-8")
         try:
-            with urllib.request.urlopen(requisicao, corpo, timeout=30) as resposta:
+            # 30 s estourava sozinho o orçamento da checagem inteira; o Groq responde
+            # em 1-3 s, então 20 s já é folga. Ajustável por GROQ_TIMEOUT.
+            timeout_groq = float(os.environ.get("GROQ_TIMEOUT", "20"))
+            with urllib.request.urlopen(requisicao, corpo, timeout=timeout_groq) as resposta:
                 dados = json.loads(resposta.read().decode("utf-8"))
             conteudo = dados["choices"][0]["message"]["content"]
             return json.loads(conteudo)

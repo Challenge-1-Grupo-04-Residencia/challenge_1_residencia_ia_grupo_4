@@ -252,70 +252,117 @@ export async function checarComAndamento(
   aoAndar: (etapa: EtapaDoAndamento) => void,
   sinal?: AbortSignal,
 ): Promise<ChecagemResponse> {
-  let resposta: Response;
+  // Vigia de silêncio. Sem ele, uma conexão que morria no caminho (proxy cortando,
+  // contêiner reiniciado por falta de memória) deixava a tela presa para sempre em
+  // "Vendo o pedido...". O backend manda um batimento a cada 10 s, então silêncio
+  // longo significa conexão morta. O primeiro byte ganha mais folga: no plano gratuito
+  // da Render o servidor pode estar "acordando" (cold start de até ~1 min).
+  const vigia = new AbortController();
+  let estourou = false;
+  let relogio: ReturnType<typeof setTimeout> | undefined;
+  const rearmar = (ms: number) => {
+    clearTimeout(relogio);
+    relogio = setTimeout(() => {
+      estourou = true;
+      vigia.abort();
+    }, ms);
+  };
+  const aoAbortarDeFora = () => vigia.abort();
+  sinal?.addEventListener("abort", aoAbortarDeFora, { once: true });
+  rearmar(SILENCIO_MAXIMO_ANTES_DO_PRIMEIRO_BYTE_MS);
+
+  const erroDeSilencio = () =>
+    new ErroDaVera(
+      "Demorei demais para responder e a conversa caiu. Tenta de novo que agora eu já acordei, visse?",
+    );
 
   try {
-    resposta = await fetch(`${urlBase()}/api/v1/checar/stream`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(entrada),
-      signal: sinal,
-    });
-  } catch (erro) {
-    if (erro instanceof DOMException && erro.name === "AbortError") throw erro;
-    throw new ErroDaVera(
-      "Minha internet caiu, acredita? Tenta de novo daqui a pouco.",
-    );
-  }
+    let resposta: Response;
 
-  if (!resposta.ok || !resposta.body) {
-    throw new ErroDaVera(
-      resposta.status === 422
-        ? "Preciso de um texto ou link para conferir, meu bem."
-        : "Deu problema aqui do meu lado. Tenta de novo daqui a pouco.",
-      resposta.status,
-    );
-  }
+    try {
+      resposta = await fetch(`${urlBase()}/api/v1/checar/stream`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(entrada),
+        signal: vigia.signal,
+      });
+    } catch (erro) {
+      if (estourou) throw erroDeSilencio();
+      if (erro instanceof DOMException && erro.name === "AbortError") throw erro;
+      throw new ErroDaVera(
+        "Minha internet caiu, acredita? Tenta de novo daqui a pouco.",
+      );
+    }
 
-  const leitor = resposta.body.getReader();
-  const decodificador = new TextDecoder();
-  let restante = "";
-  let veredito: ChecagemResponse | null = null;
+    if (!resposta.ok || !resposta.body) {
+      throw new ErroDaVera(
+        resposta.status === 422
+          ? "Preciso de um texto ou link para conferir, meu bem."
+          : "Deu problema aqui do meu lado. Tenta de novo daqui a pouco.",
+        resposta.status,
+      );
+    }
 
-  while (true) {
-    const { done, value } = await leitor.read();
-    if (done) break;
-    restante += decodificador.decode(value, { stream: true });
+    const leitor = resposta.body.getReader();
+    const decodificador = new TextDecoder();
+    let restante = "";
+    let veredito: ChecagemResponse | null = null;
 
-    // Os eventos são separados por linha em branco; o último pedaço pode estar
-    // cortado no meio e fica no buffer para a próxima volta.
-    const blocos = restante.split("\n\n");
-    restante = blocos.pop() ?? "";
-
-    for (const bloco of blocos) {
-      const tipo = bloco.match(/^event: (.+)$/m)?.[1];
-      const dados = bloco.match(/^data: (.+)$/m)?.[1];
-      if (!tipo || !dados) continue;
-
-      if (tipo === "etapa") {
-        aoAndar(JSON.parse(dados) as EtapaDoAndamento);
-      } else if (tipo === "veredito") {
-        veredito = JSON.parse(dados) as ChecagemResponse;
-      } else if (tipo === "falhou") {
+    while (true) {
+      rearmar(SILENCIO_MAXIMO_ENTRE_EVENTOS_MS);
+      let pedaco: ReadableStreamReadResult<Uint8Array>;
+      try {
+        pedaco = await leitor.read();
+      } catch (erro) {
+        if (estourou) throw erroDeSilencio();
+        if (erro instanceof DOMException && erro.name === "AbortError") throw erro;
         throw new ErroDaVera(
-          (JSON.parse(dados) as { mensagem: string }).mensagem,
+          "A conversa caiu no meio da investigação. Tenta de novo?",
         );
       }
-    }
-  }
+      const { done, value } = pedaco;
+      if (done) break;
+      restante += decodificador.decode(value, { stream: true });
 
-  if (!veredito) {
-    throw new ErroDaVera(
-      "A conversa caiu no meio da investigação. Tenta de novo?",
-    );
+      // Os eventos são separados por linha em branco; o último pedaço pode estar
+      // cortado no meio e fica no buffer para a próxima volta. Batimentos (linhas que
+      // começam com ":") não têm `event:` e são descartados abaixo.
+      const blocos = restante.split("\n\n");
+      restante = blocos.pop() ?? "";
+
+      for (const bloco of blocos) {
+        const tipo = bloco.match(/^event: (.+)$/m)?.[1];
+        const dados = bloco.match(/^data: (.+)$/m)?.[1];
+        if (!tipo || !dados) continue;
+
+        if (tipo === "etapa") {
+          aoAndar(JSON.parse(dados) as EtapaDoAndamento);
+        } else if (tipo === "veredito") {
+          veredito = JSON.parse(dados) as ChecagemResponse;
+        } else if (tipo === "falhou") {
+          throw new ErroDaVera(
+            (JSON.parse(dados) as { mensagem: string }).mensagem,
+          );
+        }
+      }
+    }
+
+    if (!veredito) {
+      throw new ErroDaVera(
+        "A conversa caiu no meio da investigação. Tenta de novo?",
+      );
+    }
+    return veredito;
+  } finally {
+    clearTimeout(relogio);
+    sinal?.removeEventListener("abort", aoAbortarDeFora);
   }
-  return veredito;
 }
+
+/** Folga até o primeiro byte: cobre o cold start do plano gratuito da Render. */
+const SILENCIO_MAXIMO_ANTES_DO_PRIMEIRO_BYTE_MS = 90_000;
+/** Depois do primeiro byte o backend manda batimento a cada 10 s. */
+const SILENCIO_MAXIMO_ENTRE_EVENTOS_MS = 35_000;
 
 export interface Avaliacao {
   id: number;

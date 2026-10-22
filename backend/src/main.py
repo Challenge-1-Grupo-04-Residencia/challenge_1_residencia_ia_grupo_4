@@ -7,10 +7,13 @@ para JSON. Toda a regra vive em ``src.core``.
 
 import json
 import logging
+import os
 import queue
 import threading
+import time
 import uuid
 from collections.abc import Iterator
+from contextlib import asynccontextmanager
 from datetime import datetime
 from functools import lru_cache
 
@@ -32,11 +35,49 @@ from src.core.engine.leitor_link import CamadaLeitorLink
 from src.infrastructure.storage.historico_memoria import HistoricoEmMemoria
 
 _log = logging.getLogger(__name__)
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+
+#: Estado do aquecimento, exposto em ``/health/ready``.
+_aquecimento: dict[str, object] = {"estado": "pendente", "segundos": None, "erro": None}
+
+
+def _aquecer() -> None:
+    """Monta o pipeline e carrega o modelo de embeddings fora do caminho da requisição.
+
+    Roda numa thread disparada no *startup*: o uvicorn abre a porta na hora (o health
+    check da Render passa e o deploy fica ``Live``) enquanto o trabalho pesado acontece
+    em segundo plano. Sem isso, quem pagava o carregamento era a primeira pessoa a
+    pedir uma checagem depois de cada *cold start* do plano gratuito.
+    """
+    from src.infrastructure.search import embeddings
+
+    inicio = time.perf_counter()
+    _aquecimento["estado"] = "aquecendo"
+    try:
+        obter_orquestrador()
+        embeddings.obter_motor()
+        _aquecimento["estado"] = "pronto"
+    except Exception as erro:  # noqa: BLE001 - a API sobe mesmo sem aquecer
+        _log.exception("aquecimento falhou")
+        _aquecimento["estado"] = "falhou"
+        _aquecimento["erro"] = type(erro).__name__
+    finally:
+        _aquecimento["segundos"] = round(time.perf_counter() - inicio, 2)
+        _log.info("aquecimento: %s em %ss", _aquecimento["estado"], _aquecimento["segundos"])
+
+
+@asynccontextmanager
+async def _ciclo_de_vida(_app: FastAPI):
+    if os.environ.get("VERA_WARMUP", "1") != "0":
+        threading.Thread(target=_aquecer, name="vera-aquecimento", daemon=True).start()
+    yield
+
 
 app = FastAPI(
     title="Senhora Vera API",
     description="Motor de Veracidade de Notícias em Múltiplas Camadas",
     version="0.3.0",
+    lifespan=_ciclo_de_vida,
 )
 
 # O frontend roda em outra porta em desenvolvimento, então precisa de CORS. Em produção
@@ -224,9 +265,9 @@ def checar_noticia(request: ChecagemRequest) -> ChecagemResponse:
     *threadpool*, e as requisições deixam de esperar umas pelas outras.
     """
     noticia = NoticiaRequest(texto=request.texto, url=request.url)
-    orquestrador = obter_orquestrador()
 
     try:
+        orquestrador = obter_orquestrador()
         veredito = orquestrador.veredito(noticia)
     except Exception:  # noqa: BLE001 - nenhuma falha interna sai como traceback
         _log.exception("pipeline falhou para texto de %d caracteres", len(request.texto))
@@ -313,6 +354,9 @@ def _registrar_no_historico(
 #: Sentinela que encerra a fila de eventos do fluxo.
 _FIM = object()
 
+#: Segundos sem evento até o fluxo mandar um batimento (comentário SSE).
+_INTERVALO_HEARTBEAT = 10.0
+
 
 def _sse(tipo: str, dados: dict) -> str:
     """Formata um evento no protocolo Server-Sent Events."""
@@ -334,11 +378,16 @@ def checar_em_fluxo(request: ChecagemRequest) -> StreamingResponse:
     Starlette o itera em *threadpool* e o laço de eventos não fica preso.
     """
     noticia = NoticiaRequest(texto=request.texto, url=request.url)
-    orquestrador = obter_orquestrador()
     eventos: queue.Queue = queue.Queue()
 
     def rodar() -> None:
         try:
+            # Monta (ou reaproveita) o orquestrador AQUI, na thread de trabalho, e não
+            # antes de devolver a resposta. Antes, ``obter_orquestrador()`` era chamado
+            # no corpo do endpoint: no primeiro acesso após um *cold start* ele carregava
+            # o modelo de embeddings antes de o servidor mandar sequer os headers HTTP,
+            # e a tela ficava presa em "Vendo o pedido..." até o proxy cortar (504).
+            orquestrador = obter_orquestrador()
             veredito = orquestrador.veredito(noticia, observador=eventos.put)
             eventos.put(("veredito", veredito))
         except Exception as erro:  # noqa: BLE001 - vai para o fluxo como evento
@@ -350,8 +399,27 @@ def checar_em_fluxo(request: ChecagemRequest) -> StreamingResponse:
     threading.Thread(target=rodar, daemon=True).start()
 
     def gerar() -> Iterator[str]:
+        # Primeiro byte imediato: confirma a conexão ao navegador e a qualquer proxy
+        # no caminho (Cloudflare na frente da Render), que só começam a repassar o
+        # corpo depois do primeiro pedaço. O preenchimento força a descarga de buffers
+        # que esperam alguns KB antes de enviar. Comentários SSE (``:``) são
+        # ignorados pelo cliente.
+        yield ":" + " " * 2048 + "\n\n"
+        yield _sse("etapa", {
+            "tipo": "iniciou",
+            "camada": "N0",
+            "mensagem": "Recebi o pedido. Preparando a investigação...",
+            "sinais": [],
+        })
         while True:
-            item = eventos.get()
+            try:
+                item = eventos.get(timeout=_INTERVALO_HEARTBEAT)
+            except queue.Empty:
+                # Batimento: sem bytes por muito tempo, proxies derrubam a conexão
+                # ociosa (Cloudflare corta em ~100 s) e o cliente não sabe se a Vera
+                # ainda está trabalhando.
+                yield ": ping\n\n"
+                continue
             if item is _FIM:
                 return
             if isinstance(item, Evento):
@@ -524,3 +592,33 @@ def listar_avaliacoes_lote():
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok", "sistema": "Vera API"}
+
+
+@app.get("/health/ready")
+def prontidao() -> dict[str, object]:
+    """Diz se o pipeline já está aquecido (modelo carregado) e se o banco responde.
+
+    ``/health`` continua barato de propósito — é o que a Render consulta para dar o
+    deploy como ``Live``. Este aqui é para diagnóstico: separa "o processo está de pé"
+    de "a checagem vai responder rápido".
+    """
+    from sqlalchemy import text as sql
+
+    from src.infrastructure.database import engine
+    from src.infrastructure.search import embeddings
+
+    banco: dict[str, object]
+    inicio = time.perf_counter()
+    try:
+        with engine.connect() as conn:
+            conn.execute(sql("SELECT 1"))
+        banco = {"ok": True, "ms": round((time.perf_counter() - inicio) * 1000)}
+    except Exception as erro:  # noqa: BLE001 - diagnóstico, não derruba nada
+        banco = {"ok": False, "erro": f"{type(erro).__name__}: {str(erro)[:160]}"}
+
+    return {
+        "aquecimento": _aquecimento,
+        "embeddings": embeddings.estado(),
+        "banco": banco,
+        "groq": bool(os.environ.get("GROQ_API_KEY")),
+    }

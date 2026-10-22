@@ -2,19 +2,15 @@
 name = "challenge-1-residencia-ia-grupo-4"
 version = "0.1.0"
 requires-python = ">=3.12"
+# Só o que a API precisa para rodar em produção. A imagem Docker instala apenas esta
+# lista (`uv sync --no-dev`); antes ela levava JupyterLab, mkdocs, pandas e o PyTorch com
+# ~2,7 GB de bibliotecas CUDA para uma máquina de 0,1 vCPU sem GPU, e o
+# SentenceTransformer sozinho passava dos 512 MB de RAM do plano gratuito da Render.
 dependencies = [
-    "ipykernel>=7.3.0",
-    "jupyterlab>=4.6.4",
-    "matplotlib>=3.11.2",
-    "mkdocs-material>=9.7.7",
-    "pandas>=3.0.6",
-    "pyarrow>=25.0.1",
-    "scikit-learn>=1.9.1",
-    "seaborn>=0.13.2",
     "fastapi>=0.110.0",
     "uvicorn[standard]>=0.29.0",
     "pydantic>=2.6.4",
-    "pytest>=8.0.0",
+    "scikit-learn>=1.9.1",
     "joblib>=1.4.0",
     "httpx>=0.27.0",
     "sqlalchemy>=2.0.29",
@@ -22,6 +18,25 @@ dependencies = [
     "pgvector>=0.2.5",
     "beautifulsoup4>=4.12.0",
     "lxml>=5.1.0",
+    # Embeddings da busca vetorial (N3) via ONNX Runtime: mesmo all-MiniLM-L6-v2 e os
+    # mesmos vetores do sentence-transformers, sem PyTorch.
+    "fastembed>=0.4.0",
+]
+
+# Ferramentas de desenvolvimento, notebooks, documentação e scripts de ingestão. O
+# `uv sync` local continua instalando tudo (o grupo `dev` é padrão); só a imagem de
+# produção fica de fora.
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ipykernel>=7.3.0",
+    "jupyterlab>=4.6.4",
+    "matplotlib>=3.11.2",
+    "seaborn>=0.13.2",
+    "mkdocs-material>=9.7.7",
+    "pandas>=3.0.6",
+    "pyarrow>=25.0.1",
+    # Usado por `backend/scripts/vetorizar_banco.py` para semear o banco.
     "sentence-transformers>=2.7.0",
     "cloudscraper>=1.2.71",
 ]
