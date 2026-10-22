@@ -273,7 +273,8 @@ export function Conversa({ saudacao = true, aoComecar }: Props = {}) {
           <div className="relative min-w-0 flex-1 rounded-lg border-[3px] border-tinta bg-papel-2 p-3 shadow-bloco-sm">
             <p className="text-base">
               <strong className="font-display text-xl">Senta aqui, meu bem!</strong>{" "}
-              Cola a notícia aí embaixo que eu vou atrás.
+              Não sou robô de conversa fiada: me manda o link ou o texto completo da
+              notícia aí embaixo que eu vou atrás.
             </p>
             {/* Rabicho apontando para a Vera. */}
             <span

@@ -64,7 +64,7 @@ export function classificarEntrada(entrada: string): EntradaClassificada {
 
 /** O que a interface diz de volta, para a pessoa ver que foi entendida. */
 export const DICA_POR_TIPO: Record<TipoDeEntrada, string> = {
-  link: "Isso é um link. Vou abrir e ler a página.",
-  texto: "Isso é o texto da notícia. Vou ver como foi escrito.",
-  afirmacao: "Isso é uma afirmação. Vou procurar quem já falou dela.",
+  link: "Link identificado! Vou ler a reportagem e conferir a fonte.",
+  texto: "Texto longo identificado! Vou analisar o estilo e as evidências.",
+  afirmacao: "Afirmação curta. Se tiver o link ou o texto maior, me ajuda a achar as fontes!",
 };

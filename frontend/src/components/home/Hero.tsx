@@ -60,8 +60,9 @@ export function Hero({ aoRever, className = "" }: Props) {
             </div>
 
             <p className="mt-1.5 text-base leading-snug text-tinta-2">
-              Eu sou a Vera. Eu sei de tudo, mas só depois de conferir. Chegou
-              notícia esquisita no grupo da família? Me manda aqui embaixo.
+              Eu sou a Vera. Eu sei de tudo, mas só depois de conferir! Não sou robô de
+              conversa fiada: meu negócio é checar notícia. Me manda o link ou o texto
+              completo aqui embaixo que eu vou atrás.
             </p>
 
             <span className="risco mt-2 block h-1 w-40 rounded-full bg-vermelho" aria-hidden />

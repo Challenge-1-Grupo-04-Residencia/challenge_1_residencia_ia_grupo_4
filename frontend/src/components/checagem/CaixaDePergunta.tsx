@@ -40,7 +40,7 @@ export function CaixaDePergunta({
   const dica = modoAcompanhamento
     ? "Pergunta por que, ou quais fontes eu vi."
     : vazio
-      ? "É só apertar Enter, visse?"
+      ? "Cole o link ou o texto completo da notícia."
       : DICA_POR_TIPO[classificarEntrada(texto).tipo];
 
   return (
@@ -50,6 +50,20 @@ export function CaixaDePergunta({
           ? "Pergunte algo sobre o resultado"
           : "Cole aqui o link, o texto ou a afirmação que quer checar"}
       </label>
+
+      {/* Dica amigável para orientar quem confunde a Vera com um chatbot comum */}
+      {!modoAcompanhamento && (
+        <div className="mb-2 flex items-center gap-2 rounded-md border-2 border-dashed border-tinta/25 bg-papel-2 px-3 py-1.5 text-xs text-tinta-2 shadow-sm">
+          <Icone nome="jornal" tamanho={16} className="shrink-0 text-vermelho" />
+          <p className="min-w-0 leading-snug">
+            <strong className="text-tinta">Dica da Vera:</strong> Cole o{" "}
+            <strong className="text-tinta">link da matéria</strong> ou o{" "}
+            <strong className="text-tinta">texto completo</strong> da notícia.
+            Quanto mais contexto mandar, mais fácil de achar as fontes, visse?
+          </p>
+        </div>
+      )}
+
       <div className="campo-composto rounded-lg border-[3px] border-tinta bg-papel-2 p-2 shadow-bloco-sm">
         <textarea
           id="pergunta"
