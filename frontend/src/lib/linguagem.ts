@@ -163,8 +163,8 @@ const RESUMOS: Record<string, ResumoDoSinal> = {
   "S-08": { icone: "coracao", favor: "Sem apelo", contra: "Mexe com medo e raiva" },
   "S-09": { icone: "link", favor: "Mostra de onde tirou", contra: "Não mostra de onde" },
   "S-10": { icone: "robo", favor: "Escrita de gente", contra: "Cheiro de máquina" },
-  "S-11": { icone: "jornal", favor: "Outros jornais publicaram", contra: "Nenhum jornal publicou" },
-  "S-12": { icone: "lupa", favor: "As fontes confirmam", contra: "As fontes desmentem" },
+  "S-11": { icone: "jornal", favor: "Outros jornais publicaram", contra: "Nenhum jornal sério publicou isso" },
+  "S-12": { icone: "lupa", favor: "Mais fontes indicam", contra: "As fontes desmentem" },
   "S-13": { icone: "copia", favor: "Texto original", contra: "Cópia remexida" },
 };
 

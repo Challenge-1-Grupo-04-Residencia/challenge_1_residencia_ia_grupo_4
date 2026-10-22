@@ -307,6 +307,65 @@ const SLIDES_DEF: Slide[] = [
     ),
   },
   {
+    chave: "problema",
+    passos: 1,
+    render: (p) => (
+      <div className="flex flex-col justify-center gap-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <div>
+            <Super icone="alerta" texto="O ponto de partida · CBL Engage" />
+            <h2 className="font-display text-5xl leading-none">O Desafio da Desinformação</h2>
+          </div>
+          <Carimbo cor="bg-ocre">Fase 1: Engage</Carimbo>
+        </div>
+
+        {/* Pergunta Essencial */}
+        <div className="flex flex-col gap-3">
+          <Balao>
+            <p className="text-2xl leading-snug">
+              <strong className="text-vermelho">Pergunta Essencial:</strong> Como sistemas de IA podem ajudar as pessoas a avaliar a confiabilidade de informações <strong>sem substituir seu pensamento crítico</strong>?
+            </p>
+          </Balao>
+        </div>
+
+        {/* As 3 Perguntas Norteadoras investigadas pela equipe */}
+        <Revela mostrar={p >= 1}>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className={`flex flex-col gap-2 p-4 ${CARD}`}>
+              <div className="flex items-center gap-2">
+                <Icone nome="coracao" tamanho={22} className="text-vermelho" />
+                <span className="font-display text-xl leading-none">O Fator Humano</span>
+              </div>
+              <p className="text-sm font-bold text-tinta-2">
+                Quais vieses cognitivos e gatilhos emocionais (medo e raiva) aceleram o compartilhamento de boatos?
+              </p>
+            </div>
+
+            <div className={`flex flex-col gap-2 p-4 ${CARD}`}>
+              <div className="flex items-center gap-2">
+                <Icone nome="robo" tamanho={22} className="text-vermelho" />
+                <span className="font-display text-xl leading-none">Tecnologia & IA</span>
+              </div>
+              <p className="text-sm font-bold text-tinta-2">
+                Como os avanços em IA generativa aumentaram a sofisticação e a velocidade das campanhas de desinformação?
+              </p>
+            </div>
+
+            <div className={`flex flex-col gap-2 p-4 ${CARD}`}>
+              <div className="flex items-center gap-2">
+                <Icone nome="contas" tamanho={22} className="text-vermelho" />
+                <span className="font-display text-xl leading-none">Critérios de Sucesso</span>
+              </div>
+              <p className="text-sm font-bold text-tinta-2">
+                Quais evidências objetivas e transparentes precisamos expor para que a IA apoie a decisão sem ser caixa-preta?
+              </p>
+            </div>
+          </div>
+        </Revela>
+      </div>
+    ),
+  },
+  {
     chave: "visao",
     passos: 1,
     render: (p) => (
@@ -692,6 +751,7 @@ const ORDEM = [
   "capa",
   "qrcode",
   "equipe",
+  "problema",
   "visao",
   "historia",
   "camadas",
