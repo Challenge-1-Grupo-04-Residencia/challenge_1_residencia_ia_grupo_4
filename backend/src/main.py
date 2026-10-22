@@ -43,10 +43,7 @@ app = FastAPI(
 # esta lista deve ser restringida ao domínio real da Vera.
 app.add_middleware(
     CORSMiddleware,
-    # Aceita o frontend em qualquer host na porta 3000 — inclui o acesso por outra
-    # máquina na rede (http://192.168.0.x:3000), não só localhost. Em produção isto deve
-    # ser restringido ao domínio real da Vera.
-    allow_origin_regex=r"https?://[^/]+:3000",
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
