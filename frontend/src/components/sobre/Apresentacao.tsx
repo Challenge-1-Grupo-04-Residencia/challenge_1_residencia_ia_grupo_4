@@ -259,6 +259,56 @@ function SlideQRCode() {
   );
 }
 
+function SlideObrigado() {
+  const [url, setUrl] = useState("");
+  useEffect(() => setUrl(window.location.origin), []);
+  return (
+    <div className="relative flex flex-col items-center justify-center gap-6 overflow-hidden text-center">
+      <Reticula className="text-vermelho" />
+      <div className="surge relative flex flex-col items-center gap-2" style={{ "--atraso": "100ms" } as React.CSSProperties}>
+        <h2 className="font-display text-5xl leading-none md:text-6xl">Obrigado!</h2>
+        <Carimbo cor="bg-ocre">Grupo 4 · Residência em IA</Carimbo>
+      </div>
+
+      <div className="grid max-w-4xl items-center gap-8 md:grid-cols-[auto_1fr_auto]">
+        <Image
+          src="/vera-corpo.png"
+          alt="Senhora Vera agradecendo"
+          width={180}
+          height={240}
+          className="estufa relative mx-auto h-40 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-52"
+        />
+
+        <div className="surge flex flex-col items-center gap-3 md:items-start md:text-left" style={{ "--atraso": "250ms" } as React.CSSProperties}>
+          <Balao>
+            <p className="fonte-mao text-2xl md:text-3xl">
+              “Valeu, parêia! Qualquer notícia que te mandarem, traz aqui que eu confiro, visse?”
+            </p>
+          </Balao>
+          <p className="text-lg text-tinta-2">
+            Perguntas, dúvidas ou comentários? Estamos à disposição da banca!
+          </p>
+        </div>
+
+        <div className="surge flex flex-col items-center gap-2" style={{ "--atraso": "350ms" } as React.CSSProperties}>
+          <div className="estufa rounded-md border-[3px] border-tinta bg-white p-3 shadow-bloco">
+            {url ? (
+              <QRCodeSVG value={url} size={130} level="M" marginSize={0} />
+            ) : (
+              <div className="size-[130px]" aria-hidden />
+            )}
+          </div>
+          {url && (
+            <span className="max-w-[140px] truncate font-mono text-xs font-bold text-tinta-2">
+              {url.replace(/^https?:\/\//, "")}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Slides --------------------------------------------------------------------------
 
 type Slide = { chave: string; passos: number; render: (p: number) => React.ReactNode };
@@ -725,27 +775,17 @@ const SLIDES_DEF: Slide[] = [
   {
     chave: "obrigado",
     passos: 0,
-    render: () => (
-      <div className="relative flex flex-col items-center gap-4 overflow-hidden text-center">
-        <Reticula className="text-vermelho" />
-        <Image src="/vera-corpo.png" alt="Senhora Vera agradecendo" width={200} height={267} className="estufa relative h-40 w-auto drop-shadow-[6px_6px_0_var(--tinta)] md:h-52" />
-        <h2 className="surge relative font-display text-5xl leading-none md:text-6xl" style={{ "--atraso": "150ms" } as React.CSSProperties}>Obrigado!</h2>
-        <div className="surge relative w-full max-w-xl" style={{ "--atraso": "300ms" } as React.CSSProperties}>
-          <Balao><p className="fonte-mao text-2xl">“Valeu, parêia! Qualquer notícia que te mandarem, traz aqui que eu confiro, visse?”</p></Balao>
-        </div>
-        <div className="surge relative" style={{ "--atraso": "440ms" } as React.CSSProperties}>
-          <Carimbo cor="bg-ocre">Grupo 4 · Residência em IA</Carimbo>
-        </div>
-      </div>
-    ),
+    render: () => <SlideObrigado />,
   },
 ];
 
 /**
- * Ordem de exibição (fluxo da apresentação):
- * capa (fisga) → QR (todo mundo abre no celular) → equipe → a ideia → como investiga
- * (camadas, dificuldade) → demo ao vivo → o que mede (sinais, faixas) → engenharia →
- * princípios → como foi feito → métricas (N2 e pipeline) → números (fecho).
+ * Ordem de exibição (fluxo da apresentação - 5 papéis narrativos):
+ * 👤 Pessoa 1: Capa → QR Code → Equipe → Problema (CBL Engage)
+ * 👤 Pessoa 2: Visão → História da Vera (Produto & UX)
+ * 👤 Pessoa 3: Camadas N0-N4 → Dificuldade/Parada → Demo Ao Vivo (Técnico 1: Infra)
+ * 👤 Pessoa 4: 13 Sinais → Frentes de Engenharia → Métricas N2 → Métricas Pipeline (Técnico 2: IA/ML)
+ * 👤 Pessoa 5: 5 Faixas de Veracidade → Princípios → Metodologia Ágil → Números → Fechamento & QR Code
  */
 const ORDEM = [
   "capa",
@@ -758,12 +798,12 @@ const ORDEM = [
   "dificuldade",
   "demo",
   "sinais",
-  "faixas",
   "frentes",
-  "principios",
-  "metodologia",
   "metricas-n2",
   "metricas-pipeline",
+  "faixas",
+  "principios",
+  "metodologia",
   "numeros",
   "obrigado",
 ] as const;
