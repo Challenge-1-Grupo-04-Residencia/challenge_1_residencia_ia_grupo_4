@@ -279,7 +279,7 @@ const SLIDES_DEF: Slide[] = [
           <Balao><p className="fonte-mao text-3xl">“O que é que tu quer saber que é verdade?”</p></Balao>
         </div>
         <p className="surge relative max-w-2xl text-2xl" style={{ "--atraso": "440ms" } as React.CSSProperties}>
-          Uma senhora do Recife que sabe de tudo, mas <strong>não repassa nada sem conferir a fonte antes</strong>.
+          Uma senhora de Recife que sabe de tudo, mas <strong>não repassa nada sem conferir a fonte antes</strong>.
         </p>
       </div>
     ),
@@ -400,7 +400,7 @@ const SLIDES_DEF: Slide[] = [
           <div className="flex flex-col gap-4">
             <Balao>
               <p className="text-2xl leading-snug">
-                <strong>Vera</strong> vem de <strong>VERAcidade</strong>: uma senhora do Recife que sabe de tudo do bairro, mas, antes de espalhar qualquer coisa, <strong>vai atrás da fonte</strong>.
+                <strong>Vera</strong> vem de <strong>VERAcidade</strong>: uma senhora de Recife que sabe de tudo do bairro, mas, antes de espalhar qualquer coisa, <strong>vai atrás da fonte</strong>.
               </p>
             </Balao>
             <Revela mostrar={p >= 1}>
